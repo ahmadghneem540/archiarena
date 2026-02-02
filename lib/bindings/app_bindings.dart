@@ -1,0 +1,85 @@
+import 'package:get/get.dart';
+import '../features/splash/splash_view.dart';
+import '../features/splash/splash_binding.dart';
+import '../features/home/home_view.dart';
+import '../features/home/home_binding.dart';
+import '../features/auth/create_account_intro/create_account_intro_view.dart';
+import '../features/auth/create_account_intro/create_account_intro_binding.dart';
+import '../features/auth/create_account_describe/create_account_describe_view.dart';
+import '../features/auth/create_account_describe/create_account_describe_binding.dart';
+import '../features/auth/create_account_name/create_account_name_view.dart';
+import '../features/auth/create_account_name/create_account_name_binding.dart';
+import '../features/auth/terms_and_privacy/terms_and_privacy_view.dart';
+import '../features/auth/terms_and_privacy/terms_and_privacy_binding.dart';
+import '../features/auth/login/login_view.dart';
+import '../features/auth/login/login_binding.dart';
+import '../features/menu/privacy_security_view.dart';
+import '../features/menu/professional_account_view.dart';
+import '../features/menu/notification_settings_view.dart';
+import '../features/menu/language_view.dart';
+import '../features/menu/appearance_view.dart';
+import '../features/menu/help_support_view.dart';
+import '../features/menu/feedback_view.dart';
+import '../features/menu/about_view.dart';
+import '../core/routes/app_routes.dart';
+
+class AppBindings {
+  static List<GetPage> get pages => [
+    GetPage(
+      name: AppRoutes.splash,
+      page: () => const SplashView(),
+      binding: SplashBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.home,
+      page: () => const HomeView(),
+      binding: HomeBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.authLogin,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.createAccountIntro,
+      page: () => const CreateAccountIntroView(),
+      binding: CreateAccountIntroBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.createAccountDescribe,
+      page: () => const CreateAccountDescribeView(),
+      binding: CreateAccountDescribeBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.createAccountName,
+      page: () => const CreateAccountNameView(),
+      binding: CreateAccountNameBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.termsAndPrivacy,
+      page: () => const TermsAndPrivacyView(),
+      binding: TermsAndPrivacyBinding(),
+    ),
+    // صفحات فرعية للقائمة
+    GetPage(
+      name: AppRoutes.menuPrivacySecurity,
+      page: () => const PrivacySecurityView(),
+    ),
+    GetPage(
+      name: AppRoutes.menuProfessionalAccount,
+      page: () => const ProfessionalAccountView(),
+    ),
+    GetPage(
+      name: AppRoutes.menuNotificationSettings,
+      page: () => const NotificationSettingsView(),
+    ),
+    GetPage(name: AppRoutes.menuLanguage, page: () => const LanguageView()),
+    GetPage(name: AppRoutes.menuAppearance, page: () => const AppearanceView()),
+    GetPage(
+      name: AppRoutes.menuHelpSupport,
+      page: () => const HelpSupportView(),
+    ),
+    GetPage(name: AppRoutes.menuFeedback, page: () => const FeedbackView()),
+    GetPage(name: AppRoutes.menuAbout, page: () => const AboutView()),
+  ];
+}

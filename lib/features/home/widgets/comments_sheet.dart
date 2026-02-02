@@ -1,0 +1,597 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../home_controller.dart';
+import '../models/comment_model.dart';
+import 'audio_comment_player.dart';
+
+/// شاشة التعليقات — تظهر عند الضغط على أيقونة التعليقات.
+/// تدعم التعليق النصي والصوتي والردود المتداخلة.
+class CommentsSheet extends StatefulWidget {
+  const CommentsSheet({super.key, required this.postId});
+
+  final int postId;
+
+  @override
+  State<CommentsSheet> createState() => _CommentsSheetState();
+}
+
+class _CommentsSheetState extends State<CommentsSheet> {
+  final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  String? _replyingToId;
+  String? _replyingToName;
+  bool _isRecording = false;
+  bool _showIcons = false;
+  int _recordingSeconds = 0;
+  DateTime? _recordStartTime;
+  Timer? _recordingTimer;
+
+  static String _formatDuration(int seconds) {
+    final m = seconds ~/ 60;
+    final s = seconds % 60;
+    return '${m.toString().padLeft(1)}:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  void dispose() {
+    _recordingTimer?.cancel();
+    _textController.dispose();
+    _scrollController.dispose();
+    if (_isRecording) _audioRecorder.stop();
+    super.dispose();
+  }
+
+  List<CommentModel> _buildCommentTree(List<CommentModel> flat) {
+    final topLevel = flat.where((c) => c.parentId == null).toList();
+    List<CommentModel> attachReplies(CommentModel c) {
+      final children = flat.where((x) => x.parentId == c.id).toList();
+      return children
+          .map((child) => child.copyWith(replies: attachReplies(child)))
+          .toList();
+    }
+
+    return topLevel.map((c) => c.copyWith(replies: attachReplies(c))).toList();
+  }
+
+  void _sendComment() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+    final controller = Get.find<HomeController>();
+    controller.addComment(widget.postId, text, _replyingToId);
+    _textController.clear();
+    setState(() {
+      _replyingToId = null;
+      _replyingToName = null;
+    });
+  }
+
+  Future<void> _pickFromGallery() async {
+    final XFile? file = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file != null && mounted) {
+      // يمكن لاحقاً إضافة تعليق بصورة عبر نموذج يدعم imagePath
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('تم اختيار صورة من المعرض: ${file.name}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _toggleRecording() async {
+    // التسجيل الصوتي مدعوم فقط على Android و iOS
+    if (!kIsWeb &&
+        defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('التسجيل الصوتي متاح على الهاتف فقط (Android / iOS)'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (_isRecording) {
+      _recordingTimer?.cancel();
+      _recordingTimer = null;
+      final durationSecs = _recordingSeconds;
+      try {
+        final path = await _audioRecorder.stop();
+        if (path != null && mounted) {
+          final controller = Get.find<HomeController>();
+          controller.addAudioComment(
+            widget.postId,
+            path,
+            _replyingToId,
+            durationSecs > 0 ? durationSecs : null,
+          );
+          setState(() {
+            _replyingToId = null;
+            _replyingToName = null;
+          });
+        }
+      } catch (_) {}
+      setState(() {
+        _isRecording = false;
+        _recordingSeconds = 0;
+        _recordStartTime = null;
+      });
+      return;
+    }
+
+    try {
+      final hasPermission = await _audioRecorder.hasPermission();
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('يُرجى منح صلاحية الميكروفون للتسجيل'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      final dir = await getTemporaryDirectory();
+      final path =
+          '${dir.path}/comment_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      await _audioRecorder.start(const RecordConfig(), path: path);
+      if (mounted) {
+        _recordStartTime = DateTime.now();
+        setState(() {
+          _isRecording = true;
+          _recordingSeconds = 0;
+        });
+        _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+          if (!mounted || !_isRecording) return;
+          setState(() {
+            _recordingSeconds = DateTime.now()
+                .difference(_recordStartTime!)
+                .inSeconds;
+          });
+        });
+      }
+    } on MissingPluginException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'التسجيل الصوتي غير متاح. شغّل التطبيق على جهاز Android أو iOS بعد إعادة البناء (flutter clean ثم flutter run).',
+            ),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('فشل بدء التسجيل: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _startReply(CommentModel comment) {
+    setState(() {
+      _replyingToId = comment.id;
+      _replyingToName = comment.authorName;
+    });
+  }
+
+  void _cancelReply() {
+    setState(() {
+      _replyingToId = null;
+      _replyingToName = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final controller = Get.find<HomeController>();
+    final flatList = controller.getCommentsListForPost(widget.postId);
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        height: screenHeight * 0.75,
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              _buildHandle(),
+              const SizedBox(height: 8),
+              const Text(
+                'التعليقات',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onSurface,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Obx(() {
+                  final tree = _buildCommentTree(flatList);
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: tree.length,
+                    itemBuilder: (context, index) {
+                      return _CommentTile(
+                        comment: tree[index],
+                        depth: 0,
+                        onReply: _startReply,
+                      );
+                    },
+                  );
+                }),
+              ),
+              _buildBottomBar(context),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHandle() {
+    return Container(
+      width: 40,
+      height: 4,
+      decoration: BoxDecoration(
+        color: AppColors.grey300,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: MediaQuery.of(context).padding.left,
+        right: MediaQuery.of(context).padding.right,
+        bottom: MediaQuery.of(context).padding.bottom,
+        top: 12,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.border)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_replyingToName != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  Text(
+                    'الرد على $_replyingToName',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _cancelReply,
+                    child: Icon(
+                      Icons.close,
+                      size: 18,
+                      color: AppColors.grey600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: Icon(
+                  _showIcons ? Icons.close : Icons.add_circle_outline,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+                tooltip: _showIcons ? 'إخفاء الخيارات' : 'إظهار خيارات التعليق',
+                onPressed: () => setState(() => _showIcons = !_showIcons),
+              ),
+              if (_showIcons) ...[
+                IconButton(
+                  icon: Icon(
+                    _isRecording ? Icons.stop_circle : Icons.mic_none,
+                    color: _isRecording ? AppColors.error : AppColors.primary,
+                    size: 26,
+                  ),
+                  onPressed: _toggleRecording,
+                ),
+                if (_isRecording)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(
+                      _formatDuration(_recordingSeconds),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onSurface,
+                        fontFeatures: [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                IconButton(
+                  icon: Icon(
+                    Icons.photo_library_outlined,
+                    color: AppColors.primary,
+                    size: 26,
+                  ),
+                  onPressed: _pickFromGallery,
+                ),
+              ],
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.inputBackground,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: TextField(
+                    controller: _textController,
+                    textDirection: TextDirection.rtl,
+                    decoration: InputDecoration(
+                      hintText: 'اكتب تعليقاً...',
+                      hintStyle: TextStyle(
+                        color: AppColors.grey600,
+                        fontSize: 15,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.emoji_emotions_outlined,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          Icons.send_rounded,
+                          color: AppColors.primary,
+                          size: 22,
+                        ),
+                        onPressed: _sendComment,
+                      ),
+                    ),
+                    maxLines: 3,
+                    minLines: 1,
+                    onSubmitted: (_) => _sendComment(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColors.grey300,
+                child: Text(
+                  'أ',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommentTile extends StatelessWidget {
+  const _CommentTile({
+    required this.comment,
+    required this.depth,
+    required this.onReply,
+  });
+
+  final CommentModel comment;
+  final int depth;
+  final void Function(CommentModel) onReply;
+
+  @override
+  Widget build(BuildContext context) {
+    const indent = 24.0;
+    const lineWidth = 2.0;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(right: depth * indent, bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (depth > 0) ...[
+                SizedBox(
+                  width: indent,
+                  height: 24,
+                  child: CustomPaint(
+                    size: const Size(lineWidth, 24),
+                    painter: _LinePainter(),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardBackground,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadowLight,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: AppColors.primary.withValues(
+                              alpha: 0.2,
+                            ),
+                            child: Text(
+                              comment.authorName.isNotEmpty
+                                  ? comment.authorName[0].toUpperCase()
+                                  : '؟',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              comment.authorName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            comment.createdAt,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.grey600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Material(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(8),
+                            child: InkWell(
+                              onTap: () => onReply(comment),
+                              borderRadius: BorderRadius.circular(8),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                child: Text(
+                                  'الرد',
+                                  style: TextStyle(
+                                    color: AppColors.onPrimary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      if (comment.isAudio && comment.audioPath != null)
+                        AudioCommentPlayer(
+                          audioPath: comment.audioPath!,
+                          durationSeconds: comment.audioDurationSeconds,
+                        )
+                      else if (comment.isAudio)
+                        _buildAudioPlaceholder()
+                      else
+                        Text(
+                          comment.text ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.onSurface,
+                            height: 1.4,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        ...comment.replies.map(
+          (r) => _CommentTile(comment: r, depth: depth + 1, onReply: onReply),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAudioPlaceholder() {
+    return Row(
+      children: [
+        Icon(Icons.audiotrack, color: AppColors.primary, size: 28),
+        const SizedBox(width: 8),
+        Text(
+          'تعليق صوتي',
+          style: TextStyle(fontSize: 13, color: AppColors.grey700),
+        ),
+      ],
+    );
+  }
+}
+
+class _LinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.grey300
+      ..strokeWidth = size.width;
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
