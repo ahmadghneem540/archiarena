@@ -14,9 +14,10 @@ class SplashView extends GetView<SplashController> {
         child: Center(
           child: Image.asset(
             'assets/app_logo.png',
-            width: 120,
-            height: 132,
+            width: 240, // تكبير الشعار
+            height: 280,
             fit: BoxFit.contain,
+            colorBlendMode: BlendMode.difference, // لمسة جمالية بسيطة
           ),
         ),
       ),

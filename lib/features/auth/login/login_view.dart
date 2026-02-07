@@ -4,7 +4,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import 'login_controller.dart';
 
-/// شاشة تسجيل الدخول — تصميم مطابق للمرفق (خلفية، لوجو، حقول، أزرار).
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
@@ -22,26 +21,21 @@ class LoginView extends GetView<LoginController> {
                 child: Column(
                   children: [
                     _buildHeader(context),
+
+                    /// الجزء السفلي
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Column(
                           children: [
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 0),
                             _buildLogo(),
-                            const SizedBox(height: 32),
-                            _buildPhoneOrEmailField(context),
+                            const SizedBox(height: 12),
+
+                            /// كارد الحقول
+                            _buildFormCard(context),
+
                             const SizedBox(height: 20),
-                            _buildPasswordField(context),
-                            const SizedBox(height: 28),
-                            _buildLoginButton(context),
-                            const SizedBox(height: 16),
-                            _buildForgotPassword(context),
-                            const SizedBox(height: 24),
-                            _buildOrDivider(),
-                            const SizedBox(height: 24),
-                            _buildCreateAccountButton(context),
-                            const SizedBox(height: 32),
                           ],
                         ),
                       ),
@@ -56,17 +50,19 @@ class LoginView extends GetView<LoginController> {
     );
   }
 
+  /// الصورة العلوية (صغرناها لرفع المحتوى)
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.45,
-      // width: double.infinity,
-      child: SafeArea(child: Image.asset('assets/bg_login.png', fit: BoxFit.cover)),
+      height: MediaQuery.of(context).size.height * 0.36,
+      width: double.infinity,
+      child: Image.asset('assets/bg_login.png', fit: BoxFit.cover),
     );
   }
 
+  /// اللوغو (ارتفع للأعلى)
   Widget _buildLogo() {
     return Transform.translate(
-      offset: const Offset(0, -36),
+      offset: const Offset(0, -70),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -82,10 +78,39 @@ class LoginView extends GetView<LoginController> {
         padding: const EdgeInsets.all(12),
         child: Image.asset(
           'assets/app_logo.png',
-          height: 72,
-          width: 72,
+          height: 140,
+          width: 190,
           fit: BoxFit.contain,
         ),
+      ),
+    );
+  }
+
+  /// كارد يحتوي الحقول والأزرار
+  Widget _buildFormCard(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildPhoneOrEmailField(context),
+          const SizedBox(height: 16),
+          _buildPasswordField(context),
+          const SizedBox(height: 22),
+          _buildLoginButton(context),
+          const SizedBox(height: 16),
+          _buildForgotPassword(context),
+        ],
       ),
     );
   }
@@ -137,7 +162,6 @@ class LoginView extends GetView<LoginController> {
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
               color: AppColors.grey500,
-              size: 22,
             ),
             onPressed: controller.togglePasswordVisibility,
           ),
@@ -171,54 +195,10 @@ class LoginView extends GetView<LoginController> {
   Widget _buildForgotPassword(BuildContext context) {
     return TextButton(
       onPressed: controller.forgotPassword,
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.primaryDark,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-      ),
+      style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark),
       child: const Text(
         'نسيت كلمة المرور؟',
         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-      ),
-    );
-  }
-
-  Widget _buildOrDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: AppColors.border, thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'أو',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.grey500,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(child: Divider(color: AppColors.border, thickness: 1)),
-      ],
-    );
-  }
-
-  Widget _buildCreateAccountButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton(
-        onPressed: controller.createNewAccount,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: const Text(
-          'إنشاء حساب جديد',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
       ),
     );
   }

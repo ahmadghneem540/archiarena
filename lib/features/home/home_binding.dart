@@ -4,6 +4,7 @@ import 'home_controller.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<HomeController>(() => HomeController());
+    // استخدام put بدلاً من lazyPut لضمان وجود Controller فوراً
+    Get.put<HomeController>(HomeController());
   }
 }

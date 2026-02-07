@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import 'terms_and_privacy_controller.dart';
@@ -91,7 +92,11 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                ArchiButton(label: 'تسجيل', onPressed: controller.signUp),
+                ArchiButton(
+                  label: 'تسجيل',
+                  onPressed: controller.signUp,
+                ),
+
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(

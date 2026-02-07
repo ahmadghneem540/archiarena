@@ -9,6 +9,10 @@ import '../features/auth/create_account_describe/create_account_describe_view.da
 import '../features/auth/create_account_describe/create_account_describe_binding.dart';
 import '../features/auth/create_account_name/create_account_name_view.dart';
 import '../features/auth/create_account_name/create_account_name_binding.dart';
+import '../features/auth/create_account_company/create_account_company_view.dart';
+import '../features/auth/create_account_company/create_account_company_binding.dart';
+import '../features/auth/create_account_company_describe/create_account_company_describe_view.dart';
+import '../features/auth/create_account_company_describe/create_account_company_describe_binding.dart';
 import '../features/auth/terms_and_privacy/terms_and_privacy_view.dart';
 import '../features/auth/terms_and_privacy/terms_and_privacy_binding.dart';
 import '../features/auth/login/login_view.dart';
@@ -54,6 +58,16 @@ class AppBindings {
       name: AppRoutes.createAccountName,
       page: () => const CreateAccountNameView(),
       binding: CreateAccountNameBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.createAccountCompany,
+      page: () => const CreateAccountCompanyView(),
+      binding: CreateAccountCompanyBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.createAccountCompanyDescribe,
+      page: () => const CreateAccountCompanyDescribeView(),
+      binding: CreateAccountCompanyDescribeBinding(),
     ),
     GetPage(
       name: AppRoutes.termsAndPrivacy,

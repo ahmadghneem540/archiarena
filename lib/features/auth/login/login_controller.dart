@@ -18,6 +18,19 @@ class LoginController extends GetxController {
     obscurePassword.value = !obscurePassword.value;
   }
 
+  // void login() {
+  //   final phoneOrEmail = phoneOrEmailController.text.trim();
+  //   final password = passwordController.text;
+  //   if (phoneOrEmail.isEmpty || password.isEmpty) {
+  //     Get.snackbar(
+  //       'تنبيه',
+  //       'يرجى إدخال الهاتف أو البريد وكلمة المرور.',
+  //       snackPosition: SnackPosition.BOTTOM,
+  //     );
+  //     return;
+  //   }
+  //   Get.offAllNamed(AppRoutes.home);
+  // }
   void login() {
     final phoneOrEmail = phoneOrEmailController.text.trim();
     final password = passwordController.text;
@@ -29,7 +42,13 @@ class LoginController extends GetxController {
       );
       return;
     }
-    Get.offAllNamed(AppRoutes.home);
+
+    // التحقق من المعاملات المرسلة من الصفحة السابقة (إن وجدت)
+    final arguments = Get.arguments;
+    final isCompany = arguments != null && arguments['isCompany'] == true;
+
+    // بعد التحقق من البيانات، الانتقال إلى HomeView مع تمرير نوع المستخدم
+    Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
   }
 
   void forgotPassword() {

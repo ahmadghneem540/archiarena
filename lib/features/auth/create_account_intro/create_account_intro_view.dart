@@ -10,7 +10,9 @@ class CreateAccountIntroView extends GetView<CreateAccountIntroController> {
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: Get.locale?.languageCode == 'ar'
+          ? TextDirection.rtl
+          : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
@@ -18,39 +20,59 @@ class CreateAccountIntroView extends GetView<CreateAccountIntroController> {
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Get.back(),
           ),
-          title: const Text('إنشاء حساب'),
+          title: Text('create_account'.tr),
+          actions: [
+            PopupMenuButton<Locale>(
+              icon: const Icon(Icons.language),
+              onSelected: (locale) => Get.updateLocale(locale),
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: Locale('ar'), child: Text('العربية')),
+                PopupMenuItem(value: Locale('en'), child: Text('English')),
+              ],
+            ),
+          ],
         ),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 const SizedBox(height: 24),
-                Image.asset(
-                  'assets/joinus.png',
-                  width: 400,
-                  height: 400,
-                  fit: BoxFit.contain,
+
+                /// حل overflow: الصورة أصبحت مرنة
+                Flexible(
+                  child: Image.asset('assets/joinus.png', fit: BoxFit.contain),
                 ),
-                const SizedBox(height: 32),
+
+                const SizedBox(height: 24),
+
                 Text(
-                  'انضم إلينا',
+                  'join_us'.tr,
                   style: Theme.of(context).textTheme.headlineLarge,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
+
                 Text(
-                  'سنُساعدك في إنشاء حساب جديد في خطوات بسيطة.',
+                  'create_account_desc'.tr,
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
+
                 const Spacer(),
-                ArchiButton(label: 'التالي', onPressed: controller.next),
+
+                ArchiButton(label: 'personal'.tr, onPressed: controller.next),
                 const SizedBox(height: 16),
+
+                ArchiButton(label: 'companies'.tr, onPressed: controller.nextCompany),
+                const SizedBox(height: 16),
+
                 TextButton(
                   onPressed: controller.alreadyHaveAccount,
-                  child: const Text('لديك حساب بالفعل؟'),
+                  child: Text('have_account'.tr),
                 ),
+
                 const SizedBox(height: 24),
               ],
             ),

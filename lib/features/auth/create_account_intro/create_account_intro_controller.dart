@@ -6,6 +6,10 @@ class CreateAccountIntroController extends GetxController {
     Get.toNamed(AppRoutes.createAccountName);
   }
 
+  void nextCompany() {
+    Get.toNamed(AppRoutes.createAccountCompany);
+  }
+
   void alreadyHaveAccount() {
     Get.offAllNamed(AppRoutes.authLogin);
   }

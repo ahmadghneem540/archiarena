@@ -33,6 +33,7 @@ class HomeHeader extends StatelessWidget {
           height: 52,
           child: Obx(() {
             final _ = controller.currentTab.value;
+            final isCompany = controller.isCompany.value;
             return Row(
               children: [
                 Expanded(
@@ -51,6 +52,11 @@ class HomeHeader extends StatelessWidget {
                     iconOutlined: Icons.work_outline,
                   ),
                 ),
+                // أيقونة الطلبات (فقط للشركات)
+                if (isCompany)
+                  Expanded(
+                    child: _HomeOrderTabIcon(controller: controller),
+                  ),
                 Expanded(
                   child: _HomeTabIcon(
                     controller: controller,
@@ -112,6 +118,36 @@ class _HomeTabIcon extends StatelessWidget {
           isSelected ? icon : iconOutlined,
           color: isSelected ? AppColors.primary : AppColors.grey600,
           size: 28,
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeOrderTabIcon extends StatelessWidget {
+  const _HomeOrderTabIcon({required this.controller});
+
+  final HomeController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = controller.currentTab.value == HomeTab.orders;
+    return InkWell(
+      onTap: () => controller.selectTab(HomeTab.orders),
+      borderRadius: BorderRadius.circular(24),
+      child: Center(
+        child: Image.asset(
+          isSelected ? 'assets/order_icon.png' : 'assets/order_icon_out.png',
+          width: 24,
+          height: 24,
+          errorBuilder: (context, error, stackTrace) {
+            // في حالة عدم وجود الصورة، استخدم أيقونة بديلة
+            return Icon(
+              isSelected ? Icons.receipt_long : Icons.receipt_long_outlined,
+              color: isSelected ? AppColors.primary : AppColors.grey600,
+              size: 24,
+            );
+          },
         ),
       ),
     );

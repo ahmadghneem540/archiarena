@@ -96,6 +96,17 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                     prefixIcon: Icon(Icons.lock_outline, size: 22),
                   ),
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  textDirection: TextDirection.rtl,
+                  controller: controller.emailController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    hintText: 'البريد الالكتروني',
+                    prefixIcon: Icon(Icons.email_sharp, size: 22),
+                  ),
+                ),
+
                 const SizedBox(height: 28),
                 Text(
                   'متى عيد ميلادك؟',

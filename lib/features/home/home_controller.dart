@@ -5,14 +5,29 @@ import '../../core/theme/app_colors.dart';
 import 'models/comment_model.dart';
 import 'models/friend_request_model.dart';
 import 'models/notification_model.dart';
+import 'models/order_model.dart';
+import 'models/project_image_model.dart';
 import 'models/user_profile_model.dart';
 import 'widgets/comments_sheet.dart';
 import 'widgets/home_post_details_sheet.dart';
+import 'widgets/order_details_view.dart';
 
-enum HomeTab { home, work, groups, profile, notifications, menu }
+enum HomeTab { home, work, orders, groups, profile, notifications, menu }
 
 class HomeController extends GetxController {
   final Rx<HomeTab> currentTab = HomeTab.home.obs;
+  final showUploadPage = false.obs;
+  // نوع المستخدم: true للشركات، false للأشخاص
+  final RxBool isCompany = false.obs; // يمكن تغييرها حسب نوع المستخدم المسجل
+
+  void openUploadPage() {
+    showUploadPage.value = true;
+  }
+
+  void closeUploadPage() {
+    showUploadPage.value = false;
+  }
+
   final notificationCount = 3;
 
   // تفاعلات البوست الأول
@@ -38,6 +53,12 @@ class HomeController extends GetxController {
 
   // الإشعارات (التاب الخامس)
   final notifications = <NotificationModel>[].obs;
+
+  // الطلبات/المشاريع المرفوعة (للشركات)
+  final orders = <OrderModel>[].obs;
+  
+  // صور المشاريع (مفتاح: orderId)
+  final Map<String, RxList<ProjectImageModel>> orderImages = {};
 
   bool hasSentFriendRequest(String userId) =>
       sentFriendRequestIds.contains(userId);
@@ -157,6 +178,82 @@ class HomeController extends GetxController {
     );
   }
 
+  void openOrderDetails(String orderId, String orderTitle) {
+    Get.to(() => OrderDetailsView(
+          controller: this,
+          orderId: orderId,
+          orderTitle: orderTitle,
+        ));
+  }
+
+  RxList<ProjectImageModel> getOrderImages(String orderId) {
+    if (!orderImages.containsKey(orderId)) {
+      orderImages[orderId] = _generateSampleImages(orderId).obs;
+    }
+    return orderImages[orderId]!;
+  }
+
+  void acceptImage(String orderId, String imageId) {
+    final images = orderImages[orderId];
+    if (images == null) return;
+
+    // رفض جميع الصور الأخرى وقبول الصورة المختارة
+    for (var image in images) {
+      if (image.id == imageId) {
+        image.isAccepted.value = true;
+        image.isRejected.value = false;
+      } else {
+        image.isAccepted.value = false;
+        image.isRejected.value = true;
+      }
+    }
+  }
+
+  void downloadAllImages(String orderId) {
+    final images = orderImages[orderId];
+    if (images == null || images.isEmpty) {
+      Get.snackbar(
+        'تنبيه',
+        'لا توجد صور للتحميل',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    
+    // هنا يمكن إضافة منطق التحميل الفعلي
+    Get.snackbar(
+      'نجح',
+      'تم تحميل ${images.length} صورة',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: AppColors.primary,
+      colorText: AppColors.onPrimary,
+    );
+  }
+
+  List<ProjectImageModel> _generateSampleImages(String orderId) {
+    final imageAssets = [
+      'assets/order1.jfif',
+      'assets/order2.jfif',
+      'assets/order3.jfif',
+      'assets/order4.jfif',
+      'assets/order5.jfif',
+      'assets/order6.jfif',
+    ];
+    
+    final authors = ['م كوم', 'م احمد', 'شركة الخلف', 'معلا', 'خالد', 'engAbd'];
+    
+    return List.generate(6, (index) {
+      return ProjectImageModel(
+        id: 'img_${orderId}_$index',
+        imageUrl: imageAssets[index % imageAssets.length],
+        authorName: authors[index % authors.length],
+        timeAgo: 'منذ ساعتين',
+        isAccepted: false,
+        isRejected: false,
+      );
+    });
+  }
+
   void selectTab(HomeTab tab) {
     currentTab.value = tab;
     // يمكن لاحقاً تبديل المحتوى أو التنقل حسب التاب
@@ -172,6 +269,12 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // التحقق من المعاملات المرسلة عند الانتقال إلى Home
+    final arguments = Get.arguments;
+    if (arguments != null && arguments['isCompany'] == true) {
+      isCompany.value = true;
+    }
+    
     myProfile = UserProfileModel(
       id: 'me',
       name: 'المستخدم',
@@ -185,6 +288,60 @@ class HomeController extends GetxController {
     _addSampleFriendRequests();
     _addSuggestionUsers();
     _addSampleNotifications();
+    _addSampleOrders();
+  }
+
+  void _addSampleOrders() {
+    orders.addAll([
+      OrderModel(
+        id: 'o1',
+        title: 'مكتب هندسي',
+        timeAgo: 'منذ ساعتين',
+        imageUrl: 'assets/order1.jfif',
+      ),
+      OrderModel(
+        id: 'o2',
+        title: 'تصميم أعمدة سكنية داخلية',
+        timeAgo: 'منذ 20 د',
+        imageUrl: 'assets/order2.jfif',
+      ),
+      OrderModel(
+        id: 'o3',
+        title: 'فيلا سكنية حديثة',
+        timeAgo: 'منذ 3 ساعات',
+        imageUrl: 'assets/order3.jfif',
+      ),
+      OrderModel(
+        id: 'o4',
+        title: 'مبنى تجاري متعدد الطوابق',
+        timeAgo: 'منذ 5 ساعات',
+        imageUrl: 'assets/order4.jfif',
+      ),
+      OrderModel(
+        id: 'o5',
+        title: 'تصميم مطعم راقي',
+        timeAgo: 'منذ يوم',
+        imageUrl: 'assets/order5.jfif',
+      ),
+      OrderModel(
+        id: 'o6',
+        title: 'شقة سكنية بمساحة 120 م²',
+        timeAgo: 'منذ يومين',
+        imageUrl: 'assets/order6.jfif',
+      ),
+      OrderModel(
+        id: 'o7',
+        title: 'مستشفى خاص',
+        timeAgo: 'منذ 3 أيام',
+        imageUrl: 'assets/order7.jfif',
+      ),
+      OrderModel(
+        id: 'o8',
+        title: 'مدرسة ابتدائية',
+        timeAgo: 'منذ أسبوع',
+        imageUrl: 'assets/order8.jfif',
+      ),
+    ]);
   }
 
   void _addSampleNotifications() {

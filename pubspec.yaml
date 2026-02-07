@@ -13,6 +13,9 @@ dependencies:
   record: ^6.0.0
   audioplayers: ^6.0.0
   path_provider: ^2.1.0
+  connectivity_plus: ^6.0.0
+  internet_connection_checker: ^1.0.0+1
+  shared_preferences: ^2.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

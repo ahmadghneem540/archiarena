@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_routes.dart';
 import 'bindings/app_bindings.dart';
+import 'core/translations/app_translation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'archiarena',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      translations: AppTranslations(),
       locale: const Locale('ar'),
       fallbackLocale: const Locale('ar'),
       initialRoute: AppRoutes.splash,

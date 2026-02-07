@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color primary = Color(0xFF00A79E); // teal
-  static const Color primaryDark = Color(0xFF1A237E); // dark blue
+  static const Color primary = Color(0xFF198090); // teal
+  static const Color primaryDark = Color(0xFF6ECDDB); // dark blue
 
   static const Color surface = Colors.white;
   static const Color inputBackground = Color(0xFFF2F2F7);

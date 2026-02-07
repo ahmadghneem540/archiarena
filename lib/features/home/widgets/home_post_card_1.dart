@@ -5,9 +5,14 @@ import '../home_controller.dart';
 import 'home_interaction_row.dart';
 
 class HomePostCard1 extends StatelessWidget {
-  const HomePostCard1({super.key, required this.controller});
+  const HomePostCard1({
+    super.key,
+    required this.controller,
+    this.postIndex = 0,
+  });
 
   final HomeController controller;
+  final int postIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +82,6 @@ class HomePostCard1 extends StatelessWidget {
                     'تصميم داخلي',
                     style: TextStyle(fontSize: 13, color: AppColors.grey700),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.more_vert, size: 22, color: AppColors.grey600),
                 ],
               ),
             ),
@@ -89,14 +92,29 @@ class HomePostCard1 extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 color: AppColors.placeholder1,
               ),
-              child: Center(
-                child: Icon(
-                  Icons.image_outlined,
-                  size: 48,
-                  color: AppColors.grey500,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(
+                  10,
+                ),
+                child: Image.asset(
+                  _getPostImage(postIndex),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: AppColors.placeholder1,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.grey400,
+                        size: 48,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -153,5 +171,16 @@ class HomePostCard1 extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getPostImage(int index) {
+    final images = [
+      'assets/post1.png',
+      'assets/post.jpg',
+      'assets/post3.jfif',
+      'assets/post4.jfif',
+      'assets/post5.jfif',
+    ];
+    return images[index % images.length];
   }
 }

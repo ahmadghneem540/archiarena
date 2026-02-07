@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
 import '../models/user_profile_model.dart';
 
@@ -30,7 +29,7 @@ class OtherUserProfilePage extends StatelessWidget {
           backgroundColor: AppColors.surface,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Get.back(),
           ),
           title: Text(
@@ -46,26 +45,11 @@ class OtherUserProfilePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildCover(),
-              const SizedBox(height: 8),
+              _buildCoverWithProfile(),
+              const SizedBox(height: 60), // لتعويض مساحة صورة البروفايل
               _buildProfileHeader(),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Obx(() {
-                  final sent = controller.sentFriendRequestIds.contains(
-                    user.id,
-                  );
-                  final isFriend = controller.myFriends.any(
-                    (f) => f.id == user.id,
-                  );
-                  return _buildFriendButton(
-                    context,
-                    sent: sent,
-                    isFriend: isFriend,
-                  );
-                }),
-              ),
+              const SizedBox(height: 16),
+              _buildActionButtons(context),
               const SizedBox(height: 16),
               _buildAboutSection(),
               const SizedBox(height: 20),
@@ -80,43 +64,93 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCover() {
-    return Container(
-      height: 160,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary.withValues(alpha: 0.6),
-            AppColors.primaryDark.withValues(alpha: 0.8),
-          ],
+  /// الجزء العلوي: غلاف + صورة البروفايل العائمة
+  Widget _buildCoverWithProfile() {
+    final initial = user.name.isNotEmpty ? user.name[0] : '؟';
+
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        /// الخلفية (Cover)
+        Container(
+          height: 200,
+          width: double.infinity,
+          child: Image.asset(
+            'assets/post5.jfif',
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.6),
+                      AppColors.primaryDark.withValues(alpha: 0.8),
+                    ],
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.architecture,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 64,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
-      ),
+
+        /// صورة البروفايل مربعة بحواف مدوّرة وتطفو على الغلاف
+        Positioned(
+          bottom: -48,
+          child: Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(4),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                child: Center(
+                  child: Text(
+                    initial.toUpperCase(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      fontSize: 36,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
+  /// الاسم أسفل البروفايل
   Widget _buildProfileHeader() {
-    final initial = user.name.isNotEmpty ? user.name[0] : '؟';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          const SizedBox(height: 8),
-          CircleAvatar(
-            radius: 48,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-            child: Text(
-              initial.toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-                fontSize: 36,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
             user.username ?? user.name,
             style: const TextStyle(
@@ -139,114 +173,163 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFriendButton(
-    BuildContext context, {
-    required bool sent,
-    required bool isFriend,
-  }) {
-    if (fromRequest) {
-      return Row(
-        children: [
-          Expanded(
-            child: ArchiButton(
-              label: 'موافقة',
-              height: 48,
-              fontSize: 16,
-              onPressed: () {
-                controller.acceptFriendRequest(user.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('تمت الموافقة. أصبح صديقاً.'),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: AppColors.primary,
-                  ),
-                );
-                Get.back();
-              },
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                controller.rejectFriendRequest(user.id);
-                Get.back();
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.grey700,
-                side: BorderSide(color: AppColors.grey400),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: const Text('رفض'),
-            ),
-          ),
-        ],
-      );
-    }
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Obx(() {
+        final sent = controller.sentFriendRequestIds.contains(user.id);
+        final isFriend = controller.myFriends.any((f) => f.id == user.id);
+        // التحقق إذا كان المستخدم أرسل طلب صداقة لي
+        final hasReceivedRequest = controller.friendRequests.any(
+          (r) => r.id == user.id,
+        );
 
-    if (isFriend) {
-      return Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColors.grey300,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(
-          child: Text(
-            'صديق',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
-              fontSize: 16,
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (sent) {
-      return Container(
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColors.grey300,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: const Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
+        // إذا كان المستخدم أرسل طلب صداقة لي (من طلبات الصداقة الواردة)
+        if (fromRequest || hasReceivedRequest) {
+          return Row(
             children: [
-              Icon(Icons.schedule, color: AppColors.grey600, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'تم إرسال طلب الصداقة',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.grey700,
-                  fontSize: 15,
-                ),
+              Expanded(
+                child: _gradientButton('موافقة', Icons.check, () {
+                  controller.acceptFriendRequest(user.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('تمت الموافقة. أصبح صديقاً.'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: AppColors.primary,
+                    ),
+                  );
+                  Get.back();
+                }),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _outlinedButton('رفض', Icons.close, () {
+                  controller.rejectFriendRequest(user.id);
+                  Get.back();
+                }),
               ),
             ],
+          );
+        }
+
+        if (isFriend) {
+          return Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.grey300,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check_circle, color: AppColors.grey600, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'صديق',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurface,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        if (sent) {
+          return Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.grey300,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.schedule, color: AppColors.grey600, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'تم إرسال طلب الصداقة',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.grey700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // زر طلب الصداقة بنفس تصميم الأزرار في البروفايل الشخصي
+        return _gradientButton('طلب صداقة', Icons.person_add_alt_1, () {
+          controller.sendFriendRequest(user.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم إرسال طلب الصداقة. في انتظار الموافقة.'),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.primary,
+            ),
+          );
+        });
+      }),
+    );
+  }
+
+  Widget _gradientButton(String label, IconData icon, VoidCallback onPressed) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(10),
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: AppColors.onPrimary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: AppColors.onPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    return ArchiButton(
-      label: 'طلب صداقة',
-      height: 48,
-      fontSize: 16,
-      icon: Icons.person_add_alt_1,
-      iconSize: 20,
-      onPressed: () {
-        controller.sendFriendRequest(user.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تم إرسال طلب الصداقة. في انتظار الموافقة.'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.primary,
-          ),
-        );
-      },
+  Widget _outlinedButton(String label, IconData icon, VoidCallback onPressed) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.grey700,
+        side: BorderSide(color: AppColors.grey400),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        minimumSize: const Size(0, 44),
+      ),
     );
   }
 
@@ -277,16 +360,6 @@ class OtherUserProfilePage extends StatelessWidget {
               Text(
                 'لا توجد معلومات عامة',
                 style: TextStyle(fontSize: 14, color: AppColors.grey600),
-              ),
-            ] else ...[
-              const SizedBox(height: 12),
-              Text(
-                'معلومات عامة',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ],
           ],
@@ -342,16 +415,130 @@ class OtherUserProfilePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        height: 120,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowLight,
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Center(
-          child: Text(
-            'لا توجد منشورات',
-            style: TextStyle(fontSize: 14, color: AppColors.grey600),
+        child: IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          user.name.isNotEmpty ? user.name[0] : '؟',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.username ?? user.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        Text(
+                          'منذ ساعتين',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.grey600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      'تصميم داخلي',
+                      style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 220,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.placeholder1,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.asset(
+                    'assets/post3.jfif',
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: AppColors.placeholder1,
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.grey400,
+                          size: 48,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      user.username ?? user.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'مكتب هندسي مساحة تقريبية 80-120 م، تقسم إلى منطقة استقبال وعرض بمساحة 15 م لعرض المشاريع واستقبال العملاء، منطقة عمل مفتوحة للفريق بمساحة 35-45 م',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.grey700,
+                        height: 1.4,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

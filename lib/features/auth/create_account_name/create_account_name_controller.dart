@@ -9,6 +9,7 @@ class CreateAccountNameController extends GetxController {
   final lastNameController = TextEditingController();
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
+  final emailController = TextEditingController();
 
   final birthDate = DateTime(1996, 11, 19).obs;
   late final FixedExtentScrollController dayController;
