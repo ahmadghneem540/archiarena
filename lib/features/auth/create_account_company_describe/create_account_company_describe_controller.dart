@@ -15,8 +15,10 @@ class CreateAccountCompanyDescribeController extends GetxController {
   }
 
   void next() {
-    // تمرير معامل يشير إلى أن المستخدم شركة
-    Get.toNamed(AppRoutes.termsAndPrivacy, arguments: {'isCompany': true});
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
+    final data = Map<String, dynamic>.from(args)
+      ..['licenseFile'] = licenseFile.value;
+    Get.toNamed(AppRoutes.termsAndPrivacy, arguments: data);
   }
 
   void alreadyHaveAccount() {

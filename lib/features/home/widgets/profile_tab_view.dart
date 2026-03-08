@@ -39,8 +39,6 @@ class ProfileTabView extends StatelessWidget {
 
   /// الجزء العلوي: غلاف + صورة البروفايل العائمة
   Widget _buildCoverWithProfile(UserProfileModel p) {
-    final initial = p.name.isNotEmpty ? p.name[0] : '؟';
-
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,

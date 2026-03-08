@@ -184,10 +184,14 @@ class LoginView extends GetView<LoginController> {
           ),
         ],
       ),
-      child: ArchiButton(
-        label: 'تسجيل الدخول',
-        onPressed: controller.login,
-        height: 52,
+      child: Obx(
+        () => ArchiButton(
+          label: controller.isLoading.value ? 'جاري الدخول...' : 'تسجيل الدخول',
+          onPressed: () {
+            if (!controller.isLoading.value) controller.login();
+          },
+          height: 52,
+        ),
       ),
     );
   }

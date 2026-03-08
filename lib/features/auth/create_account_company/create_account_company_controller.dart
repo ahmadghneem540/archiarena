@@ -55,6 +55,14 @@ class CreateAccountCompanyController extends GetxController {
   }
 
   void next() {
-    Get.toNamed(AppRoutes.createAccountCompanyDescribe);
+    Get.toNamed(AppRoutes.createAccountCompanyDescribe, arguments: {
+      'isCompany': true,
+      'companyName': companyNameController.text.trim(),
+      'email': emailController.text.trim(),
+      'phone': mobileController.text.trim(),
+      'password': passwordController.text,
+      'establishmentDate':
+          '${establishmentDate.value.year}-${establishmentDate.value.month.toString().padLeft(2, '0')}-${establishmentDate.value.day.toString().padLeft(2, '0')}',
+    });
   }
 }

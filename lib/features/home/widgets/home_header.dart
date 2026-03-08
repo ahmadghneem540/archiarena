@@ -174,28 +174,32 @@ class _HomeNotificationTabIcon extends StatelessWidget {
               color: isSelected ? AppColors.primary : AppColors.grey600,
               size: 28,
             ),
-            Positioned(
-              top: -2,
-              right: -2,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                decoration: const BoxDecoration(
-                  color: AppColors.error,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${controller.notificationCount}',
-                    style: const TextStyle(
-                      color: AppColors.onPrimary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+            Obx(() {
+              final count = controller.notificationCount.value;
+              if (count <= 0) return const SizedBox.shrink();
+              return Positioned(
+                top: -2,
+                right: -2,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$count',
+                      style: const TextStyle(
+                        color: AppColors.onPrimary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            }),
           ],
         ),
       ),

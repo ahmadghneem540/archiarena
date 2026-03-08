@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../data/services/auth_api_service.dart';
 
 class LoginController extends GetxController {
   final phoneOrEmailController = TextEditingController();
   final passwordController = TextEditingController();
   final obscurePassword = true.obs;
+  final isLoading = false.obs;
 
   @override
   void onClose() {
@@ -18,20 +20,7 @@ class LoginController extends GetxController {
     obscurePassword.value = !obscurePassword.value;
   }
 
-  // void login() {
-  //   final phoneOrEmail = phoneOrEmailController.text.trim();
-  //   final password = passwordController.text;
-  //   if (phoneOrEmail.isEmpty || password.isEmpty) {
-  //     Get.snackbar(
-  //       'تنبيه',
-  //       'يرجى إدخال الهاتف أو البريد وكلمة المرور.',
-  //       snackPosition: SnackPosition.BOTTOM,
-  //     );
-  //     return;
-  //   }
-  //   Get.offAllNamed(AppRoutes.home);
-  // }
-  void login() {
+  Future<void> login() async {
     final phoneOrEmail = phoneOrEmailController.text.trim();
     final password = passwordController.text;
     if (phoneOrEmail.isEmpty || password.isEmpty) {
@@ -43,12 +32,28 @@ class LoginController extends GetxController {
       return;
     }
 
-    // التحقق من المعاملات المرسلة من الصفحة السابقة (إن وجدت)
     final arguments = Get.arguments;
     final isCompany = arguments != null && arguments['isCompany'] == true;
 
-    // بعد التحقق من البيانات، الانتقال إلى HomeView مع تمرير نوع المستخدم
-    Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
+    isLoading.value = true;
+    try {
+      final res = await AuthApiService.login(
+        identifier: phoneOrEmail,
+        password: password,
+      );
+
+      if (res.isSuccess) {
+        Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
+      } else {
+        Get.snackbar(
+          'فشل تسجيل الدخول',
+          res.message ?? 'بيانات الدخول غير صحيحة',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void forgotPassword() {

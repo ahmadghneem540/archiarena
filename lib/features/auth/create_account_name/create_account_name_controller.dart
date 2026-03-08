@@ -63,6 +63,15 @@ class CreateAccountNameController extends GetxController {
   }
 
   void next() {
-    Get.toNamed(AppRoutes.createAccountDescribe);
+    Get.toNamed(AppRoutes.createAccountDescribe, arguments: {
+      'isCompany': false,
+      'firstName': firstNameController.text.trim(),
+      'lastName': lastNameController.text.trim(),
+      'email': emailController.text.trim(),
+      'phone': mobileController.text.trim(),
+      'password': passwordController.text,
+      'birthDate': '${birthDate.value.year}-${birthDate.value.month.toString().padLeft(2, '0')}-${birthDate.value.day.toString().padLeft(2, '0')}',
+      'gender': selectedGender.value == Gender.male ? 'male' : 'female',
+    });
   }
 }

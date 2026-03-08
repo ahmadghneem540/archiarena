@@ -8,6 +8,7 @@ abstract class AppRoutes {
   static const String createAccountCompany = '/auth/create-account-company';
   static const String createAccountCompanyDescribe = '/auth/create-account-company-describe';
   static const String termsAndPrivacy = '/auth/terms-and-privacy';
+  static const String verifyEmail = '/auth/verify-email';
 
   // صفحات فرعية للقائمة (Menu)
   static const String menuPrivacySecurity = '/menu/privacy-security';

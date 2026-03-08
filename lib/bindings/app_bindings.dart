@@ -15,6 +15,8 @@ import '../features/auth/create_account_company_describe/create_account_company_
 import '../features/auth/create_account_company_describe/create_account_company_describe_binding.dart';
 import '../features/auth/terms_and_privacy/terms_and_privacy_view.dart';
 import '../features/auth/terms_and_privacy/terms_and_privacy_binding.dart';
+import '../features/auth/verify_email/verify_email_view.dart';
+import '../features/auth/verify_email/verify_email_binding.dart';
 import '../features/auth/login/login_view.dart';
 import '../features/auth/login/login_binding.dart';
 import '../features/menu/privacy_security_view.dart';
@@ -73,6 +75,11 @@ class AppBindings {
       name: AppRoutes.termsAndPrivacy,
       page: () => const TermsAndPrivacyView(),
       binding: TermsAndPrivacyBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.verifyEmail,
+      page: () => const VerifyEmailView(),
+      binding: VerifyEmailBinding(),
     ),
     // صفحات فرعية للقائمة
     GetPage(
