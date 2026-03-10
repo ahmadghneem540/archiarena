@@ -170,7 +170,7 @@ class FriendsTabView extends StatelessWidget {
               ],
             ),
             if (count > 0)
-              TextButton(onPressed: () {}, child: const Text('عرض الكل')),
+              TextButton(onPressed: () {}, child: Text('show_all'.tr)),
           ],
         ),
         const SizedBox(height: 16),
@@ -179,7 +179,7 @@ class FriendsTabView extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(32),
               child: Text(
-                'لا توجد طلبات صداقة جديدة',
+                'no_friend_requests'.tr,
                 style: TextStyle(fontSize: 15, color: AppColors.grey600),
               ),
             ),
@@ -260,8 +260,8 @@ class _SuggestionCard extends StatelessWidget {
                   if (user.mutualCount > 0)
                     Text(
                       user.mutualCount == 1
-                          ? 'صديق واحد مشترك'
-                          : '${user.mutualCount} أصدقاء مشتركين',
+                          ? 'mutual_friend'.tr
+                          : '${user.mutualCount} ${'mutual_friends'.tr}',
                       style: TextStyle(fontSize: 13, color: AppColors.grey600),
                     ),
                 ],
@@ -339,10 +339,10 @@ class _FriendRequestCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     request.mutualCount == 0
-                        ? 'لا أصدقاء مشتركين'
+                        ? 'no_mutual_friends'.tr
                         : request.mutualCount == 1
-                        ? 'صديق واحد مشترك'
-                        : '${request.mutualCount} أصدقاء مشتركين',
+                        ? 'mutual_friend'.tr
+                        : '${request.mutualCount} ${'mutual_friends'.tr}',
                     style: TextStyle(fontSize: 13, color: AppColors.grey600),
                   ),
                   const SizedBox(height: 10),
@@ -352,7 +352,7 @@ class _FriendRequestCard extends StatelessWidget {
                         child: SizedBox(
                           height: 38,
                           child: ArchiButton(
-                            label: 'موافقة',
+                            label: 'accept'.tr,
                             height: 38,
                             fontSize: 14,
                             onPressed: onConfirm,
@@ -368,7 +368,7 @@ class _FriendRequestCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           minimumSize: const Size(0, 38),
                         ),
-                        child: const Text('رفض'),
+                        child: Text('reject'.tr),
                       ),
                     ],
                   ),

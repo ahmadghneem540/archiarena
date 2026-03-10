@@ -62,14 +62,65 @@ class CreateAccountNameController extends GetxController {
     selectedGender.value = g;
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   void next() {
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
+    final phone = mobileController.text.trim();
+    final password = passwordController.text;
+    final email = emailController.text.trim();
+
+    if (firstName.isEmpty || lastName.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (phone.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (password.isEmpty || password.length < 6) {
+      Get.snackbar(
+        'alert'.tr,
+        'password_min_length'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (email.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      Get.snackbar(
+        'alert'.tr,
+        'invalid_email'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     Get.toNamed(AppRoutes.createAccountDescribe, arguments: {
       'isCompany': false,
-      'firstName': firstNameController.text.trim(),
-      'lastName': lastNameController.text.trim(),
-      'email': emailController.text.trim(),
-      'phone': mobileController.text.trim(),
-      'password': passwordController.text,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'phone': phone,
+      'password': password,
       'birthDate': '${birthDate.value.year}-${birthDate.value.month.toString().padLeft(2, '0')}-${birthDate.value.day.toString().padLeft(2, '0')}',
       'gender': selectedGender.value == Gender.male ? 'male' : 'female',
     });

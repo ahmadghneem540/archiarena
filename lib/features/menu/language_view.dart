@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -6,20 +7,23 @@ import 'widgets/menu_page_scaffold.dart';
 class LanguageView extends StatelessWidget {
   const LanguageView({super.key});
 
-  static const String _currentLanguage = 'العربية';
-
   @override
   Widget build(BuildContext context) {
-    final options = ['العربية', 'English', 'Français', 'Türkçe'];
+    final options = ['lang_arabic'.tr, 'lang_english'.tr, 'lang_german'.tr];
+    final currentLanguage = Get.locale?.languageCode == 'ar'
+        ? 'lang_arabic'.tr
+        : Get.locale?.languageCode == 'de'
+            ? 'lang_german'.tr
+            : 'lang_english'.tr;
     return MenuPageScaffold(
-      title: 'اللغة',
+      title: 'language'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'اختر لغة التطبيق',
+              'choose_app_language'.tr,
               style: TextStyle(fontSize: 14, color: AppColors.grey600, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -32,7 +36,7 @@ class LanguageView extends StatelessWidget {
               ),
               child: Column(
                 children: options.asMap().entries.map((e) {
-                  final isSelected = e.value == _currentLanguage;
+                  final isSelected = e.value == currentLanguage;
                   final isLast = e.key == options.length - 1;
                   return Column(
                     mainAxisSize: MainAxisSize.min,

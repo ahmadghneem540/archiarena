@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -9,33 +10,33 @@ class NotificationSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MenuPageScaffold(
-      title: 'إعدادات الإشعارات',
+      title: 'notification_settings'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildSection('المنشورات والتفاعلات', [
-              _SwitchRow(title: 'الإعجابات', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'التعليقات', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'الردود على التعليقات', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'الإشارات والمنشن', value: false, onChanged: (_) {}),
+            _buildSection('posts_and_interactions'.tr, [
+              _SwitchRow(title: 'likes'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'comments'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'replies_to_comments'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'mentions'.tr, value: false, onChanged: (_) {}),
             ]),
             const SizedBox(height: 20),
-            _buildSection('الصداقات والمتابعة', [
-              _SwitchRow(title: 'طلبات الصداقة', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'قبول طلب الصداقة', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'طلبات المتابعة', value: false, onChanged: (_) {}),
+            _buildSection('friendships_and_follow'.tr, [
+              _SwitchRow(title: 'friend_requests'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'accept_friend_request'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'follow_requests'.tr, value: false, onChanged: (_) {}),
             ]),
             const SizedBox(height: 20),
-            _buildSection('المشاريع والعمل', [
-              _SwitchRow(title: 'تعليقات على المشاريع', value: true, onChanged: (_) {}),
-              _SwitchRow(title: 'عروض العمل والرسائل', value: true, onChanged: (_) {}),
+            _buildSection('projects_and_work'.tr, [
+              _SwitchRow(title: 'project_comments'.tr, value: true, onChanged: (_) {}),
+              _SwitchRow(title: 'job_offers_messages'.tr, value: true, onChanged: (_) {}),
             ]),
             const SizedBox(height: 20),
-            _buildSection('عام', [
-              _SwitchRow(title: 'الإشعارات الصوتية', value: false, onChanged: (_) {}),
-              _SwitchRow(title: 'اهتزاز', value: true, onChanged: (_) {}),
+            _buildSection('general'.tr, [
+              _SwitchRow(title: 'sound_notifications'.tr, value: false, onChanged: (_) {}),
+              _SwitchRow(title: 'vibration'.tr, value: true, onChanged: (_) {}),
             ]),
             const SizedBox(height: 32),
           ],

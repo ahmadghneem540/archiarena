@@ -192,8 +192,8 @@ class OtherUserProfilePage extends StatelessWidget {
                 child: _gradientButton('موافقة', Icons.check, () {
                   controller.acceptFriendRequest(user.id);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('تمت الموافقة. أصبح صديقاً.'),
+                    SnackBar(
+                      content: Text('friend_request_accepted'.tr),
                       behavior: SnackBarBehavior.floating,
                       backgroundColor: AppColors.primary,
                     ),
@@ -270,8 +270,8 @@ class OtherUserProfilePage extends StatelessWidget {
         return _gradientButton('طلب صداقة', Icons.person_add_alt_1, () {
           controller.sendFriendRequest(user.id);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تم إرسال طلب الصداقة. في انتظار الموافقة.'),
+            SnackBar(
+              content: Text('friend_request_sent'.tr),
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppColors.primary,
             ),
@@ -405,7 +405,7 @@ class OtherUserProfilePage extends StatelessWidget {
               color: AppColors.onSurface,
             ),
           ),
-          TextButton(onPressed: () {}, child: const Text('عرض الكل')),
+          TextButton(onPressed: () {}, child: Text('show_all'.tr)),
         ],
       ),
     );

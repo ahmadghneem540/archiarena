@@ -12,19 +12,23 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           backgroundColor: AppColors.surface,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
+              size: 20,
+            ),
             onPressed: () => Get.back(),
           ),
-          title: const Text(
-            'التحقق من البريد',
+          title: Text(
+            'verify_email'.tr,
             style: TextStyle(
               color: AppColors.onSurface,
               fontWeight: FontWeight.w600,
@@ -40,7 +44,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  'تأكيد البريد الإلكتروني',
+                  'verify_email'.tr,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.onSurface,
@@ -48,7 +52,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'لقد أرسلنا رمز التحقق المكوّن من 6 أرقام إلى بريدك الإلكتروني. أدخل الرمز أدناه لإكمال التسجيل.',
+                  'verify_code_sent_long'.tr,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.grey600,
                         height: 1.5,
@@ -64,8 +68,8 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                 Obx(
                   () => ArchiButton(
                     label: controller.isLoading.value
-                        ? 'جاري التحقق...'
-                        : 'تحقق من الرمز',
+                        ? 'loading_verify'.tr
+                        : 'verify_code_btn'.tr,
                     onPressed: () {
                       if (!controller.isLoading.value) controller.verify();
                     },
@@ -76,7 +80,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                 _buildResendSection(context),
                 const SizedBox(height: 40),
                 Text(
-                  'أركي أرينا منصة للتصميم المعماري. تم إرسال الرمز إلى بريدك المسجّل.',
+                  'verify_email_sent_note'.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
                         height: 1.5,
@@ -89,7 +93,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                   child: TextButton(
                     onPressed: () => Get.offAllNamed(AppRoutes.authLogin),
                     child: Text(
-                      'لديك حساب؟ تسجيل الدخول',
+                      'have_account_login'.tr,
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -131,7 +135,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'البريد الإلكتروني',
+                  'email'.tr,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.grey600,
                         fontSize: 12,
@@ -159,7 +163,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'رمز التحقق',
+          'verify_code_label'.tr,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: AppColors.onSurface,
@@ -215,7 +219,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
       () => Center(
         child: controller.resendCooldown.value > 0
             ? Text(
-                'إعادة الإرسال متاحة خلال ${controller.resendCooldown.value} ثانية',
+                '${'resend_in_seconds'.tr} ${controller.resendCooldown.value} ${'seconds'.tr}',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.grey600,
@@ -224,7 +228,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
             : TextButton(
                 onPressed: controller.resendCode,
                 child: Text(
-                  'لم يصلك الرمز؟ إعادة الإرسال',
+                  'resend_code_link'.tr,
                   style: TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w500,

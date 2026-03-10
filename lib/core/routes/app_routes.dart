@@ -1,4 +1,5 @@
 abstract class AppRoutes {
+  static const String languageSelect = '/language-select';
   static const String splash = '/splash';
   static const String home = '/home';
   static const String authLogin = '/auth/login';

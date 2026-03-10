@@ -8,33 +8,28 @@ import 'create_account_name_controller.dart';
 class CreateAccountNameView extends GetView<CreateAccountNameController> {
   const CreateAccountNameView({super.key});
 
-  static const List<String> _monthsAr = [
-    'يناير',
-    'فبراير',
-    'مارس',
-    'أبريل',
-    'مايو',
-    'يونيو',
-    'يوليو',
-    'أغسطس',
-    'سبتمبر',
-    'أكتوبر',
-    'نوفمبر',
-    'ديسمبر',
+  static const List<String> _monthKeys = [
+    'month_january', 'month_february', 'month_march', 'month_april',
+    'month_may', 'month_june', 'month_july', 'month_august',
+    'month_september', 'month_october', 'month_november', 'month_december',
   ];
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
+              size: 20,
+            ),
             onPressed: () => Get.back(),
           ),
-          title: const Text('إنشاء حساب'),
+          title: Text('create_account'.tr),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -44,12 +39,12 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  'ما اسمك؟',
+                  'what_is_your_name'.tr,
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'أدخل الاسم الذي تستخدمه في الحياة الواقعية.',
+                  'enter_actual_name'.tr,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
@@ -59,8 +54,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                       child: TextField(
                         textDirection: TextDirection.rtl,
                         controller: controller.firstNameController,
-                        decoration: const InputDecoration(
-                          hintText: 'الاسم الأول',
+                        decoration: InputDecoration(
+                          hintText: 'first_name'.tr,
                         ),
                       ),
                     ),
@@ -69,8 +64,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                       child: TextField(
                         textDirection: TextDirection.rtl,
                         controller: controller.lastNameController,
-                        decoration: const InputDecoration(
-                          hintText: 'اسم العائلة',
+                        decoration: InputDecoration(
+                          hintText: 'last_name'.tr,
                         ),
                       ),
                     ),
@@ -81,9 +76,9 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                   textDirection: TextDirection.rtl,
                   controller: controller.mobileController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: 'رقم الموبايل',
-                    prefixIcon: Icon(Icons.phone_outlined, size: 22),
+                  decoration: InputDecoration(
+                    hintText: 'phone_number'.tr,
+                    prefixIcon: const Icon(Icons.phone_outlined, size: 22),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -91,25 +86,25 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                   textDirection: TextDirection.rtl,
                   controller: controller.passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    hintText: 'كلمة مرور الحساب',
-                    prefixIcon: Icon(Icons.lock_outline, size: 22),
+                  decoration: InputDecoration(
+                    hintText: 'account_password'.tr,
+                    prefixIcon: const Icon(Icons.lock_outline, size: 22),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   textDirection: TextDirection.rtl,
                   controller: controller.emailController,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: 'البريد الالكتروني',
-                    prefixIcon: Icon(Icons.email_sharp, size: 22),
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'email'.tr,
+                    prefixIcon: const Icon(Icons.email_sharp, size: 22),
                   ),
                 ),
 
                 const SizedBox(height: 28),
                 Text(
-                  'متى عيد ميلادك؟',
+                  'when_birthday'.tr,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 12),
@@ -131,13 +126,13 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 ),
                 Obx(
                   () => Text(
-                    '${controller.age} سنة',
+                    '${controller.age} ${'years_old'.tr}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'ما جنسك؟',
+                  'what_gender'.tr,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
@@ -147,20 +142,20 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                       RadioOption<Gender>(
                         value: Gender.female,
                         groupValue: controller.selectedGender.value,
-                        label: 'أنثى',
+                        label: 'female'.tr,
                         onChanged: (v) => controller.selectGender(v!),
                       ),
                       RadioOption<Gender>(
                         value: Gender.male,
                         groupValue: controller.selectedGender.value,
-                        label: 'ذكر',
+                        label: 'male'.tr,
                         onChanged: (v) => controller.selectGender(v!),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 32),
-                ArchiButton(label: 'التالي', onPressed: controller.next),
+                ArchiButton(label: 'next'.tr, onPressed: controller.next),
                 const SizedBox(height: 24),
               ],
             ),
@@ -220,8 +215,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
         builder: (context, index) {
           final selected = controller.birthDate.value.month == index + 1;
           return Center(
-            child: Text(
-              _monthsAr[index],
+              child: Text(
+              _monthKeys[index].tr,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,

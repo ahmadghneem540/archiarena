@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
@@ -287,7 +288,7 @@ class ProfileTabView extends StatelessWidget {
                   foregroundColor: AppColors.grey700,
                   side: BorderSide(color: AppColors.grey400),
                 ),
-                child: const Text('تعديل التفاصيل العامة'),
+                child: Text('edit_general_details'.tr),
               ),
             ),
           ],
@@ -326,14 +327,14 @@ class ProfileTabView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'المنشورات',
+            'posts'.tr,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: AppColors.onSurface,
             ),
           ),
-          TextButton(onPressed: () {}, child: const Text('عرض الكل')),
+          TextButton(onPressed: () {}, child: Text('show_all'.tr)),
         ],
       ),
     );

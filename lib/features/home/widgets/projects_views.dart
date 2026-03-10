@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
+import '../models/post_model.dart';
 import 'home_interaction_row.dart';
 
 class HomePostCard extends StatelessWidget {
-  const HomePostCard({super.key, required this.controller});
+  const HomePostCard({super.key, required this.controller, this.post});
 
   final HomeController controller;
+  final PostModel? post;
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +134,43 @@ class HomePostCard extends StatelessWidget {
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.account_balance_wallet_outlined, size: 18, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                post?.budget ?? 'project_budget'.tr,
+                                style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.timer_outlined, size: 18, color: AppColors.primary),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                post?.deadline ?? 'project_deadline'.tr,
+                                style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
                   Row(

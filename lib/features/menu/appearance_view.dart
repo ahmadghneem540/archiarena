@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -6,24 +7,23 @@ import 'widgets/menu_page_scaffold.dart';
 class AppearanceView extends StatelessWidget {
   const AppearanceView({super.key});
 
-  static const String _current = 'فاتح';
-
   @override
   Widget build(BuildContext context) {
     final options = [
-      ('فاتح', Icons.light_mode_rounded),
-      ('داكن', Icons.dark_mode_rounded),
-      ('تلقائي', Icons.brightness_auto_rounded),
+      ('light'.tr, Icons.light_mode_rounded),
+      ('dark'.tr, Icons.dark_mode_rounded),
+      ('auto'.tr, Icons.brightness_auto_rounded),
     ];
+    final current = 'light'.tr;
     return MenuPageScaffold(
-      title: 'المظهر',
+      title: 'appearance'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'اختر مظهر التطبيق',
+              'choose_appearance'.tr,
               style: TextStyle(fontSize: 14, color: AppColors.grey600, height: 1.4),
             ),
             const SizedBox(height: 16),
@@ -36,7 +36,7 @@ class AppearanceView extends StatelessWidget {
               ),
               child: Column(
                 children: options.asMap().entries.map((e) {
-                  final isSelected = e.value.$1 == _current;
+                  final isSelected = e.value.$1 == current;
                   final isLast = e.key == options.length - 1;
                   return Column(
                     mainAxisSize: MainAxisSize.min,

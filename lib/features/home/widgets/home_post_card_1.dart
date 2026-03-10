@@ -1,21 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
+import '../models/post_model.dart';
 import 'home_interaction_row.dart';
 
 class HomePostCard1 extends StatelessWidget {
   const HomePostCard1({
     super.key,
     required this.controller,
-    this.postIndex = 0,
+    required this.post,
   });
 
   final HomeController controller;
-  final int postIndex;
+  final PostModel post;
+
+  String _fullImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    final base = ConstData.API_BASE;
+    return base.endsWith('/') ? '$base$url' : '$base/$url';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authorInitial = (post.authorName?.isNotEmpty == true)
+        ? post.authorName!.substring(0, 1).toUpperCase()
+        : 'A';
+    final imageUrl = _fullImageUrl(post.imageUrl);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -47,7 +62,7 @@ class HomePostCard1 extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'A',
+                        authorInitial,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -57,31 +72,34 @@ class HomePostCard1 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'شركة زيرو للتصميم',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: AppColors.onSurface,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.authorName ?? post.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: AppColors.onSurface,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        'منذ ساعتين',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.grey600,
+                        Text(
+                          post.createdAt ?? '',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.grey600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Spacer(),
-                  Text(
-                    'تصميم داخلي',
-                    style: TextStyle(fontSize: 13, color: AppColors.grey700),
-                  ),
+                  if (post.category != null && post.category!.isNotEmpty)
+                    Text(
+                      post.category!,
+                      style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                    ),
                 ],
               ),
             ),
@@ -93,28 +111,34 @@ class HomePostCard1 extends StatelessWidget {
                 color: AppColors.placeholder1,
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  10,
-                ),
-                child: Image.asset(
-                  _getPostImage(postIndex),
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: AppColors.placeholder1,
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.grey400,
-                        size: 48,
-                      ),
-                    );
-                  },
-                ),
+                borderRadius: BorderRadius.circular(10),
+                child: imageUrl.isNotEmpty
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _buildPlaceholder();
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: AppColors.placeholder1,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : _buildPlaceholder(),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -122,7 +146,7 @@ class HomePostCard1 extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'شركة زيرو للتصميم',
+                    post.authorName ?? post.title,
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -131,7 +155,7 @@ class HomePostCard1 extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'مكتب هندسي مساحة تقريبية 80-120 م، تقسم إلى منطقة استقبال وعرض بمساحة 15 م لعرض المشاريع واستقبال العملاء، منطقة عمل مفتوحة للفريق بمساحة 35-45 م',
+                    post.description ?? post.title,
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.grey700,
@@ -140,23 +164,80 @@ class HomePostCard1 extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if ((post.budget != null && post.budget!.isNotEmpty) ||
+                      (post.deadline != null && post.deadline!.isNotEmpty)) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        if (post.budget != null && post.budget!.isNotEmpty)
+                          Expanded(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet_outlined,
+                                  size: 18,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    post.budget!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.grey700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (post.deadline != null && post.deadline!.isNotEmpty)
+                          Expanded(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.timer_outlined,
+                                  size: 18,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    post.deadline!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppColors.grey700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: HomeInteractionRow(
-                          likes: controller.post1Likes,
-                          comments: controller.post1Comments,
-                          isLiked: controller.post1IsLiked,
-                          onLike: controller.togglePost1Like,
-                          onComment: controller.addPost1Comment,
+                          likesCount: post.likesCount,
+                          commentsCount: post.commentsCount,
+                          isLikedValue: post.isLiked,
+                          onLike: () => controller.togglePostLike(post.id),
+                          onComment: () =>
+                              controller.openCommentsSheet(post.id),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ArchiButton(
-                          label: 'التفاصيل والمخططات',
+                          label: 'details_and_plans'.tr,
                           height: 44,
                           fontSize: 14,
                           onPressed: controller.openPost1DetailsSheet,
@@ -173,14 +254,14 @@ class HomePostCard1 extends StatelessWidget {
     );
   }
 
-  String _getPostImage(int index) {
-    final images = [
-      'assets/post1.png',
-      'assets/post.jpg',
-      'assets/post3.jfif',
-      'assets/post4.jfif',
-      'assets/post5.jfif',
-    ];
-    return images[index % images.length];
+  Widget _buildPlaceholder() {
+    return Container(
+      color: AppColors.placeholder1,
+      child: Icon(
+        Icons.image_not_supported,
+        color: AppColors.grey400,
+        size: 48,
+      ),
+    );
   }
 }

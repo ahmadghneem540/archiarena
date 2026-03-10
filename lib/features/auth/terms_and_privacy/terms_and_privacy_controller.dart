@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/services.dart';
 import '../../../data/services/auth_api_service.dart';
 
 class TermsAndPrivacyController extends GetxController {
@@ -61,6 +63,7 @@ class TermsAndPrivacyController extends GetxController {
       );
 
       if (res.isSuccess) {
+        await MyServices.saveStringValue(ConstData.keyIsCompany, '0');
         Get.offAllNamed(AppRoutes.verifyEmail, arguments: {'email': email});
       } else {
         _showRegistrationError(res.message ?? 'حدث خطأ أثناء التسجيل');
@@ -80,7 +83,7 @@ class TermsAndPrivacyController extends GetxController {
       Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-          title: Text(isEmailUsed ? 'البريد مستخدم' : 'فشل التسجيل'),
+          title: Text(isEmailUsed ? 'email_used'.tr : 'registration_failed'.tr),
           content: Text(message),
           actions: [
             if (isEmailUsed) ...[
@@ -89,12 +92,12 @@ class TermsAndPrivacyController extends GetxController {
                   Get.back();
                   Get.offAllNamed(AppRoutes.authLogin);
                 },
-                child: Text('تسجيل الدخول'),
+                child: Text('login'.tr),
               ),
             ],
             TextButton(
               onPressed: () => Get.back(),
-              child: Text('حسناً'),
+              child: Text('ok'.tr),
             ),
           ],
         ),
@@ -133,6 +136,7 @@ class TermsAndPrivacyController extends GetxController {
       );
 
       if (res.isSuccess) {
+        await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
         Get.offAllNamed(AppRoutes.verifyEmail, arguments: {'email': email});
       } else {
         _showRegistrationError(res.message ?? 'حدث خطأ أثناء التسجيل');

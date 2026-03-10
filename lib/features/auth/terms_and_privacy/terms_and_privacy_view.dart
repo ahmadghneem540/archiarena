@@ -9,16 +9,20 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
+              size: 20,
+            ),
             onPressed: () => Get.back(),
           ),
-          title: const Text('الشروط والخصوصية'),
+          title: Text('terms_and_privacy'.tr),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -28,25 +32,23 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
               children: [
                 const SizedBox(height: 32),
                 Text(
-                  'إنهاء التسجيل',
+                  'finish_registration'.tr,
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(height: 20),
                 RichText(
-                  textDirection: TextDirection.rtl,
+                  textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                   text: TextSpan(
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurface),
                     children: [
-                      const TextSpan(text: 'بالضغط على '),
-                      const TextSpan(text: 'تسجيل'),
-                      const TextSpan(text: ' أنت توافق على '),
+                      TextSpan(text: '${'by_clicking_register'.tr} '),
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'الشروط',
+                            'terms'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -56,12 +58,12 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
-                      const TextSpan(text: ' و'),
+                      const TextSpan(text: ' '),
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'سياسة البيانات',
+                            'privacy_policy'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -71,12 +73,12 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
-                      const TextSpan(text: ' و'),
+                      const TextSpan(text: ' '),
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'سياسة ملفات تعريف الارتباط',
+                            'cookie_policy'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -93,7 +95,7 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                 const SizedBox(height: 32),
                 Obx(
                   () => ArchiButton(
-                    label: controller.isLoading.value ? 'جاري التسجيل...' : 'تسجيل',
+                    label: controller.isLoading.value ? 'loading_register'.tr : 'register'.tr,
                     onPressed: () {
                       if (!controller.isLoading.value) controller.signUp();
                     },
@@ -107,8 +109,8 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                       onPressed: controller.isLoading.value
                           ? null
                           : controller.signUpWithoutUpdatingContact,
-                      child: const Text(
-                        'تسجيل دون تحديث جهات اتصالي',
+                      child: Text(
+                        'register_without_contacts'.tr,
                         style: TextStyle(
                           fontSize: 15,
                           color: AppColors.onSurfaceVariant,
@@ -119,7 +121,7 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                 ),
                 const SizedBox(height: 40),
                 Text(
-                  'أركي أرينا منصة للتصميم المعماري. سياسة البيانات وشروط الخدمة لدينا سارية. تعرّف على المزيد حول رؤيتنا.',
+                  'archiarena_vision'.tr,
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.5),

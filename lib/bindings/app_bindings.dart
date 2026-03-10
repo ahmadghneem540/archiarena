@@ -1,4 +1,6 @@
 import 'package:get/get.dart';
+import '../features/language_select/language_select_view.dart';
+import '../features/language_select/language_select_binding.dart';
 import '../features/splash/splash_view.dart';
 import '../features/splash/splash_binding.dart';
 import '../features/home/home_view.dart';
@@ -31,6 +33,11 @@ import '../core/routes/app_routes.dart';
 
 class AppBindings {
   static List<GetPage> get pages => [
+    GetPage(
+      name: AppRoutes.languageSelect,
+      page: () => const LanguageSelectView(),
+      binding: LanguageSelectBinding(),
+    ),
     GetPage(
       name: AppRoutes.splash,
       page: () => const SplashView(),

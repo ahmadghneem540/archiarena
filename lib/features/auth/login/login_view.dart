@@ -9,8 +9,9 @@ class LoginView extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         body: SafeArea(
@@ -116,12 +117,13 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget _buildPhoneOrEmailField(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return TextField(
       controller: controller.phoneOrEmailController,
       keyboardType: TextInputType.emailAddress,
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
-        hintText: 'الهاتف أو البريد الإلكتروني',
+        hintText: 'login_or_email'.tr,
         hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
         border: UnderlineInputBorder(
           borderSide: BorderSide(color: AppColors.border),
@@ -139,13 +141,14 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget _buildPasswordField(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Obx(
       () => TextField(
         controller: controller.passwordController,
         obscureText: controller.obscurePassword.value,
-        textDirection: TextDirection.rtl,
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
         decoration: InputDecoration(
-          hintText: 'كلمة المرور',
+          hintText: 'password'.tr,
           hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
           border: UnderlineInputBorder(
             borderSide: BorderSide(color: AppColors.border),
@@ -186,7 +189,7 @@ class LoginView extends GetView<LoginController> {
       ),
       child: Obx(
         () => ArchiButton(
-          label: controller.isLoading.value ? 'جاري الدخول...' : 'تسجيل الدخول',
+          label: controller.isLoading.value ? 'loading_login'.tr : 'login'.tr,
           onPressed: () {
             if (!controller.isLoading.value) controller.login();
           },
@@ -200,8 +203,8 @@ class LoginView extends GetView<LoginController> {
     return TextButton(
       onPressed: controller.forgotPassword,
       style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark),
-      child: const Text(
-        'نسيت كلمة المرور؟',
+      child: Text(
+        'forgot_password'.tr,
         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       ),
     );

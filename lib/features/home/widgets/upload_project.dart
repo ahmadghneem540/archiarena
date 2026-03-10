@@ -124,6 +124,8 @@ class UploadProjectPage extends StatelessWidget {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     final categoryController = TextEditingController();
+    final budgetController = TextEditingController();
+    final deadlineController = TextEditingController();
     final images = <File>[].obs;
     final isLoading = false.obs;
     final picker = ImagePicker();
@@ -177,6 +179,25 @@ class UploadProjectPage extends StatelessWidget {
                   decoration: const InputDecoration(
                     hintText: 'الوصف',
                     border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: budgetController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'enter_budget'.tr,
+                    prefixIcon: const Icon(Icons.attach_money, size: 22),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: deadlineController,
+                  decoration: InputDecoration(
+                    hintText: 'enter_deadline'.tr,
+                    prefixIcon: const Icon(Icons.timer_outlined, size: 22),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -265,6 +286,12 @@ class UploadProjectPage extends StatelessWidget {
                           title: title,
                           category: category,
                           description: desc,
+                          budget: budgetController.text.trim().isEmpty
+                              ? null
+                              : budgetController.text.trim(),
+                          deadline: deadlineController.text.trim().isEmpty
+                              ? null
+                              : deadlineController.text.trim(),
                           images: images.isEmpty ? null : images,
                         );
                         if (res.isSuccess) {

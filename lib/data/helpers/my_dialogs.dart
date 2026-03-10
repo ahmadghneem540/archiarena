@@ -5,16 +5,16 @@ import '../../core/constant/color.dart';
 
 class MyDialogs {
   static void success({required String msg}) {
-    Get.snackbar('Success'.tr, msg, colorText: Colors.white);
+    Get.snackbar('success'.tr, msg, colorText: Colors.white);
   }
 
   static void error({required String msg}) {
-    Get.snackbar('Error'.tr, msg,
+    Get.snackbar('error'.tr, msg,
         colorText: Colors.white, backgroundColor: Colors.redAccent);
   }
 
   static void info({required String msg}) {
-    Get.snackbar('Info'.tr, msg, colorText: Colors.white);
+    Get.snackbar('info'.tr, msg, colorText: Colors.white);
   }
 
   static void showProgress() {

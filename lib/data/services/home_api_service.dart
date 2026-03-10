@@ -66,6 +66,8 @@ class HomeApiService {
     String? planStatus,
     String? suitableFor,
     String? style,
+    String? budget,
+    String? deadline,
     List<File>? images,
   }) async {
     try {
@@ -79,6 +81,8 @@ class HomeApiService {
         if (planStatus != null) 'plan_status': planStatus,
         if (suitableFor != null) 'suitable_for': suitableFor,
         if (style != null) 'style': style,
+        if (budget != null && budget.isNotEmpty) 'budget': budget,
+        if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
       };
 
       final List<MultipartFile> imageFiles = [];

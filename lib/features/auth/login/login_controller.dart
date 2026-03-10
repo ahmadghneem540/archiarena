@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/services.dart';
 import '../../../data/services/auth_api_service.dart';
+import '../../../data/services/profile_api_service.dart';
+import '../../home/home_controller.dart';
 
 class LoginController extends GetxController {
   final phoneOrEmailController = TextEditingController();
@@ -32,9 +36,6 @@ class LoginController extends GetxController {
       return;
     }
 
-    final arguments = Get.arguments;
-    final isCompany = arguments != null && arguments['isCompany'] == true;
-
     isLoading.value = true;
     try {
       final res = await AuthApiService.login(
@@ -43,6 +44,22 @@ class LoginController extends GetxController {
       );
 
       if (res.isSuccess) {
+        bool isCompany = (await MyServices.getStringValue(ConstData.keyIsCompany)) == '1';
+        try {
+          final profileRes = await ProfileApiService.getMyProfile();
+          if (profileRes.isSuccess && profileRes.data != null) {
+            final d = profileRes.data!;
+            final fromProfile = _checkIsCompany(d) ?? _checkIsCompany(d['user']);
+            if (fromProfile == true) {
+              isCompany = true;
+              await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
+            } else if (fromProfile == false) {
+              isCompany = false;
+              await MyServices.saveStringValue(ConstData.keyIsCompany, '0');
+            }
+          }
+        } catch (_) {}
+        Get.delete<HomeController>(force: true);
         Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
       } else {
         Get.snackbar(
@@ -54,6 +71,20 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  bool? _checkIsCompany(dynamic data) {
+    if (data is! Map) return null;
+    final m = Map<String, dynamic>.from(data);
+    if (m['is_company'] == true) return true;
+    if (m['is_company'] == false) return false;
+    final t = (m['user_type'] ?? m['type'] ?? m['account_type'] ?? m['role'])
+        ?.toString()
+        .toLowerCase();
+    if (t == null || t.isEmpty) return null;
+    if (t == 'company' || t.contains('company')) return true;
+    if (t == 'customer' || t == 'personal' || t == 'individual') return false;
+    return null;
   }
 
   void forgotPassword() {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/services.dart';
 import '../../../widget/gradient_button.dart';
 import 'create_account_intro_controller.dart';
 
@@ -17,17 +19,56 @@ class CreateAccountIntroView extends GetView<CreateAccountIntroController> {
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              Get.locale?.languageCode == 'ar'
+                  ? Icons.arrow_back_ios_new
+                  : Icons.arrow_back_ios,
+              size: 20,
+            ),
             onPressed: () => Get.back(),
           ),
           title: Text('create_account'.tr),
           actions: [
             PopupMenuButton<Locale>(
-              icon: const Icon(Icons.language),
-              onSelected: (locale) => Get.updateLocale(locale),
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: Locale('ar'), child: Text('العربية')),
-                PopupMenuItem(value: Locale('en'), child: Text('English')),
+              icon: const Icon(Icons.language, size: 26),
+              tooltip: 'choose_language'.tr,
+              offset: const Offset(0, 50),
+              onSelected: (locale) async {
+                Get.updateLocale(locale);
+                await MyServices.saveStringValue(
+                    ConstData.keyLocale, locale.languageCode);
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: const Locale('ar'),
+                  child: Row(
+                    children: [
+                      const Text('🇸🇦', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 12),
+                      Text('lang_arabic'.tr),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: const Locale('de'),
+                  child: Row(
+                    children: [
+                      const Text('🇩🇪', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 12),
+                      Text('lang_german'.tr),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: const Locale('en'),
+                  child: Row(
+                    children: [
+                      const Text('🇬🇧', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 12),
+                      Text('lang_english'.tr),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],

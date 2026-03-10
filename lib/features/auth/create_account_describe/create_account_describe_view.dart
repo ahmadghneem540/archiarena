@@ -11,16 +11,20 @@ class CreateAccountDescribeView
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: AppColors.surface,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
+              size: 20,
+            ),
             onPressed: () => Get.back(),
           ),
-          title: const Text('إنشاء حساب'),
+          title: Text('create_account'.tr),
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -30,12 +34,12 @@ class CreateAccountDescribeView
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  'ما الذي يصفك بشكل أفضل؟',
+                  'what_describes_you'.tr,
                   style: Theme.of(context).textTheme.headlineLarge,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'هذا يساعدنا في تخصيص المحتوى لك.',
+                  'helps_customize_content'.tr,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 20),
@@ -45,19 +49,19 @@ class CreateAccountDescribeView
                       RadioOption<UserType>(
                         value: UserType.hobbyist,
                         groupValue: controller.selectedType.value,
-                        label: 'هواة',
+                        label: 'hobbyist'.tr,
                         onChanged: (v) => controller.selectType(v!),
                       ),
                       RadioOption<UserType>(
                         value: UserType.engineer,
                         groupValue: controller.selectedType.value,
-                        label: 'مهندس',
+                        label: 'engineer'.tr,
                         onChanged: (v) => controller.selectType(v!),
                       ),
                       RadioOption<UserType>(
                         value: UserType.advancedStudies,
                         groupValue: controller.selectedType.value,
-                        label: 'دراسات متقدمة',
+                        label: 'advanced_studies'.tr,
                         onChanged: (v) => controller.selectType(v!),
                       ),
                     ],
@@ -65,29 +69,29 @@ class CreateAccountDescribeView
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'رفع الشهادات',
+                  'upload_certificates'.tr,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'يمكنك رفع شهاداتك التعليمية ومؤهلاتك.',
+                  'upload_certificates_desc'.tr,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 _uploadArea(),
                 const SizedBox(height: 16),
                 ArchiButton(
-                  label: 'رفع',
+                  label: 'upload'.tr,
                   height: 44,
                   fontSize: 16,
                   onPressed: controller.pickCertificate,
                 ),
                 const SizedBox(height: 24),
-                ArchiButton(label: 'التالي', onPressed: controller.next),
+                ArchiButton(label: 'next'.tr, onPressed: controller.next),
                 const SizedBox(height: 16),
                 TextButton(
                   onPressed: controller.alreadyHaveAccount,
-                  child: const Text('لديك حساب بالفعل؟'),
+                  child: Text('have_account'.tr),
                 ),
                 const SizedBox(height: 32),
               ],

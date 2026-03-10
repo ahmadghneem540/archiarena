@@ -131,20 +131,29 @@ class AuthApiService {
           'password': password,
         },
       );
+      final raw = res.data as Map<String, dynamic>? ?? {};
       final apiRes = ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
+        raw,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
 
-      if (apiRes.isSuccess && apiRes.data != null) {
-        final token = apiRes.data!['token'] as String?;
-        final user = apiRes.data!['user'];
-        if (token != null) {
+      if (apiRes.isSuccess) {
+        final data = apiRes.data ?? raw;
+        final token = _extractToken(data, raw);
+        if (token != null && token.isNotEmpty) {
           await MyServices.saveStringValue(ConstData.keyToken, token);
+          final user = data['user'] ?? raw['user'];
           if (user != null && user['id'] != null) {
             await MyServices.saveStringValue(
               ConstData.keyUserId,
               user['id'].toString(),
+            );
+          }
+          final apiIsCompany = _extractIsCompany(data, raw, user);
+          if (apiIsCompany != null) {
+            await MyServices.saveStringValue(
+              ConstData.keyIsCompany,
+              apiIsCompany ? '1' : '0',
             );
           }
         }
@@ -153,6 +162,37 @@ class AuthApiService {
     } on DioException catch (e) {
       return _handleError(e);
     }
+  }
+
+  /// يرجع true للشركة، false للأفراد، null عندما لا يُرجع الـ API القيمة
+  static bool? _extractIsCompany(
+    Map<String, dynamic>? data,
+    Map<String, dynamic>? raw,
+    dynamic user,
+  ) {
+    final u = user is Map ? Map<String, dynamic>.from(user) : null;
+    if (u != null) {
+      if (u['is_company'] == true) return true;
+      if (u['is_company'] == false) return false;
+      if (u['user_type']?.toString().toLowerCase() == 'company') return true;
+      if (u['user_type']?.toString().toLowerCase() == 'customer') return false;
+      if (u['type']?.toString().toLowerCase() == 'company') return true;
+      if (u['account_type']?.toString().toLowerCase() == 'company') return true;
+      if (u['role']?.toString().toLowerCase() == 'company') return true;
+    }
+    if (data != null && data['is_company'] == true) return true;
+    if (data != null && data['is_company'] == false) return false;
+    if (raw != null && raw['is_company'] == true) return true;
+    if (raw != null && raw['is_company'] == false) return false;
+    return null;
+  }
+
+  static String? _extractToken(Map<String, dynamic>? data, Map<String, dynamic>? raw) {
+    final fromData = data?['token'] ?? data?['access_token'] ?? data?['accessToken'];
+    if (fromData != null && fromData.toString().isNotEmpty) return fromData.toString();
+    final fromRaw = raw?['token'] ?? raw?['access_token'] ?? raw?['accessToken'];
+    if (fromRaw != null && fromRaw.toString().isNotEmpty) return fromRaw.toString();
+    return null;
   }
 
   static ApiResponse<Map<String, dynamic>> _handleError(DioException e) {
@@ -187,6 +227,7 @@ class AuthApiService {
   static Future<void> logout() async {
     await MyServices.saveStringValue(ConstData.keyToken, '');
     await MyServices.saveStringValue(ConstData.keyUserId, '');
+    await MyServices.saveStringValue(ConstData.keyIsCompany, '0');
     ApiClient.reset();
   }
 }

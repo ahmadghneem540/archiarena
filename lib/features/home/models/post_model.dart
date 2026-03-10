@@ -12,6 +12,8 @@ class PostModel {
     this.commentsCount = 0,
     this.isLiked = false,
     this.createdAt,
+    this.budget,
+    this.deadline,
   });
 
   final int id;
@@ -25,6 +27,8 @@ class PostModel {
   final int commentsCount;
   final bool isLiked;
   final String? createdAt;
+  final String? budget;
+  final String? deadline;
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final author = json['author'] ?? json['user'];
@@ -42,13 +46,20 @@ class PostModel {
       commentsCount: json['comments_count'] ?? json['commentsCount'] ?? 0,
       isLiked: json['is_liked'] == true || json['isLiked'] == true,
       createdAt: json['created_at'] ?? json['createdAt']?.toString(),
+      budget: json['budget']?.toString(),
+      deadline: json['deadline']?.toString(),
     );
   }
 
   static String? _extractImageUrl(Map<String, dynamic> json) {
     final images = json['images'];
     if (images is List && images.isNotEmpty) {
-      return images.first?.toString();
+      final first = images.first;
+      if (first is String) return first;
+      if (first is Map) {
+        return first['url'] ?? first['image_url'] ?? first['path']?.toString();
+      }
+      return first?.toString();
     }
     return json['image_url'] ?? json['imageUrl']?.toString();
   }

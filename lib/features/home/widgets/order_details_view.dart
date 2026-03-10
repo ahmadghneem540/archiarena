@@ -52,7 +52,7 @@ class OrderDetailsView extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () => controller.downloadAllImages(orderId),
                 icon: const Icon(Icons.download, size: 18),
-                label: const Text('تحميل الكل'),
+                label: Text('download_all'.tr),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,

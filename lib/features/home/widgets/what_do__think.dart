@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -18,6 +19,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   final ImagePicker _imagePicker = ImagePicker();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _budgetController = TextEditingController();
+  final _deadlineController = TextEditingController();
 
   File? _mainImage;
   final List<File> _secondaryImages = [];
@@ -39,6 +42,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _budgetController.dispose();
+    _deadlineController.dispose();
     super.dispose();
   }
 
@@ -54,8 +59,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
 
   void _pickPlanFile() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('اختيار ملف المخطط (PDF) — قريباً'),
+      SnackBar(
+        content: Text('plan_pdf_soon'.tr),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -84,8 +89,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       setState(() => _isUploading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم رفع المشروع بنجاح'),
+        SnackBar(
+          content: Text('upload_project_success'.tr),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -103,7 +108,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('رفع مشروع'), centerTitle: true),
+      appBar: AppBar(title: Text('upload_project'.tr), centerTitle: true),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -121,12 +126,16 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   const SizedBox(height: 16),
                   _buildCategoryDropdown(),
                   const SizedBox(height: 16),
+                  _buildBudgetField(),
+                  const SizedBox(height: 16),
+                  _buildDeadlineField(),
+                  const SizedBox(height: 16),
                   _buildPlanFileSection(),
                   const SizedBox(height: 24),
                   Opacity(
                     opacity: _isUploading ? 0.7 : 1,
                     child: ArchiButton(
-                      label: _isUploading ? 'جاري الرفع...' : 'رفع المشروع',
+                      label: _isUploading ? 'uploading'.tr : 'upload_project'.tr,
                       onPressed: _isUploading ? () {} : _submitProject,
                     ),
                   ),
@@ -176,10 +185,10 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                     )
                   : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.add_photo_alternate_outlined, size: 48),
-                        SizedBox(height: 8),
-                        Text('اختر صورة رئيسية'),
+                      children: [
+                        const Icon(Icons.add_photo_alternate_outlined, size: 48),
+                        const SizedBox(height: 8),
+                        Text('choose_main_image'.tr),
                       ],
                     ),
             ),
@@ -222,6 +231,45 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     ],
   );
 
+  Widget _buildBudgetField() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'project_budget'.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _budgetController,
+        textDirection: TextDirection.rtl,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+          hintText: 'enter_budget'.tr,
+          prefixIcon: const Icon(Icons.attach_money, size: 22),
+        ),
+      ),
+    ],
+  );
+
+  Widget _buildDeadlineField() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        'project_deadline'.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _deadlineController,
+        textDirection: TextDirection.rtl,
+        decoration: InputDecoration(
+          hintText: 'enter_deadline'.tr,
+          prefixIcon: const Icon(Icons.timer_outlined, size: 22),
+        ),
+      ),
+    ],
+  );
+
   Widget _buildCategoryDropdown() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -232,7 +280,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       const SizedBox(height: 8),
       DropdownButtonFormField<String>(
         value: _selectedCategory,
-        hint: const Text('اختر التصنيف'),
+        hint: Text('choose_category'.tr),
         items: _categories
             .map((c) => DropdownMenuItem(value: c, child: Text(c)))
             .toList(),
@@ -252,7 +300,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       OutlinedButton.icon(
         onPressed: _pickPlanFile,
         icon: const Icon(Icons.upload_file),
-        label: const Text('رفع ملف المخطط (PDF)'),
+        label: Text('upload_plan_pdf'.tr),
       ),
     ],
   );

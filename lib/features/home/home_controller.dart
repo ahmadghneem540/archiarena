@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/constant/const_data.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/services/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/services/auth_api_service.dart';
 import '../../data/services/friends_api_service.dart';
@@ -174,6 +176,13 @@ class HomeController extends GetxController {
     openCommentsSheet(2);
   }
 
+  Future<void> togglePostLike(int postId) async {
+    final res = await HomeApiService.toggleLike(postId);
+    if (res.isSuccess) {
+      loadPosts();
+    }
+  }
+
   Future<void> acceptFriendRequest(String id) async {
     final requestId = int.tryParse(id);
     if (requestId != null) {
@@ -312,8 +321,16 @@ class HomeController extends GetxController {
   void onInit() {
     super.onInit();
     final arguments = Get.arguments;
-    if (arguments != null && arguments['isCompany'] == true) {
-      isCompany.value = true;
+    if (arguments != null) {
+      if (arguments['isCompany'] == true) {
+        isCompany.value = true;
+      } else if (arguments['isCompany'] == false) {
+        isCompany.value = false;
+      } else {
+        _loadIsCompanyFromStorage();
+      }
+    } else {
+      _loadIsCompanyFromStorage();
     }
 
     myProfile = UserProfileModel(
@@ -335,6 +352,11 @@ class HomeController extends GetxController {
     _addSampleOrders();
   }
 
+  Future<void> _loadIsCompanyFromStorage() async {
+    final saved = await MyServices.getStringValue(ConstData.keyIsCompany);
+    if (saved == '1') isCompany.value = true;
+  }
+
   /// جلب شروط رفع المشروع
   Future<void> loadUploadConditions() async {
     final res = await HomeApiService.getUploadConditions();
@@ -347,17 +369,21 @@ class HomeController extends GetxController {
     }
   }
 
-  /// جلب المنشورات
+  /// جلب المنشورات من الـ API
   Future<void> loadPosts() async {
     final res = await HomeApiService.getPosts();
     if (res.isSuccess && res.data != null) {
       final list = res.data!['posts'] ?? res.data!['data'];
-      if (list is List) {
+      if (list is List && list.isNotEmpty) {
         posts.value = list
             .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
             .whereType<PostModel>()
             .toList();
+      } else {
+        posts.value = [];
       }
+    } else {
+      posts.value = [];
     }
   }
 
@@ -477,6 +503,21 @@ class HomeController extends GetxController {
         livesIn: d['current_location'] ?? d['lives_in']?.toString(),
         from: d['origin_location'] ?? d['from']?.toString(),
       );
+      final profileIsCompany = d['is_company'] == true ||
+          d['user_type']?.toString().toLowerCase() == 'company' ||
+          d['type']?.toString().toLowerCase() == 'company';
+      final profileIsPersonal = d['is_company'] == false ||
+          d['user_type']?.toString().toLowerCase() == 'customer' ||
+          d['user_type']?.toString().toLowerCase() == 'personal' ||
+          d['type']?.toString().toLowerCase() == 'customer' ||
+          d['type']?.toString().toLowerCase() == 'personal';
+      if (profileIsCompany) {
+        isCompany.value = true;
+        MyServices.saveStringValue(ConstData.keyIsCompany, '1');
+      } else if (profileIsPersonal) {
+        isCompany.value = false;
+        MyServices.saveStringValue(ConstData.keyIsCompany, '0');
+      }
       update();
     }
   }
@@ -673,21 +714,23 @@ class HomeController extends GetxController {
 
   /// تسجيل الخروج مع تأكيد ثم التوجيه لشاشة تسجيل الدخول.
   void logout(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     Get.dialog(
       Directionality(
-        textDirection: TextDirection.rtl,
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
         child: AlertDialog(
-          title: const Text('تسجيل الخروج'),
-          content: const Text('هل أنت متأكد من تسجيل الخروج؟'),
+          title: Text('logout'.tr),
+          content: Text('logout_confirm'.tr),
           actions: [
-            TextButton(onPressed: () => Get.back(), child: const Text('إلغاء')),
+            TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
             TextButton(
               onPressed: () async {
                 Get.back();
                 await AuthApiService.logout();
                 Get.offAllNamed(AppRoutes.authLogin);
+                Get.delete<HomeController>(force: true);
               },
-              child: const Text('تسجيل الخروج'),
+              child: Text('logout'.tr),
             ),
           ],
         ),

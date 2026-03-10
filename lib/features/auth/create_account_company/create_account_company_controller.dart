@@ -54,13 +54,63 @@ class CreateAccountCompanyController extends GetxController {
     return years;
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   void next() {
+    final companyName = companyNameController.text.trim();
+    final phone = mobileController.text.trim();
+    final password = passwordController.text;
+    final email = emailController.text.trim();
+
+    if (companyName.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (phone.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (password.isEmpty || password.length < 6) {
+      Get.snackbar(
+        'alert'.tr,
+        'password_min_length'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (email.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      Get.snackbar(
+        'alert'.tr,
+        'invalid_email'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
     Get.toNamed(AppRoutes.createAccountCompanyDescribe, arguments: {
       'isCompany': true,
-      'companyName': companyNameController.text.trim(),
-      'email': emailController.text.trim(),
-      'phone': mobileController.text.trim(),
-      'password': passwordController.text,
+      'companyName': companyName,
+      'email': email,
+      'phone': phone,
+      'password': password,
       'establishmentDate':
           '${establishmentDate.value.year}-${establishmentDate.value.month.toString().padLeft(2, '0')}-${establishmentDate.value.day.toString().padLeft(2, '0')}',
     });

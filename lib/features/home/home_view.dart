@@ -1,4 +1,3 @@
-import 'package:archiarena/features/home/widgets/projects_views.dart';
 import 'package:archiarena/features/home/widgets/upload_project.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,9 +31,35 @@ class HomeView extends GetView<HomeController> {
                     Obx(() {
                       // المحتوى الأساسي حسب التبويب
                       if (controller.currentTab.value == HomeTab.work) {
-                        return ListView(
-                          children: [HomePostCard(controller: controller)],
-                        );
+                        return Obx(() {
+                          final posts = controller.posts;
+                          if (posts.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.work_outline,
+                                      size: 64, color: AppColors.grey400),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'no_posts'.tr,
+                                    style: TextStyle(
+                                        fontSize: 16, color: AppColors.grey600),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return ListView.builder(
+                            itemCount: posts.length,
+                            itemBuilder: (context, index) {
+                              return HomePostCard1(
+                                controller: controller,
+                                post: posts[index],
+                              );
+                            },
+                          );
+                        });
                       }
                       if (controller.currentTab.value == HomeTab.orders) {
                         return OrdersTabView(controller: controller);
@@ -67,15 +92,33 @@ class HomeView extends GetView<HomeController> {
                           HomeSearchBar(controller: controller),
                           const SizedBox(height: 20),
                           Expanded(
-                            child: ListView.builder(
-                              itemCount: 5,
-                              itemBuilder: (context, index) {
-                                return HomePostCard1(
-                                  controller: controller,
-                                  postIndex: index,
+                            child: Obx(() {
+                              final posts = controller.posts;
+                              if (posts.isEmpty) {
+                                return Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.feed_outlined, size: 64, color: AppColors.grey400),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'no_posts'.tr,
+                                        style: TextStyle(fontSize: 16, color: AppColors.grey600),
+                                      ),
+                                    ],
+                                  ),
                                 );
-                              },
-                            ),
+                              }
+                              return ListView.builder(
+                                itemCount: posts.length,
+                                itemBuilder: (context, index) {
+                                  return HomePostCard1(
+                                    controller: controller,
+                                    post: posts[index],
+                                  );
+                                },
+                              );
+                            }),
                           ),
                         ],
                       );
