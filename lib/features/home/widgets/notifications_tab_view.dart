@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../home_controller.dart';
 import '../models/notification_model.dart';
+import 'shimmer_loading.dart';
 
 /// شاشة التاب الخامس — الإشعارات (التفاعلات، التعليقات، قبول الصداقات).
 class NotificationsTabView extends StatelessWidget {
@@ -20,7 +21,14 @@ class NotificationsTabView extends StatelessWidget {
           const SizedBox(height: 16),
           _buildHeader(context),
           const SizedBox(height: 24),
-          Obx(() => _buildNotificationsList(context)),
+          Obx(() {
+            if (controller.isNotificationsLoading.value) {
+              return Column(
+                children: List.generate(6, (_) => const ShimmerListTile(leadingSize: 44, titleWidth: 180, subtitleWidth: 100)),
+              );
+            }
+            return _buildNotificationsList(context);
+          }),
           const SizedBox(height: 32),
         ],
       ),

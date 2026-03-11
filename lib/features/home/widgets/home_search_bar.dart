@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
+import 'search_users_page.dart';
 import 'what_do__think.dart';
 
 class HomeSearchBar extends StatelessWidget {
@@ -37,19 +38,27 @@ class HomeSearchBar extends StatelessWidget {
                         color: AppColors.inputBackground,
                         borderRadius: BorderRadius.circular(22),
                       ),
-                      child: TextField(
-                        textDirection: TextDirection.rtl,
-                        style: const TextStyle(fontSize: 15, color: Colors.black),
-                        decoration: InputDecoration(
-                          hintText: 'قم بالبحث عن التصميم؟',
-                          hintStyle: TextStyle(
-                            color: AppColors.grey600,
-                            fontSize: 15,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 12,
+                      child: InkWell(
+                        onTap: () {
+                          Get.to(() => SearchUsersPage(controller: controller));
+                        },
+                        borderRadius: BorderRadius.circular(22),
+                        child: IgnorePointer(
+                          child: TextField(
+                            textDirection: TextDirection.rtl,
+                            style: const TextStyle(fontSize: 15, color: Colors.black),
+                            decoration: InputDecoration(
+                              hintText: 'بحث عن مستخدمين أو تصاميم',
+                              hintStyle: TextStyle(
+                                color: AppColors.grey600,
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12,
+                              ),
+                            ),
                           ),
                         ),
                       ),

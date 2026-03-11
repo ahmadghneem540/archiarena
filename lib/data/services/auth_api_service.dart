@@ -223,8 +223,13 @@ class AuthApiService {
     );
   }
 
-  /// تسجيل الخروج (مسح التوكن محلياً)
+  /// تسجيل الخروج (استدعاء API ثم مسح التوكن محلياً)
   static Future<void> logout() async {
+    try {
+      await _dio.post(ApiEndpoints.authLogout);
+    } on DioException catch (_) {
+      // حتى لو فشل الطلب (شبكة أو 401) نكمل مسح البيانات محلياً
+    }
     await MyServices.saveStringValue(ConstData.keyToken, '');
     await MyServices.saveStringValue(ConstData.keyUserId, '');
     await MyServices.saveStringValue(ConstData.keyIsCompany, '0');

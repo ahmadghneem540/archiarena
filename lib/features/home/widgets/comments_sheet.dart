@@ -65,16 +65,18 @@ class _CommentsSheetState extends State<CommentsSheet> {
     return topLevel.map((c) => c.copyWith(replies: attachReplies(c))).toList();
   }
 
-  void _sendComment() {
+  Future<void> _sendComment() async {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
     final controller = Get.find<HomeController>();
-    controller.addComment(widget.postId, text, _replyingToId);
-    _textController.clear();
-    setState(() {
-      _replyingToId = null;
-      _replyingToName = null;
-    });
+    final success = await controller.addComment(widget.postId, text, _replyingToId);
+    if (success && mounted) {
+      _textController.clear();
+      setState(() {
+        _replyingToId = null;
+        _replyingToName = null;
+      });
+    }
   }
 
   Future<void> _pickFromGallery() async {
@@ -117,16 +119,18 @@ class _CommentsSheetState extends State<CommentsSheet> {
         final path = await _audioRecorder.stop();
         if (path != null && mounted) {
           final controller = Get.find<HomeController>();
-          controller.addAudioComment(
+          await controller.addAudioComment(
             widget.postId,
             path,
             _replyingToId,
             durationSecs > 0 ? durationSecs : null,
           );
-          setState(() {
-            _replyingToId = null;
-            _replyingToName = null;
-          });
+          if (mounted) {
+            setState(() {
+              _replyingToId = null;
+              _replyingToName = null;
+            });
+          }
         }
       } catch (_) {}
       setState(() {

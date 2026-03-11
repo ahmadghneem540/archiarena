@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
+import 'countdown_timer.dart';
 import 'home_interaction_row.dart';
 
 class HomePostCard1 extends StatelessWidget {
@@ -17,11 +18,13 @@ class HomePostCard1 extends StatelessWidget {
   final HomeController controller;
   final PostModel post;
 
+  /// نفس منطق HomeController.fullImageUrl لتجنب // في الرابط
   String _fullImageUrl(String? url) {
     if (url == null || url.isEmpty) return '';
     if (url.startsWith('http')) return url;
     final base = ConstData.API_BASE;
-    return base.endsWith('/') ? '$base$url' : '$base/$url';
+    final path = url.startsWith('/') ? url : '/$url';
+    return base.endsWith('/') ? '$base${path.substring(1)}' : '$base$path';
   }
 
   @override
@@ -168,51 +171,64 @@ class HomePostCard1 extends StatelessWidget {
                       (post.deadline != null && post.deadline!.isNotEmpty)) ...[
                     const SizedBox(height: 10),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (post.budget != null && post.budget!.isNotEmpty)
                           Expanded(
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.account_balance_wallet_outlined,
-                                  size: 18,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: Text(
-                                    post.budget!,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.grey700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                Text(
+                                  'تكلفة المشروع',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.grey600,
                                   ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.account_balance_wallet_outlined,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        post.budget!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.onSurface,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         if (post.deadline != null && post.deadline!.isNotEmpty)
                           Expanded(
-                            child: Row(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.timer_outlined,
-                                  size: 18,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: Text(
-                                    post.deadline!,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: AppColors.grey700,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
+                                Text(
+                                  'متبقي حتى انتهاء المشروع',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.grey600,
                                   ),
+                                ),
+                                const SizedBox(height: 2),
+                                CountdownTimer(
+                                  deadline: post.deadline,
+                                  iconSize: 18,
                                 ),
                               ],
                             ),
@@ -240,7 +256,7 @@ class HomePostCard1 extends StatelessWidget {
                           label: 'details_and_plans'.tr,
                           height: 44,
                           fontSize: 14,
-                          onPressed: controller.openPost1DetailsSheet,
+                          onPressed: () => controller.openPostDetailsSheet(post),
                         ),
                       ),
                     ],

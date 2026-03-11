@@ -11,6 +11,7 @@ import 'widgets/menu_tab_view.dart';
 import 'widgets/notifications_tab_view.dart';
 import 'widgets/orders_tab_view.dart';
 import 'widgets/profile_tab_view.dart';
+import 'widgets/shimmer_loading.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -32,6 +33,9 @@ class HomeView extends GetView<HomeController> {
                       // المحتوى الأساسي حسب التبويب
                       if (controller.currentTab.value == HomeTab.work) {
                         return Obx(() {
+                          if (controller.isPostsLoading.value) {
+                            return buildShimmerPostList(4);
+                          }
                           final posts = controller.posts;
                           if (posts.isEmpty) {
                             return Center(
@@ -93,6 +97,9 @@ class HomeView extends GetView<HomeController> {
                           const SizedBox(height: 20),
                           Expanded(
                             child: Obx(() {
+                              if (controller.isPostsLoading.value) {
+                                return buildShimmerPostList(4);
+                              }
                               final posts = controller.posts;
                               if (posts.isEmpty) {
                                 return Center(
@@ -110,6 +117,7 @@ class HomeView extends GetView<HomeController> {
                                 );
                               }
                               return ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 24),
                                 itemCount: posts.length,
                                 itemBuilder: (context, index) {
                                   return HomePostCard1(

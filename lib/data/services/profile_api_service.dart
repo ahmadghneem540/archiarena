@@ -38,8 +38,60 @@ class ProfileApiService {
     }
   }
 
-  /// تحديث الملف الشخصي
+  /// منشورات ملفي الشخصي
+  static Future<ApiResponse<Map<String, dynamic>>> getMyPosts({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.profileMePosts,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      return _parseProfilePostsResponse(res.data);
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// منشورات مستخدم آخر
+  static Future<ApiResponse<Map<String, dynamic>>> getUserPosts(
+    int userId, {
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.profileUserPosts(userId),
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      return _parseProfilePostsResponse(res.data);
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  static ApiResponse<Map<String, dynamic>> _parseProfilePostsResponse(
+    dynamic raw,
+  ) {
+    if (raw is! Map<String, dynamic>) {
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+    }
+    final data = raw['data'];
+    final list = data is List ? data : <dynamic>[];
+    final pagination = raw['pagination'] is Map
+        ? Map<String, dynamic>.from(raw['pagination'] as Map)
+        : <String, dynamic>{};
+    return ApiResponse(
+      status: raw['status'] as int? ?? 200,
+      data: {'posts': list, 'pagination': pagination},
+      message: raw['message'] as String?,
+    );
+  }
+
+  /// تحديث الملف الشخصي — PUT /profile/me
   static Future<ApiResponse<Map<String, dynamic>>> updateProfile({
+    String? name,
     String? username,
     String? bio,
     String? professionalTitle,
@@ -51,6 +103,7 @@ class ProfileApiService {
   }) async {
     try {
       final map = <String, dynamic>{};
+      if (name != null) map['name'] = name;
       if (username != null) map['username'] = username;
       if (bio != null) map['bio'] = bio;
       if (professionalTitle != null) {
@@ -63,9 +116,18 @@ class ProfileApiService {
       if (isProfileLocked != null) map['is_profile_locked'] = isProfileLocked;
 
       final res = await _dio.put(ApiEndpoints.profileMe, data: map);
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{'data': raw},
+        message: null,
       );
     } on DioException catch (e) {
       return _handleError(e);
@@ -111,6 +173,53 @@ class ProfileApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// بحث المستخدمين — GET /search/users?q=...
+  static Future<ApiResponse<Map<String, dynamic>>> searchUsers(
+    String query, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    if (query.trim().isEmpty) {
+      return ApiResponse(
+        status: 200,
+        data: {'users': [], 'data': []},
+        message: null,
+      );
+    }
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.searchUsers,
+        queryParameters: {'q': query.trim(), 'page': page, 'limit': limit},
+      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'users': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final list = raw['users'] ?? raw['data'];
+        if (list is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? res.statusCode ?? 200,
+            data: {'users': list, 'data': list},
+            message: raw['message']?.toString(),
+          );
+        }
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }

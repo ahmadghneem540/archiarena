@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '../../core/api/api_response.dart';
 import '../../core/constant/const_data.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/services/services.dart';
@@ -43,6 +45,13 @@ class HomeController extends GetxController {
 
   // المنشورات من الـ API
   final posts = <PostModel>[].obs;
+  final isPostsLoading = false.obs;
+  final isProfileLoading = false.obs;
+  final isProfilePostsLoading = false.obs;
+  final isFriendRequestsLoading = false.obs;
+  final isSuggestionsLoading = false.obs;
+  final isNotificationsLoading = false.obs;
+  final isOtherUserLoading = false.obs;
 
   // تفاعلات البوست الأول
   final post1Likes = 0.obs;
@@ -56,22 +65,35 @@ class HomeController extends GetxController {
   final post2IsLiked = false.obs;
   final post2CommentsList = <CommentModel>[].obs;
 
+  /// تعليقات المنشورات من الـ API (مفتاح: postId)
+  final Map<int, RxList<CommentModel>> postCommentsMap = {};
+
   // طلبات الصداقة والأصدقاء (التاب الثالث)
   final friendRequests = <FriendRequestModel>[].obs;
   final myFriends = <FriendRequestModel>[].obs;
   final sentFriendRequestIds = <String>[].obs;
 
-  // الملف الشخصي والاقتراحات (التاب الرابع)
+  // الملف الشخصي والاقتراحات (التاب الرابع) — تُملأ من الـ API فقط
   UserProfileModel myProfile = UserProfileModel(
     id: 'me',
-    name: 'المستخدم',
-    username: 'uid0526',
+    name: '',
+    username: '',
     job: '',
     education: '',
     livesIn: '',
     from: '',
   );
+  /// منشورات الملف الشخصي (من /profile/me/posts)
+  final profilePosts = <PostModel>[].obs;
+  /// ملف مستخدم آخر (عند فتح صفحة ملفه)
+  final Rxn<UserProfileModel> otherUserProfile = Rxn<UserProfileModel>();
+  /// منشورات مستخدم آخر
+  final otherUserPosts = <PostModel>[].obs;
   final suggestionUsers = <UserProfileModel>[].obs;
+
+  /// نتائج بحث المستخدمين
+  final searchResults = <UserProfileModel>[].obs;
+  final isSearchLoading = false.obs;
 
   // الإشعارات (التاب الخامس)
   final notifications = <NotificationModel>[].obs;
@@ -98,43 +120,111 @@ class HomeController extends GetxController {
     }
   }
 
-  List<CommentModel> getCommentsListForPost(int postId) {
+  RxList<CommentModel> getCommentsListForPost(int postId) {
     if (postId == 1) return post1CommentsList;
-    return post2CommentsList;
+    if (postId == 2) return post2CommentsList;
+    postCommentsMap[postId] ??= <CommentModel>[].obs;
+    return postCommentsMap[postId]!;
   }
 
-  void addComment(int postId, String text, [String? parentId]) {
+  /// جلب التعليقات من الـ API وحفظها للمنشور
+  Future<void> loadPostComments(int postId) async {
+    final res = await HomeApiService.getComments(postId);
     final list = getCommentsListForPost(postId);
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    final comment = CommentModel(
-      id: id,
-      authorName: 'المستخدم',
-      text: text,
-      parentId: parentId,
-      createdAt: _formatTime(DateTime.now()),
-    );
-    list.add(comment);
+    if (res.isSuccess && res.data != null) {
+      final rawList = res.data!['comments'] ?? res.data!['data'];
+      if (rawList is List && rawList.isNotEmpty) {
+        final topLevel = rawList
+            .map((e) => e is Map
+                ? CommentModel.fromJson(
+                    Map.from(e),
+                    formatTime: _formatTimeAgo,
+                  )
+                : null)
+            .whereType<CommentModel>()
+            .toList();
+        final flat = <CommentModel>[];
+        for (final c in topLevel) {
+          flat.add(c);
+          flat.addAll(c.replies);
+        }
+        list.assignAll(flat);
+      } else {
+        list.assignAll(<CommentModel>[]);
+      }
+    }
     _updateCommentCount(postId);
   }
 
-  void addAudioComment(
+  /// إضافة تعليق نصي أو رد — يستدعي الـ API ثم يضيف النتيجة للقائمة
+  Future<bool> addComment(int postId, String text, [String? parentId]) async {
+    final list = getCommentsListForPost(postId);
+    ApiResponse<Map<String, dynamic>> res;
+    if (parentId == null || parentId.isEmpty) {
+      res = await HomeApiService.addComment(postId, body: text);
+    } else {
+      final commentId = int.tryParse(parentId);
+      if (commentId == null) {
+        Get.snackbar('خطأ', 'معرف التعليق غير صالح', snackPosition: SnackPosition.BOTTOM);
+        return false;
+      }
+      res = await HomeApiService.replyComment(commentId, body: text);
+    }
+    if (!res.isSuccess) {
+      Get.snackbar('فشل إرسال التعليق', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      return false;
+    }
+    final comment = _parseCommentFromResponse(res.data);
+    if (comment != null) {
+      list.add(comment);
+      _updateCommentCount(postId);
+      return true;
+    }
+    return true;
+  }
+
+  /// إضافة تعليق صوتي أو رد صوتي — يستدعي الـ API مع الملف الصوتي
+  Future<bool> addAudioComment(
     int postId,
     String audioPath, [
     String? parentId,
     int? durationSeconds,
-  ]) {
+  ]) async {
     final list = getCommentsListForPost(postId);
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    final comment = CommentModel(
-      id: id,
-      authorName: 'المستخدم',
-      audioPath: audioPath,
-      audioDurationSeconds: durationSeconds,
-      parentId: parentId,
-      createdAt: _formatTime(DateTime.now()),
-    );
-    list.add(comment);
-    _updateCommentCount(postId);
+    ApiResponse<Map<String, dynamic>> res;
+    if (parentId == null || parentId.isEmpty) {
+      res = await HomeApiService.addComment(postId, audioPath: audioPath);
+    } else {
+      final commentId = int.tryParse(parentId);
+      if (commentId == null) {
+        Get.snackbar('خطأ', 'معرف التعليق غير صالح', snackPosition: SnackPosition.BOTTOM);
+        return false;
+      }
+      res = await HomeApiService.replyComment(commentId, audioPath: audioPath);
+    }
+    if (!res.isSuccess) {
+      Get.snackbar('فشل إرسال التعليق الصوتي', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      return false;
+    }
+    final comment = _parseCommentFromResponse(res.data, audioDurationSeconds: durationSeconds);
+    if (comment != null) {
+      list.add(comment);
+      _updateCommentCount(postId);
+      return true;
+    }
+    return true;
+  }
+
+  CommentModel? _parseCommentFromResponse(Map<String, dynamic>? data, {int? audioDurationSeconds}) {
+    if (data == null) return null;
+    final raw = data['comment'] ?? data['data'] ?? data;
+    if (raw is! Map) return null;
+    final map = Map<String, dynamic>.from(raw);
+    final comment = CommentModel.fromJson(map, formatTime: _formatTimeAgo);
+    if (audioDurationSeconds != null && comment.audioPath != null) {
+      return comment.copyWith(audioDurationSeconds: audioDurationSeconds);
+    }
+    return comment;
   }
 
   void _updateCommentCount(int postId) {
@@ -147,15 +237,6 @@ class HomeController extends GetxController {
 
   int _totalCount(List<CommentModel> list) {
     return list.length;
-  }
-
-  String _formatTime(DateTime dt) {
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
-    if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
-    if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
-    return '${dt.day}/${dt.month}/${dt.year}';
   }
 
   void togglePost1Like() {
@@ -212,6 +293,7 @@ class HomeController extends GetxController {
   }
 
   void openCommentsSheet(int postId) {
+    loadPostComments(postId);
     Get.bottomSheet(
       CommentsSheet(postId: postId),
       isScrollControlled: true,
@@ -220,13 +302,24 @@ class HomeController extends GetxController {
     );
   }
 
-  void openPost1DetailsSheet() {
+  /// جلب تفاصيل منشور كاملة (تفاصيل التصميم، المخططات، الصور) — GET /home/posts/:id
+  Future<PostModel?> loadPostDetails(int postId) async {
+    final res = await HomeApiService.getPost(postId);
+    if (!res.isSuccess || res.data == null) return null;
+    return PostModel.fromJson(res.data!);
+  }
+
+  void openPostDetailsSheet(PostModel post) {
     Get.bottomSheet(
-      const HomePostDetailsSheet(),
+      HomePostDetailsSheet(controller: this, post: post),
       isScrollControlled: true,
       backgroundColor: AppColors.transparent,
       ignoreSafeArea: false,
     );
+  }
+
+  void openPost1DetailsSheet() {
+    openPostDetailsSheet(posts.isNotEmpty ? posts.first : PostModel(id: 0, title: ''));
   }
 
   void openOrderDetails(String orderId, String orderTitle) {
@@ -307,10 +400,23 @@ class HomeController extends GetxController {
 
   void selectTab(HomeTab tab) {
     currentTab.value = tab;
-    // يمكن لاحقاً تبديل المحتوى أو التنقل حسب التاب
     switch (tab) {
+      case HomeTab.home:
+      case HomeTab.work:
+        loadPosts();
+        break;
+      case HomeTab.groups:
+        loadFriendRequests();
+        loadFriendSuggestions();
+        break;
+      case HomeTab.profile:
+        loadMyProfile();
+        loadMyProfilePosts();
+        break;
+      case HomeTab.notifications:
+        loadNotifications();
+        break;
       case HomeTab.menu:
-        // فتح القائمة الجانبية أو نافذة
         break;
       default:
         break;
@@ -333,16 +439,8 @@ class HomeController extends GetxController {
       _loadIsCompanyFromStorage();
     }
 
-    myProfile = UserProfileModel(
-      id: 'me',
-      name: 'المستخدم',
-      username: 'uid0526',
-      job: 'مؤسس ومدير تنفيذي في شركة زيرو لقص الليزر',
-      education: 'دراسة هندسة عمارة في جامعة دمشق',
-      livesIn: 'سوريا',
-      from: 'درعا، داعل',
-    );
     loadMyProfile();
+    loadMyProfilePosts();
     _addSampleComments();
     loadUploadConditions();
     loadPosts();
@@ -371,8 +469,10 @@ class HomeController extends GetxController {
 
   /// جلب المنشورات من الـ API
   Future<void> loadPosts() async {
-    final res = await HomeApiService.getPosts();
-    if (res.isSuccess && res.data != null) {
+    isPostsLoading.value = true;
+    try {
+      final res = await HomeApiService.getPosts();
+      if (res.isSuccess && res.data != null) {
       final list = res.data!['posts'] ?? res.data!['data'];
       if (list is List && list.isNotEmpty) {
         posts.value = list
@@ -385,58 +485,119 @@ class HomeController extends GetxController {
     } else {
       posts.value = [];
     }
+    } finally {
+      isPostsLoading.value = false;
+    }
   }
 
-  /// جلب طلبات الصداقة
+  /// آخر عدد طلبات معروف — لمعرفة وجود طلبات جديدة وإشعار المستخدم.
+  int _lastFriendRequestCount = -1;
+
+  /// جلب طلبات الصداقة — الطلب يظهر عند المستخدم المستقبل، ويمكنه فتح بروفايل المرسل والموافقة أو الرفض.
   Future<void> loadFriendRequests() async {
-    final res = await FriendsApiService.getRequests();
+    isFriendRequestsLoading.value = true;
+    try {
+      final res = await FriendsApiService.getRequests();
     if (res.isSuccess && res.data != null) {
       final list = res.data!['requests'] ?? res.data!['data'];
       if (list is List && list.isNotEmpty) {
         friendRequests.value = list.map((e) {
           final m = e is Map ? Map.from(e) : {};
           final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
+          final profilePic = sender['profile_picture']?.toString();
+          final requestId = m['request_id'] ?? m['id'];
+          final senderUserId = sender['user_id'] ?? sender['id'];
           return FriendRequestModel(
-            id: '${m['request_id'] ?? m['id'] ?? sender['user_id']}',
+            id: '${requestId ?? senderUserId}',
+            senderUserId: senderUserId?.toString(),
             name: sender['name']?.toString() ?? 'مستخدم',
             mutualCount: m['mutual_friends_count'] ?? 0,
             timeAgo: _formatTimeAgo(m['created_at']),
+            avatarPath: profilePic != null && profilePic.isNotEmpty
+                ? HomeController.fullImageUrl(profilePic)
+                : null,
           );
         }).toList();
+      } else {
+        friendRequests.value = [];
       }
+    } else {
+      friendRequests.value = [];
     }
-    if (friendRequests.isEmpty) _addSampleFriendRequests();
     final countRes = await FriendsApiService.getRequestsCount();
     if (countRes.isSuccess && countRes.data != null) {
       notificationCount.value =
           countRes.data!['count'] ?? friendRequests.length;
     }
+    // إشعار المستخدم عند وصول طلب صداقة جديد (مع صوت/اهتزاز إن أمكن)
+    final newCount = friendRequests.length;
+    if (_lastFriendRequestCount >= 0 && newCount > _lastFriendRequestCount) {
+      _onNewFriendRequestReceived();
+    }
+    _lastFriendRequestCount = newCount;
+    } finally {
+      isFriendRequestsLoading.value = false;
+    }
+  }
+
+  void _onNewFriendRequestReceived() {
+    Get.snackbar(
+      'طلب صداقة جديد',
+      'لديك طلب صداقة جديد. افتح تبويب الأصدقاء للموافقة أو الرفض.',
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 4),
+      margin: const EdgeInsets.all(16),
+    );
+    HapticFeedback.heavyImpact();
+    _playNewRequestSound();
+  }
+
+  void _playNewRequestSound() {
+    try {
+      // لتفعيل رن الجوال: أضف ملف assets/sounds/notification.mp3
+      // ثم استخدم: AudioPlayer().play(AssetSource('sounds/notification.mp3'));
+      // أو اعتمد على Push (FCM) من السيرفر مع sound: "default" — انظر docs/API_FRIEND_REQUESTS_AND_NOTIFICATIONS.md
+    } catch (_) {}
   }
 
   /// جلب اقتراحات الأصدقاء
   Future<void> loadFriendSuggestions() async {
-    final res = await FriendsApiService.getSuggestions();
+    isSuggestionsLoading.value = true;
+    try {
+      final res = await FriendsApiService.getSuggestions();
     if (res.isSuccess && res.data != null) {
       final list = res.data!['suggestions'] ?? res.data!['data'];
       if (list is List && list.isNotEmpty) {
         suggestionUsers.value = list.map((e) {
           final m = e is Map ? Map.from(e) : {};
+          final profilePic = m['profile_picture']?.toString();
           return UserProfileModel(
             id: '${m['user_id'] ?? m['id']}',
             name: m['name']?.toString() ?? 'مستخدم',
             username: m['username']?.toString(),
-            job: m['job']?.toString(),
+            job: m['professional_title']?.toString() ?? m['job']?.toString(),
             mutualCount: m['mutual_friends_count'] ?? 0,
+            profilePicture: profilePic != null && profilePic.isNotEmpty
+                ? fullImageUrl(profilePic)
+                : null,
           );
         }).toList();
+      } else {
+        suggestionUsers.value = [];
       }
+    } else {
+      suggestionUsers.value = [];
     }
-    if (suggestionUsers.isEmpty) _addSuggestionUsers();
+    } finally {
+      isSuggestionsLoading.value = false;
+    }
   }
 
   /// جلب الإشعارات
   Future<void> loadNotifications() async {
-    final res = await NotificationsApiService.getNotifications();
+    isNotificationsLoading.value = true;
+    try {
+      final res = await NotificationsApiService.getNotifications();
     if (res.isSuccess && res.data != null) {
       final list = res.data!['notifications'] ?? res.data!['data'];
       if (list is List && list.isNotEmpty) {
@@ -453,11 +614,13 @@ class HomeController extends GetxController {
         }).toList();
       }
     }
-    if (notifications.isEmpty) _addSampleNotifications();
     final countRes = await NotificationsApiService.getUnreadCount();
     if (countRes.isSuccess && countRes.data != null) {
       notificationCount.value =
           countRes.data!['count'] ?? notifications.length;
+    }
+    } finally {
+      isNotificationsLoading.value = false;
     }
   }
 
@@ -489,24 +652,45 @@ class HomeController extends GetxController {
     return '${dt.day}/${dt.month}/${dt.year}';
   }
 
+  /// بناء رابط صورة كامل من مسار الـ API
+  static String? fullImageUrl(String? path) {
+    if (path == null || path.isEmpty) return null;
+    if (path.startsWith('http')) return path;
+    final base = ConstData.API_BASE;
+    return base.endsWith('/') ? '$base${path.startsWith('/') ? path.substring(1) : path}' : '$base${path.startsWith('/') ? path : '/$path'}';
+  }
+
   /// جلب الملف الشخصي من الـ API
   Future<void> loadMyProfile() async {
-    final res = await ProfileApiService.getMyProfile();
+    isProfileLoading.value = true;
+    try {
+      final res = await ProfileApiService.getMyProfile();
     if (res.isSuccess && res.data != null) {
       final d = res.data!;
       myProfile = UserProfileModel(
-        id: '${d['id'] ?? 'me'}',
+        id: '${d['user_id'] ?? d['id'] ?? 'me'}',
         name: d['name']?.toString() ?? myProfile.name,
         username: d['username']?.toString(),
         job: d['professional_title'] ?? d['job']?.toString(),
         education: d['education']?.toString(),
         livesIn: d['current_location'] ?? d['lives_in']?.toString(),
         from: d['origin_location'] ?? d['from']?.toString(),
+        profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+        coverImage: fullImageUrl(d['cover_image']?.toString()),
+        bio: d['bio']?.toString(),
+        company: d['company']?.toString(),
+        postsCount: (d['posts_count'] is int)
+            ? d['posts_count'] as int
+            : int.tryParse('${d['posts_count']}') ?? 0,
+        isProfileLocked: d['is_profile_locked'] == true,
+        isOwn: d['is_own'] == true,
       );
       final profileIsCompany = d['is_company'] == true ||
+          d['role']?.toString().toLowerCase() == 'company' ||
           d['user_type']?.toString().toLowerCase() == 'company' ||
           d['type']?.toString().toLowerCase() == 'company';
       final profileIsPersonal = d['is_company'] == false ||
+          d['role']?.toString().toLowerCase() == 'customer' ||
           d['user_type']?.toString().toLowerCase() == 'customer' ||
           d['user_type']?.toString().toLowerCase() == 'personal' ||
           d['type']?.toString().toLowerCase() == 'customer' ||
@@ -520,6 +704,165 @@ class HomeController extends GetxController {
       }
       update();
     }
+    } finally {
+      isProfileLoading.value = false;
+    }
+  }
+
+  /// جلب منشورات الملف الشخصي من الـ API
+  Future<void> loadMyProfilePosts() async {
+    isProfilePostsLoading.value = true;
+    try {
+      final res = await ProfileApiService.getMyPosts();
+    if (res.isSuccess && res.data != null) {
+      final list = res.data!['posts'];
+      if (list is List && list.isNotEmpty) {
+        profilePosts.value = list
+            .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
+            .whereType<PostModel>()
+            .toList();
+      } else {
+        profilePosts.value = [];
+      }
+    } else {
+      profilePosts.value = [];
+    }
+    } finally {
+      isProfilePostsLoading.value = false;
+    }
+  }
+
+  /// جلب ملف مستخدم آخر من الـ API
+  Future<void> loadOtherUserProfile(String userId) async {
+    final id = int.tryParse(userId);
+    if (id == null) return;
+    isOtherUserLoading.value = true;
+    try {
+      final res = await ProfileApiService.getUserProfile(id);
+    if (res.isSuccess && res.data != null) {
+      final d = res.data!;
+      otherUserProfile.value = UserProfileModel(
+        id: '${d['user_id'] ?? d['id'] ?? userId}',
+        name: d['name']?.toString() ?? 'مستخدم',
+        username: d['username']?.toString(),
+        job: d['professional_title'] ?? d['job']?.toString(),
+        education: d['education']?.toString(),
+        livesIn: d['current_location'] ?? d['lives_in']?.toString(),
+        from: d['origin_location'] ?? d['from']?.toString(),
+        profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+        coverImage: fullImageUrl(d['cover_image']?.toString()),
+        bio: d['bio']?.toString(),
+        company: d['company']?.toString(),
+        postsCount: (d['posts_count'] is int)
+            ? d['posts_count'] as int
+            : int.tryParse('${d['posts_count']}') ?? 0,
+        isProfileLocked: d['is_profile_locked'] == true,
+        isOwn: d['is_own'] == true,
+      );
+    } else {
+      otherUserProfile.value = null;
+    }
+    } finally {
+      isOtherUserLoading.value = false;
+    }
+  }
+
+  /// جلب منشورات مستخدم آخر
+  Future<void> loadOtherUserPosts(String userId) async {
+    final id = int.tryParse(userId);
+    if (id == null) return;
+    final res = await ProfileApiService.getUserPosts(id);
+    if (res.isSuccess && res.data != null) {
+      final list = res.data!['posts'];
+      if (list is List && list.isNotEmpty) {
+        otherUserPosts.value = list
+            .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
+            .whereType<PostModel>()
+            .toList();
+      } else {
+        otherUserPosts.value = [];
+      }
+    } else {
+      otherUserPosts.value = [];
+    }
+  }
+
+  /// مسح بيانات المستخدم الآخر عند الخروج من صفحته
+  void clearOtherUserProfile() {
+    otherUserProfile.value = null;
+    otherUserPosts.clear();
+  }
+
+  /// تحديث الملف الشخصي (البيانات النصية) — PUT /profile/me
+  Future<bool> updateMyProfile({
+    String? name,
+    String? username,
+    String? bio,
+    String? professionalTitle,
+    String? company,
+    String? education,
+    String? currentLocation,
+    String? originLocation,
+    bool? isProfileLocked,
+  }) async {
+    final res = await ProfileApiService.updateProfile(
+      name: name,
+      username: username,
+      bio: bio,
+      professionalTitle: professionalTitle,
+      company: company,
+      education: education,
+      currentLocation: currentLocation,
+      originLocation: originLocation,
+      isProfileLocked: isProfileLocked,
+    );
+    if (!res.isSuccess) {
+      Get.snackbar('فشل التحديث', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      return false;
+    }
+    await loadMyProfile();
+    return true;
+  }
+
+  /// بحث المستخدمين — GET /search/users?q=...
+  Future<void> searchUsers(String query) async {
+    if (query.trim().isEmpty) {
+      searchResults.clear();
+      return;
+    }
+    isSearchLoading.value = true;
+    try {
+      final res = await ProfileApiService.searchUsers(query.trim());
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['users'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          searchResults.value = list.map((e) {
+            final m = e is Map ? Map.from(e) : {};
+            final profilePic = m['profile_picture']?.toString();
+            return UserProfileModel(
+              id: '${m['user_id'] ?? m['id']}',
+              name: m['name']?.toString() ?? 'مستخدم',
+              username: m['username']?.toString(),
+              job: m['professional_title']?.toString() ?? m['job']?.toString(),
+              mutualCount: m['mutual_friends_count'] ?? 0,
+              profilePicture: profilePic != null && profilePic.isNotEmpty
+                  ? fullImageUrl(profilePic)
+                  : null,
+            );
+          }).toList();
+        } else {
+          searchResults.value = [];
+        }
+      } else {
+        searchResults.value = [];
+      }
+    } finally {
+      isSearchLoading.value = false;
+    }
+  }
+
+  void clearSearchResults() {
+    searchResults.clear();
   }
 
   void _addSampleOrders() {
@@ -575,114 +918,6 @@ class HomeController extends GetxController {
     ]);
   }
 
-  void _addSampleNotifications() {
-    notifications.addAll([
-      NotificationModel(
-        id: 'n1',
-        type: NotificationType.interaction,
-        senderName: 'سارة أحمد',
-        message: 'تفاعلت مع منشورك. ما رأيك؟',
-        timeAgo: 'منذ ساعتين',
-      ),
-      NotificationModel(
-        id: 'n2',
-        type: NotificationType.comment,
-        senderName: 'محمد علي',
-        message: 'علق على منشورك: "تصميم رائع، أتمنى رؤية المزيد"',
-        timeAgo: 'منذ 3 ساعات',
-      ),
-      NotificationModel(
-        id: 'n3',
-        type: NotificationType.friendAcceptance,
-        senderName: 'نورة سالم',
-        message: 'وافقت على طلب صداقتك.',
-        timeAgo: 'منذ 5 ساعات',
-      ),
-      NotificationModel(
-        id: 'n4',
-        type: NotificationType.interaction,
-        senderName: 'أحمد غنيم',
-        message: 'أعجب بمنشورك في المشروع الأخير.',
-        timeAgo: 'منذ 6 ساعات',
-      ),
-      NotificationModel(
-        id: 'n5',
-        type: NotificationType.comment,
-        senderName: 'فاطمة حسن',
-        message: 'ردت على تعليقك في منشور شركة زيرو.',
-        timeAgo: 'منذ يوم',
-      ),
-      NotificationModel(
-        id: 'n6',
-        type: NotificationType.friendAcceptance,
-        senderName: 'خالد العمري',
-        message: 'وافقت على طلب صداقتك.',
-        timeAgo: 'منذ يومين',
-      ),
-    ]);
-  }
-
-  void _addSuggestionUsers() {
-    suggestionUsers.addAll([
-      UserProfileModel(
-        id: 'u1',
-        name: 'أحمد غنيم',
-        username: 'ahmed_ghanim',
-        job: 'مهندس معماري',
-        mutualCount: 15,
-      ),
-      UserProfileModel(
-        id: 'u2',
-        name: 'لينا محمد',
-        username: 'lina_m',
-        job: 'مصممة داخلية',
-        mutualCount: 8,
-      ),
-      UserProfileModel(
-        id: 'u3',
-        name: 'عمر سعيد',
-        username: 'omar_s',
-        education: 'هندسة معمارية',
-        mutualCount: 22,
-      ),
-    ]);
-  }
-
-  void _addSampleFriendRequests() {
-    friendRequests.addAll([
-      FriendRequestModel(
-        id: 'fr1',
-        name: 'سارة أحمد',
-        mutualCount: 12,
-        timeAgo: 'منذ 9 أسابيع',
-      ),
-      FriendRequestModel(
-        id: 'fr2',
-        name: 'محمد علي',
-        mutualCount: 5,
-        timeAgo: 'منذ 10 أسابيع',
-      ),
-      FriendRequestModel(
-        id: 'fr3',
-        name: 'نورة سالم',
-        mutualCount: 20,
-        timeAgo: 'منذ 12 أسبوعاً',
-      ),
-      FriendRequestModel(
-        id: 'fr4',
-        name: 'خالد العمري',
-        mutualCount: 3,
-        timeAgo: 'منذ 19 أسبوعاً',
-      ),
-      FriendRequestModel(
-        id: 'fr5',
-        name: 'فاطمة حسن',
-        mutualCount: 8,
-        timeAgo: 'منذ 20 أسبوعاً',
-      ),
-    ]);
-  }
-
   void _addSampleComments() {
     final c1 = CommentModel(
       id: '1',
@@ -712,7 +947,6 @@ class HomeController extends GetxController {
     Get.toNamed(AppRoutes.createAccountIntro);
   }
 
-  /// تسجيل الخروج مع تأكيد ثم التوجيه لشاشة تسجيل الدخول.
   void logout(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
     Get.dialog(

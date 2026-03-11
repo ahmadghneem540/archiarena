@@ -8,20 +8,32 @@ class FriendsApiService {
 
   static final _dio = ApiClient.dio;
 
-  /// عدد طلبات الصداقة المعلقة
+  /// عدد طلبات الصداقة المعلقة — الاستجابة data: { count }
   static Future<ApiResponse<Map<String, dynamic>>> getRequestsCount() async {
     try {
       final res = await _dio.get(ApiEndpoints.friendsRequestsCount);
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is Map) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: Map<String, dynamic>.from(data),
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// قائمة طلبات الصداقة الواردة
+  /// قائمة طلبات الصداقة — كل عنصر: id، request_id، sender مع profile_picture
   static Future<ApiResponse<Map<String, dynamic>>> getRequests({
     int page = 1,
     int limit = 20,
@@ -31,44 +43,77 @@ class FriendsApiService {
         ApiEndpoints.friendsRequests,
         queryParameters: {'page': page, 'limit': limit},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'requests': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'requests': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// قبول طلب صداقة
+  /// قبول طلب صداقة — معالجة مصفوفة النتائج إن وُجدت
   static Future<ApiResponse<Map<String, dynamic>>> confirmRequest(
     int requestId,
   ) async {
     try {
       final res =
           await _dio.post(ApiEndpoints.friendsRequestConfirm(requestId));
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      return _normalizeConfirmDeleteResponse(res.data);
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// رفض / حذف طلب صداقة
+  /// رفض / حذف طلب صداقة — معالجة مصفوفة النتائج
   static Future<ApiResponse<Map<String, dynamic>>> deleteRequest(
     int requestId,
   ) async {
     try {
       final res = await _dio.delete(ApiEndpoints.friendsRequestDelete(requestId));
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      return _normalizeConfirmDeleteResponse(res.data);
     } on DioException catch (e) {
       return _handleError(e);
     }
+  }
+
+  static ApiResponse<Map<String, dynamic>> _normalizeConfirmDeleteResponse(
+    dynamic raw,
+  ) {
+    if (raw is Map<String, dynamic>) {
+      final data = raw['data'];
+      if (data is List) {
+        return ApiResponse(
+          status: raw['status'] as int? ?? 200,
+          data: <String, dynamic>{'results': data},
+          message: raw['message'] as String?,
+        );
+      }
+      return ApiResponse.fromJson(
+        raw,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    }
+    return ApiResponse(status: 200, data: <String, dynamic>{});
   }
 
   /// إرسال طلب صداقة
@@ -87,7 +132,7 @@ class FriendsApiService {
     }
   }
 
-  /// اقتراحات أصدقاء
+  /// اقتراحات أصدقاء — كل عنصر: id، user_id، job (من professional_title)، mutual_friends_count، profile_picture
   static Future<ApiResponse<Map<String, dynamic>>> getSuggestions({
     int page = 1,
     int limit = 20,
@@ -97,10 +142,29 @@ class FriendsApiService {
         ApiEndpoints.friendsSuggestions,
         queryParameters: {'page': page, 'limit': limit},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'suggestions': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'suggestions': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }

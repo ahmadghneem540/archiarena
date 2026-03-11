@@ -32,10 +32,29 @@ class NotificationsApiService {
         ApiEndpoints.notifications,
         queryParameters: {'page': page, 'limit': limit, 'status': status},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'notifications': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'notifications': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }

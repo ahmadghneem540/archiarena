@@ -9,6 +9,7 @@ class ApiEndpoints {
   static const String authRegisterCompany = '/auth/register_company';
   static const String authVerifyEmail = '/auth/verify-email';
   static const String authLogin = '/auth/login';
+  static const String authLogout = '/auth/logout';
 
   // ========== OTP ==========
   static const String verifyOtp = '/verify/otp';
@@ -37,6 +38,11 @@ class ApiEndpoints {
   static String profileUser(int userId) => '/profile/$userId';
   static const String profileMePicture = '/profile/me/picture';
   static const String profileMeCover = '/profile/me/cover';
+  static const String profileMePosts = '/profile/me/posts';
+  static String profileUserPosts(int userId) => '/profile/$userId/posts';
+
+  // ========== Search ==========
+  static const String searchUsers = '/search/users';
 
   // ========== Notifications ==========
   static const String notificationsUnreadCount =

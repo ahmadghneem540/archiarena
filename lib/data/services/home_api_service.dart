@@ -33,22 +33,56 @@ class HomeApiService {
         ApiEndpoints.homePosts(),
         queryParameters: {'page': page, 'limit': limit},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      // إذا كان الـ API يرجع قائمة مباشرة
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'posts': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        // إذا كان الحقل data داخل الـ Map هو قائمة (المنشورات)
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'posts': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// جلب تفاصيل منشور
+  /// جلب تفاصيل منشور — GET /home/posts/:id (تفاصيل التصميم، المخططات، الصور)
   static Future<ApiResponse<Map<String, dynamic>>> getPost(int id) async {
     try {
       final res = await _dio.get(ApiEndpoints.homePosts(id));
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
+      final raw = res.data;
+      if (raw is! Map<String, dynamic>) {
+        return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+      }
+      final data = raw['data'] ?? raw['post'] ?? raw;
+      if (data is! Map) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: raw['status'] as int? ?? res.statusCode ?? 200,
+        data: Map<String, dynamic>.from(data),
+        message: raw['message']?.toString(),
       );
     } on DioException catch (e) {
       return _handleError(e);
@@ -124,7 +158,7 @@ class HomeApiService {
     }
   }
 
-  /// جلب التعليقات
+  /// جلب التعليقات — كل تعليق: id، comment_id، author: { user_id, name, profile_picture }، body، text، image_url، audio_url، parent_id، replies
   static Future<ApiResponse<Map<String, dynamic>>> getComments(
     int postId, {
     int page = 1,
@@ -135,21 +169,41 @@ class HomeApiService {
         ApiEndpoints.homePostComments(postId),
         queryParameters: {'page': page, 'limit': limit},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
-      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'comments': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'comments': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// إضافة تعليق
+  /// إضافة تعليق — POST /home/posts/:id/comments
   static Future<ApiResponse<Map<String, dynamic>>> addComment(
     int postId, {
     String? body,
     File? image,
     File? audio,
+    String? audioPath,
   }) async {
     try {
       final map = <String, dynamic>{};
@@ -159,6 +213,8 @@ class HomeApiService {
       }
       if (audio != null) {
         map['audio'] = await MultipartFile.fromFile(audio.path);
+      } else if (audioPath != null && audioPath.isNotEmpty) {
+        map['audio'] = await MultipartFile.fromFile(audioPath);
       }
 
       if (map.isEmpty) {
@@ -171,21 +227,31 @@ class HomeApiService {
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{'data': raw},
+        message: null,
       );
     } on DioException catch (e) {
       return _handleError(e);
     }
   }
 
-  /// رد على تعليق
+  /// رد على تعليق — POST /home/comments/:id/reply
   static Future<ApiResponse<Map<String, dynamic>>> replyComment(
     int commentId, {
     String? body,
     File? image,
     File? audio,
+    String? audioPath,
   }) async {
     try {
       final map = <String, dynamic>{};
@@ -195,6 +261,8 @@ class HomeApiService {
       }
       if (audio != null) {
         map['audio'] = await MultipartFile.fromFile(audio.path);
+      } else if (audioPath != null && audioPath.isNotEmpty) {
+        map['audio'] = await MultipartFile.fromFile(audioPath);
       }
 
       if (map.isEmpty) {
@@ -207,9 +275,18 @@ class HomeApiService {
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{'data': raw},
+        message: null,
       );
     } on DioException catch (e) {
       return _handleError(e);
