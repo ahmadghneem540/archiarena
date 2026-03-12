@@ -121,12 +121,7 @@ class UploadProjectPage extends StatelessWidget {
   }
 
   void _showUploadSheet(BuildContext context, HomeController homeController) {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
-    final categoryController = TextEditingController();
-    final budgetController = TextEditingController();
-    final deadlineController = TextEditingController();
-    final images = <File>[].obs;
+    final imageFile = Rxn<File>();
     final isLoading = false.obs;
     final picker = ImagePicker();
 
@@ -149,133 +144,106 @@ class UploadProjectPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'رفع مشروع جديد',
-                  style: TextStyle(
+                Text(
+                  'upload_project'.tr,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    hintText: 'عنوان المشروع',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: categoryController,
-                  decoration: const InputDecoration(
-                    hintText: 'التصنيف',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: 'الوصف',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: budgetController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    hintText: 'enter_budget'.tr,
-                    prefixIcon: const Icon(Icons.attach_money, size: 22),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: deadlineController,
-                  decoration: InputDecoration(
-                    hintText: 'enter_deadline'.tr,
-                    prefixIcon: const Icon(Icons.timer_outlined, size: 22),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 20),
                 Obx(
-                  () => Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      ...images.map(
-                        (f) => Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.file(
-                                f,
-                                width: 70,
-                                height: 70,
-                                fit: BoxFit.cover,
+                  () {
+                    final file = imageFile.value;
+                    return Column(
+                      children: [
+                        if (file != null)
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.file(
+                                  file,
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              child: GestureDetector(
-                                onTap: () => images.remove(f),
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.close,
-                                    size: 16,
-                                    color: Colors.white,
+                              Positioned(
+                                top: 8,
+                                left: 8,
+                                child: GestureDetector(
+                                  onTap: () => imageFile.value = null,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.close,
+                                      size: 20,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (images.length < 10)
-                        GestureDetector(
-                          onTap: () async {
-                            final x = await picker.pickMultiImage();
-                            if (x.isNotEmpty) {
-                              for (var f in x) {
-                                images.add(File(f.path));
+                            ],
+                          )
+                        else
+                          GestureDetector(
+                            onTap: () async {
+                              final x = await picker.pickImage(
+                                source: ImageSource.gallery,
+                                imageQuality: 90,
+                              );
+                              if (x != null) {
+                                imageFile.value = File(x.path);
                               }
-                            }
-                          },
-                          child: Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.border),
-                              borderRadius: BorderRadius.circular(8),
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: AppColors.border),
+                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.cardBackground,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    size: 48,
+                                    color: AppColors.grey500,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'choose_main_image'.tr,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppColors.grey600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: const Icon(Icons.add_photo_alternate),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Obx(
                   () => ArchiButton(
-                    label: isLoading.value ? 'جاري الرفع...' : 'رفع',
+                    label: isLoading.value ? 'uploading'.tr : 'upload_project'.tr,
                     onPressed: () async {
                       if (isLoading.value) return;
-                      final title = titleController.text.trim();
-                      final category = categoryController.text.trim();
-                      final desc = descController.text.trim();
-                      if (title.isEmpty || category.isEmpty || desc.isEmpty) {
+                      final file = imageFile.value;
+                      if (file == null) {
                         Get.snackbar(
-                          'تنبيه',
-                          'يرجى ملء العنوان والتصنيف والوصف',
+                          'alert'.tr,
+                          'upload_project_main_image_required'.tr,
                           snackPosition: SnackPosition.BOTTOM,
                         );
                         return;
@@ -283,32 +251,26 @@ class UploadProjectPage extends StatelessWidget {
                       isLoading.value = true;
                       try {
                         final res = await HomeApiService.createPost(
-                          title: title,
-                          category: category,
-                          description: desc,
-                          budget: budgetController.text.trim().isEmpty
-                              ? null
-                              : budgetController.text.trim(),
-                          deadline: deadlineController.text.trim().isEmpty
-                              ? null
-                              : deadlineController.text.trim(),
-                          images: images.isEmpty ? null : images,
+                          title: 'مشروع',
+                          category: 'آخر',
+                          description: '—',
+                          images: [file],
                         );
                         if (res.isSuccess) {
                           Get.back();
                           homeController.closeUploadPage();
                           homeController.loadPosts();
                           Get.snackbar(
-                            'تم بنجاح',
-                            'تم رفع المشروع',
+                            'success'.tr,
+                            'upload_project_success'.tr,
                             snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: AppColors.primary,
                             colorText: AppColors.onPrimary,
                           );
                         } else {
                           Get.snackbar(
-                            'فشل',
-                            res.message ?? 'حدث خطأ',
+                            'error'.tr,
+                            res.message ?? 'upload_project_failed'.tr,
                             snackPosition: SnackPosition.BOTTOM,
                           );
                         }

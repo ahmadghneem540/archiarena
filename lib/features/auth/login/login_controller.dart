@@ -88,11 +88,7 @@ class LoginController extends GetxController {
   }
 
   void forgotPassword() {
-    Get.snackbar(
-      'نسيت كلمة المرور',
-      'سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    Get.toNamed(AppRoutes.forgotPasswordRequest);
   }
 
   void createNewAccount() {

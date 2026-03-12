@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../../data/services/profile_api_service.dart';
+import '../../features/home/home_controller.dart';
 import 'widgets/menu_page_scaffold.dart';
 
 /// صفحة الخصوصية والأمان.
@@ -8,64 +12,34 @@ class PrivacySecurityView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
     return MenuPageScaffold(
-      title: 'الخصوصية والأمان',
+      title: 'privacy_security'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _SectionCard(
-              title: 'الحساب',
+              title: 'account'.tr,
               items: [
-                _SwitchItem(
+                Obx(() => _SwitchItem(
                   icon: Icons.lock_outline_rounded,
-                  title: 'حساب خاص',
-                  subtitle: 'يظهر منشوراتك للمتابعين الموافق عليهم فقط',
-                  value: false,
-                  onChanged: (_) {},
-                ),
-                _SwitchItem(
-                  icon: Icons.visibility_outlined,
-                  title: 'من يمكنه رؤية المنشورات',
-                  subtitle: 'الجميع',
-                  value: true,
-                  onChanged: (_) {},
-                ),
+                  title: 'private_account'.tr,
+                  subtitle: 'private_account_desc'.tr,
+                  value: controller.isProfileLocked.value,
+                  onChanged: (v) => _onVisibilityChanged(controller, v),
+                )),
               ],
             ),
             const SizedBox(height: 20),
             _SectionCard(
-              title: 'التفاعل',
-              items: [
-                _TapItem(
-                  icon: Icons.people_outline_rounded,
-                  title: 'قائمة الحظر',
-                  subtitle: 'إدارة الحسابات المحظورة',
-                  onTap: () {},
-                ),
-                _TapItem(
-                  icon: Icons.block_outlined,
-                  title: 'طلبات المتابعة',
-                  subtitle: 'مراجعة الطلبات المعلقة',
-                  onTap: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _SectionCard(
-              title: 'الأمان',
+              title: 'security'.tr,
               items: [
                 _TapItem(
                   icon: Icons.key_rounded,
-                  title: 'تغيير كلمة المرور',
-                  onTap: () {},
-                ),
-                _TapItem(
-                  icon: Icons.phone_android_outlined,
-                  title: 'التحقق بخطوتين',
-                  subtitle: 'غير مفعّل',
-                  onTap: () {},
+                  title: 'change_password'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.changePassword),
                 ),
               ],
             ),
@@ -74,6 +48,23 @@ class PrivacySecurityView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onVisibilityChanged(HomeController controller, bool isLocked) async {
+    final res = await ProfileApiService.updateVisibility(isProfileLocked: isLocked);
+    if (res.isSuccess) {
+      controller.isProfileLocked.value = isLocked;
+      controller.myProfile = controller.myProfile.copyWith(isProfileLocked: isLocked);
+      Get.snackbar(
+        'success'.tr,
+        isLocked ? 'private_account_enabled'.tr : 'private_account_disabled'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.primary,
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
+    } else {
+      Get.snackbar('error'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+    }
   }
 }
 

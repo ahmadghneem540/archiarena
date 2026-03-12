@@ -63,7 +63,7 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
             autofocus: true,
             textDirection: TextDirection.rtl,
             decoration: InputDecoration(
-              hintText: 'ابحث عن مستخدمين...',
+              hintText: 'search_users_hint'.tr,
               hintStyle: TextStyle(color: AppColors.grey600, fontSize: 16),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
@@ -124,6 +124,7 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
               return _UserTile(
                 user: user,
                 onTap: () {
+                  widget.controller.loadMyFriends();
                   widget.controller.loadOtherUserProfile(user.id);
                   widget.controller.loadOtherUserPosts(user.id);
                   Get.to(

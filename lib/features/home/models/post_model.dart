@@ -56,6 +56,7 @@ class PostModel {
     this.createdAt,
     this.budget,
     this.deadline,
+    this.projectTimer,
     this.designDetails,
     this.projectTypes,
     this.area,
@@ -81,6 +82,7 @@ class PostModel {
   final String? createdAt;
   final String? budget;
   final String? deadline;
+  final String? projectTimer;
   final String? designDetails;
   final String? projectTypes;
   final String? area;
@@ -117,6 +119,7 @@ class PostModel {
       createdAt: json['created_at'] ?? json['createdAt']?.toString(),
       budget: json['budget']?.toString() ?? json['cost']?.toString(),
       deadline: json['deadline']?.toString() ?? json['deadline_at']?.toString() ?? json['ends_at']?.toString(),
+      projectTimer: json['project_timer']?.toString(),
       designDetails: json['design_details']?.toString(),
       projectTypes: json['project_types']?.toString(),
       area: json['area']?.toString(),

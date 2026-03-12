@@ -36,7 +36,7 @@ class HomeView extends GetView<HomeController> {
                           if (controller.isPostsLoading.value) {
                             return buildShimmerPostList(4);
                           }
-                          final posts = controller.posts;
+                          final posts = controller.worksPosts;
                           if (posts.isEmpty) {
                             return Center(
                               child: Column(
@@ -60,6 +60,7 @@ class HomeView extends GetView<HomeController> {
                               return HomePostCard1(
                                 controller: controller,
                                 post: posts[index],
+                                isInWorks: true,
                               );
                             },
                           );
@@ -100,7 +101,7 @@ class HomeView extends GetView<HomeController> {
                               if (controller.isPostsLoading.value) {
                                 return buildShimmerPostList(4);
                               }
-                              final posts = controller.posts;
+                              final posts = controller.mainFeedPosts;
                               if (posts.isEmpty) {
                                 return Center(
                                   child: Column(
@@ -123,6 +124,7 @@ class HomeView extends GetView<HomeController> {
                                   return HomePostCard1(
                                     controller: controller,
                                     post: posts[index],
+                                    isInWorks: false,
                                   );
                                 },
                               );

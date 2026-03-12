@@ -35,11 +35,6 @@ class MenuTabView extends StatelessWidget {
                 title: 'الخصوصية والأمان',
                 onTap: () => Get.toNamed(AppRoutes.menuPrivacySecurity),
               ),
-              _MenuItem(
-                icon: Icons.badge_outlined,
-                title: 'الحساب المهني',
-                onTap: () => Get.toNamed(AppRoutes.menuProfessionalAccount),
-              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -49,14 +44,9 @@ class MenuTabView extends StatelessWidget {
             context,
             children: [
               _MenuItem(
-                icon: Icons.notifications_outlined,
-                title: 'إعدادات الإشعارات',
-                onTap: () => Get.toNamed(AppRoutes.menuNotificationSettings),
-              ),
-              _MenuItem(
                 icon: Icons.language_rounded,
-                title: 'اللغة',
-                subtitle: 'العربية',
+                title: 'language'.tr,
+                subtitle: _currentLanguageSubtitle(),
                 onTap: () => Get.toNamed(AppRoutes.menuLanguage),
               ),
               _MenuItem(
@@ -110,6 +100,13 @@ class MenuTabView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _currentLanguageSubtitle() {
+    final code = Get.locale?.languageCode ?? 'ar';
+    if (code == 'ar') return 'lang_arabic'.tr;
+    if (code == 'de') return 'lang_german'.tr;
+    return 'lang_english'.tr;
   }
 
   Widget _buildHeader() {

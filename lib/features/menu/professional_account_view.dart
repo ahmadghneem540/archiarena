@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -9,7 +10,7 @@ class ProfessionalAccountView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MenuPageScaffold(
-      title: 'الحساب المهني',
+      title: 'professional_account'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
@@ -48,7 +49,7 @@ class ProfessionalAccountView extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'ربط حسابك المهني يعزز ظهورك للمشاريع والعملاء.',
+                          'professional_account_desc_short'.tr,
                           style: TextStyle(fontSize: 13, color: AppColors.grey700, height: 1.35),
                         ),
                       ],
@@ -60,22 +61,22 @@ class ProfessionalAccountView extends StatelessWidget {
             const SizedBox(height: 24),
             _buildOption(
               icon: Icons.work_outline_rounded,
-              title: 'ربط الحساب المهني',
-              subtitle: 'إضافة أو ربط حساب مهني',
+              title: 'link_professional_account'.tr,
+              subtitle: 'link_professional_desc'.tr,
               onTap: () {},
             ),
             const SizedBox(height: 12),
             _buildOption(
               icon: Icons.verified_outlined,
-              title: 'التحقق من الحساب',
-              subtitle: 'الحصول على علامة التحقق',
+              title: 'verify_account'.tr,
+              subtitle: 'verify_account_desc'.tr,
               onTap: () {},
             ),
             const SizedBox(height: 12),
             _buildOption(
               icon: Icons.analytics_outlined,
-              title: 'إحصائيات الحساب',
-              subtitle: 'مشاهدات المنشورات والتفاعلات',
+              title: 'account_stats'.tr,
+              subtitle: 'account_stats_desc'.tr,
               onTap: () {},
             ),
             const SizedBox(height: 32),

@@ -89,7 +89,8 @@ class HomeApiService {
     }
   }
 
-  /// إنشاء منشور (رفع مشروع)
+  /// إنشاء منشور (رفع مشروع) — POST /home/posts
+  /// يدعم: budget, deadline, project_timer أو timer_days/timer_hours/timer_minutes
   static Future<ApiResponse<Map<String, dynamic>>> createPost({
     required String title,
     required String category,
@@ -102,6 +103,10 @@ class HomeApiService {
     String? style,
     String? budget,
     String? deadline,
+    String? projectTimer,
+    int? timerDays,
+    int? timerHours,
+    int? timerMinutes,
     List<File>? images,
   }) async {
     try {
@@ -109,27 +114,31 @@ class HomeApiService {
         'title': title,
         'category': category,
         'description': description,
-        if (designDetails != null) 'design_details': designDetails,
-        if (projectTypes != null) 'project_types': projectTypes,
-        if (area != null) 'area': area,
-        if (planStatus != null) 'plan_status': planStatus,
-        if (suitableFor != null) 'suitable_for': suitableFor,
-        if (style != null) 'style': style,
+        if (designDetails != null && designDetails.isNotEmpty) 'design_details': designDetails,
+        if (projectTypes != null && projectTypes.isNotEmpty) 'project_types': projectTypes,
+        if (area != null && area.isNotEmpty) 'area': area,
+        if (planStatus != null && planStatus.isNotEmpty) 'plan_status': planStatus,
+        if (suitableFor != null && suitableFor.isNotEmpty) 'suitable_for': suitableFor,
+        if (style != null && style.isNotEmpty) 'style': style,
         if (budget != null && budget.isNotEmpty) 'budget': budget,
         if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
+        if (projectTimer != null && projectTimer.isNotEmpty) 'project_timer': projectTimer,
+        if (timerDays != null) 'timer_days': timerDays,
+        if (timerHours != null) 'timer_hours': timerHours,
+        if (timerMinutes != null) 'timer_minutes': timerMinutes,
       };
 
-      final List<MultipartFile> imageFiles = [];
+      final formData = FormData.fromMap(map);
+
       if (images != null && images.isNotEmpty) {
         for (var i = 0; i < images.length && i < 10; i++) {
-          imageFiles.add(
-            await MultipartFile.fromFile(images[i].path, filename: 'images'),
+          final f = images[i];
+          final name = f.path.split(RegExp(r'[/\\]')).last;
+          formData.files.add(
+            MapEntry('images', await MultipartFile.fromFile(f.path, filename: name)),
           );
         }
-        map['images'] = imageFiles;
       }
-
-      final formData = FormData.fromMap(map);
 
       final res = await _dio.post(
         ApiEndpoints.homePosts(),

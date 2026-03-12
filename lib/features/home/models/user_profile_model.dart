@@ -35,4 +35,40 @@ class UserProfileModel {
   final int postsCount;
   final bool isProfileLocked;
   final bool isOwn;
+
+  UserProfileModel copyWith({
+    String? id,
+    String? name,
+    String? username,
+    String? job,
+    String? education,
+    String? livesIn,
+    String? from,
+    int? mutualCount,
+    String? profilePicture,
+    String? coverImage,
+    String? bio,
+    String? company,
+    int? postsCount,
+    bool? isProfileLocked,
+    bool? isOwn,
+  }) {
+    return UserProfileModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      username: username ?? this.username,
+      job: job ?? this.job,
+      education: education ?? this.education,
+      livesIn: livesIn ?? this.livesIn,
+      from: from ?? this.from,
+      mutualCount: mutualCount ?? this.mutualCount,
+      profilePicture: profilePicture ?? this.profilePicture,
+      coverImage: coverImage ?? this.coverImage,
+      bio: bio ?? this.bio,
+      company: company ?? this.company,
+      postsCount: postsCount ?? this.postsCount,
+      isProfileLocked: isProfileLocked ?? this.isProfileLocked,
+      isOwn: isOwn ?? this.isOwn,
+    );
+  }
 }

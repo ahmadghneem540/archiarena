@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
@@ -221,6 +222,89 @@ class AuthApiService {
       status: status,
       message: message,
     );
+  }
+
+  /// طلب إرسال رمز إعادة تعيين كلمة المرور (نسيان كلمة المرور - الخطوة 1)
+  static Future<ApiResponse<Map<String, dynamic>>> requestForgotPassword({
+    String? email,
+    String? phone,
+  }) async {
+    if ((email == null || email.isEmpty) && (phone == null || phone.isEmpty)) {
+      return ApiResponse(status: 400, message: 'يرجى إدخال البريد أو رقم الهاتف');
+    }
+    try {
+      final data = <String, dynamic>{};
+      if (email != null && email.isNotEmpty) data['email'] = email;
+      if (phone != null && phone.isNotEmpty) data['phone'] = phone;
+
+      final res = await _dio.post(
+        ApiEndpoints.authForgotPassword,
+        data: data,
+      );
+      return ApiResponse.fromJson(
+        res.data as Map<String, dynamic>,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// إعادة تعيين كلمة المرور (نسيان كلمة المرور - الخطوة 2)
+  static Future<ApiResponse<Map<String, dynamic>>> resetPassword({
+    String? email,
+    String? phone,
+    required String code,
+    required String newPassword,
+  }) async {
+    if ((email == null || email.isEmpty) && (phone == null || phone.isEmpty)) {
+      return ApiResponse(status: 400, message: 'يرجى إدخال البريد أو رقم الهاتف');
+    }
+    try {
+      final data = <String, dynamic>{
+        'code': code,
+        'new_password': newPassword,
+      };
+      if (email != null && email.isNotEmpty) data['email'] = email;
+      if (phone != null && phone.isNotEmpty) data['phone'] = phone;
+
+      final res = await _dio.post(
+        ApiEndpoints.authResetPassword,
+        data: data,
+      );
+      return ApiResponse.fromJson(
+        res.data as Map<String, dynamic>,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// تغيير كلمة المرور (للمستخدم المسجّل دخوله)
+  static Future<ApiResponse<Map<String, dynamic>>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.authChangePassword,
+        data: {
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        },
+      );
+      return ApiResponse.fromJson(
+        res.data as Map<String, dynamic>,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      debugPrint('[ChangePassword] DioException: ${e.type}');
+      debugPrint('[ChangePassword] Status: ${e.response?.statusCode}');
+      debugPrint('[ChangePassword] Response: ${e.response?.data}');
+      debugPrint('[ChangePassword] Message: ${e.message}');
+      return _handleError(e);
+    }
   }
 
   /// تسجيل الخروج (استدعاء API ثم مسح التوكن محلياً)

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/constant/const_data.dart';
+import '../../core/services/services.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -7,14 +9,21 @@ import 'widgets/menu_page_scaffold.dart';
 class LanguageView extends StatelessWidget {
   const LanguageView({super.key});
 
+  static const List<({String label, String code})> _options = [
+    (label: 'ar', code: 'ar'),
+    (label: 'en', code: 'en'),
+    (label: 'de', code: 'de'),
+  ];
+
+  Future<void> _selectLanguage(String code) async {
+    await MyServices.saveStringValue(ConstData.keyLocale, code);
+    Get.updateLocale(Locale(code));
+    Get.back();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final options = ['lang_arabic'.tr, 'lang_english'.tr, 'lang_german'.tr];
-    final currentLanguage = Get.locale?.languageCode == 'ar'
-        ? 'lang_arabic'.tr
-        : Get.locale?.languageCode == 'de'
-            ? 'lang_german'.tr
-            : 'lang_english'.tr;
+    final currentCode = Get.locale?.languageCode ?? 'ar';
     return MenuPageScaffold(
       title: 'language'.tr,
       child: SingleChildScrollView(
@@ -35,14 +44,20 @@ class LanguageView extends StatelessWidget {
                 boxShadow: [BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2))],
               ),
               child: Column(
-                children: options.asMap().entries.map((e) {
-                  final isSelected = e.value == currentLanguage;
-                  final isLast = e.key == options.length - 1;
+                children: _options.asMap().entries.map((e) {
+                  final opt = e.value;
+                  final isSelected = opt.code == currentCode;
+                  final isLast = e.key == _options.length - 1;
+                  final label = opt.code == 'ar'
+                      ? 'lang_arabic'.tr
+                      : opt.code == 'de'
+                          ? 'lang_german'.tr
+                          : 'lang_english'.tr;
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       InkWell(
-                        onTap: () {},
+                        onTap: () => _selectLanguage(opt.code),
                         borderRadius: BorderRadius.circular(14),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -50,7 +65,7 @@ class LanguageView extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  e.value,
+                                  label,
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,

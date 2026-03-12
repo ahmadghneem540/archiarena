@@ -178,6 +178,69 @@ class ProfileApiService {
     }
   }
 
+  /// إنشاء منشور للملف الشخصي — POST /profile/me/posts (يظهر في الملف فقط)
+  static Future<ApiResponse<Map<String, dynamic>>> createProfilePost({
+    required String title,
+    required String description,
+    required String category,
+    List<File>? images,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'title': title,
+        'description': description,
+        'category': category,
+      });
+      if (images != null && images.isNotEmpty) {
+        for (var i = 0; i < images.length && i < 10; i++) {
+          final f = images[i];
+          final name = f.path.split(RegExp(r'[/\\]')).last;
+          formData.files.add(
+            MapEntry('images', await MultipartFile.fromFile(f.path, filename: name)),
+          );
+        }
+      }
+      final res = await _dio.post(
+        ApiEndpoints.profileMePosts,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      return ApiResponse.fromJson(
+        res.data as Map<String, dynamic>,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// قفل/فتح الملف — PUT /profile/me/visibility
+  static Future<ApiResponse<Map<String, dynamic>>> updateVisibility({
+    required bool isProfileLocked,
+  }) async {
+    try {
+      final res = await _dio.put(
+        ApiEndpoints.profileMeVisibility,
+        data: {'is_profile_locked': isProfileLocked},
+      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{'data': raw},
+        message: null,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
   /// بحث المستخدمين — GET /search/users?q=...
   static Future<ApiResponse<Map<String, dynamic>>> searchUsers(
     String query, {

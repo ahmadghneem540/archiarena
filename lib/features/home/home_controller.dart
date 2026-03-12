@@ -39,12 +39,30 @@ class HomeController extends GetxController {
   }
 
   final notificationCount = 0.obs;
+  /// عدد طلبات الصداقة المعلقة — للشارة الحمراء على أيقونة الأصدقاء
+  final friendRequestCount = 0.obs;
 
   // شروط رفع المشروع من الـ API
   final uploadConditions = <String>[].obs;
 
   // المنشورات من الـ API
   final posts = <PostModel>[].obs;
+  /// منشورات تم نقلها إلى الأعمال بعد تحميل المخطط
+  final transferredPostIds = <int>[].obs;
+
+  /// منشورات الصفحة الرئيسية (لم تُنقل بعد)
+  List<PostModel> get mainFeedPosts =>
+      posts.where((p) => !transferredPostIds.contains(p.id)).toList();
+
+  /// منشورات تبويب الأعمال (بعد تحميل المخطط ونقلها)
+  List<PostModel> get worksPosts =>
+      posts.where((p) => transferredPostIds.contains(p.id)).toList();
+
+  void markPostAsTransferred(int postId) {
+    if (!transferredPostIds.contains(postId)) {
+      transferredPostIds.add(postId);
+    }
+  }
   final isPostsLoading = false.obs;
   final isProfileLoading = false.obs;
   final isProfilePostsLoading = false.obs;
@@ -74,6 +92,7 @@ class HomeController extends GetxController {
   final sentFriendRequestIds = <String>[].obs;
 
   // الملف الشخصي والاقتراحات (التاب الرابع) — تُملأ من الـ API فقط
+  final isProfileLocked = false.obs;
   UserProfileModel myProfile = UserProfileModel(
     id: 'me',
     name: '',
@@ -407,7 +426,7 @@ class HomeController extends GetxController {
         break;
       case HomeTab.groups:
         loadFriendRequests();
-        loadFriendSuggestions();
+        loadMyFriends();
         break;
       case HomeTab.profile:
         loadMyProfile();
@@ -445,7 +464,7 @@ class HomeController extends GetxController {
     loadUploadConditions();
     loadPosts();
     loadFriendRequests();
-    loadFriendSuggestions();
+    loadMyFriends();
     loadNotifications();
     _addSampleOrders();
   }
@@ -526,7 +545,7 @@ class HomeController extends GetxController {
     }
     final countRes = await FriendsApiService.getRequestsCount();
     if (countRes.isSuccess && countRes.data != null) {
-      notificationCount.value =
+      friendRequestCount.value =
           countRes.data!['count'] ?? friendRequests.length;
     }
     // إشعار المستخدم عند وصول طلب صداقة جديد (مع صوت/اهتزاز إن أمكن)
@@ -558,6 +577,49 @@ class HomeController extends GetxController {
       // ثم استخدم: AudioPlayer().play(AssetSource('sounds/notification.mp3'));
       // أو اعتمد على Push (FCM) من السيرفر مع sound: "default" — انظر docs/API_FRIEND_REQUESTS_AND_NOTIFICATIONS.md
     } catch (_) {}
+  }
+
+  final isMyFriendsLoading = false.obs;
+
+  /// جلب قائمة الأصدقاء
+  Future<void> loadMyFriends() async {
+    isMyFriendsLoading.value = true;
+    try {
+      final res = await FriendsApiService.getFriends();
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['friends'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          myFriends.value = list.map((e) {
+            final m = e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
+            final user = m['user'] is Map
+                ? Map<String, dynamic>.from(m['user'] as Map)
+                : m['friend'] is Map
+                    ? Map<String, dynamic>.from(m['friend'] as Map)
+                    : m;
+            final friendId = user['user_id'] ?? user['id'] ?? m['friend_id'] ?? m['user_id'];
+            final profilePic = user['profile_picture']?.toString() ?? m['profile_picture']?.toString();
+            return FriendRequestModel(
+              id: friendId?.toString() ?? '',
+              senderUserId: friendId?.toString(),
+              name: user['name']?.toString() ?? m['name']?.toString() ?? 'مستخدم',
+              mutualCount: int.tryParse('${m['mutual_friends_count'] ?? user['mutual_friends_count'] ?? 0}') ?? 0,
+              timeAgo: _formatTimeAgo(m['created_at']),
+              avatarPath: profilePic != null && profilePic.isNotEmpty
+                  ? HomeController.fullImageUrl(profilePic)
+                  : null,
+            );
+          }).toList();
+        } else {
+          myFriends.value = [];
+        }
+      } else {
+        myFriends.value = [];
+      }
+    } catch (_) {
+      myFriends.value = [];
+    } finally {
+      isMyFriendsLoading.value = false;
+    }
   }
 
   /// جلب اقتراحات الأصدقاء
@@ -685,6 +747,7 @@ class HomeController extends GetxController {
         isProfileLocked: d['is_profile_locked'] == true,
         isOwn: d['is_own'] == true,
       );
+      isProfileLocked.value = myProfile.isProfileLocked;
       final profileIsCompany = d['is_company'] == true ||
           d['role']?.toString().toLowerCase() == 'company' ||
           d['user_type']?.toString().toLowerCase() == 'company' ||

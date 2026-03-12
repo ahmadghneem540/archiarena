@@ -10,6 +10,9 @@ class ApiEndpoints {
   static const String authVerifyEmail = '/auth/verify-email';
   static const String authLogin = '/auth/login';
   static const String authLogout = '/auth/logout';
+  static const String authForgotPassword = '/auth/forgot-password';
+  static const String authResetPassword = '/auth/reset-password';
+  static const String authChangePassword = '/auth/change-password';
 
   // ========== OTP ==========
   static const String verifyOtp = '/verify/otp';
@@ -39,6 +42,7 @@ class ApiEndpoints {
   static const String profileMePicture = '/profile/me/picture';
   static const String profileMeCover = '/profile/me/cover';
   static const String profileMePosts = '/profile/me/posts';
+  static const String profileMeVisibility = '/profile/me/visibility';
   static String profileUserPosts(int userId) => '/profile/$userId/posts';
 
   // ========== Search ==========

@@ -22,138 +22,112 @@ class FriendsTabView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 16),
-          const Text(
-            'الأصدقاء',
+          Text(
+            'friends'.tr,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: AppColors.onSurface,
             ),
           ),
-          const SizedBox(height: 20),
-          _buildTabs(context),
-          const SizedBox(height: 20),
-          Obx(() {
-            if (controller.isSuggestionsLoading.value) {
-              return Column(
-                children: List.generate(4, (_) => const ShimmerListTile(leadingSize: 48, titleWidth: 140, subtitleWidth: 80)),
-              );
-            }
-            return _buildSuggestionsSection(context);
-          }),
           const SizedBox(height: 24),
-          Obx(() {
-            if (controller.isFriendRequestsLoading.value) {
-              return Column(
-                children: List.generate(3, (_) => const ShimmerListTile(leadingSize: 56, titleWidth: 120, subtitleWidth: 60)),
-              );
-            }
-            return _buildFriendRequestsSection(context);
-          }),
+          _buildMyFriendsSection(context),
+          const SizedBox(height: 24),
+          _buildFriendRequestsSection(context),
           const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  Widget _buildTabs(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primary, AppColors.primaryDark],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text(
-                'اقتراحات',
-                style: TextStyle(
-                  color: AppColors.onPrimary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Center(
-              child: Text(
-                'أصدقاؤك',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSuggestionsSection(BuildContext context) {
-    final list = controller.suggestionUsers;
-    if (list.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Text(
-            'no_suggestions'.tr,
-            style: TextStyle(fontSize: 15, color: AppColors.grey600),
-          ),
-        ),
-      );
-    }
+  Widget _buildMyFriendsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'اقتراحات أصدقاء',
-          style: TextStyle(
+        Text(
+          'my_friends'.tr,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: AppColors.onSurface,
           ),
         ),
         const SizedBox(height: 12),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: list.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
-          itemBuilder: (context, index) {
-            final user = list[index];
-            return _SuggestionCard(
-              user: user,
-              onTap: () {
-                controller.loadOtherUserProfile(user.id);
-                controller.loadOtherUserPosts(user.id);
-                Get.to(
-                  () => OtherUserProfilePage(
-                    controller: controller,
-                    user: user,
-                    fromRequest: false,
+        Obx(() {
+          if (controller.isMyFriendsLoading.value) {
+            return Column(
+              children: List.generate(
+                4,
+                (_) => const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: ShimmerListTile(leadingSize: 56, titleWidth: 140, subtitleWidth: 80),
+                ),
+              ),
+            );
+          }
+          final list = controller.myFriends;
+          if (list.isEmpty) {
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.people_outline_rounded, size: 48, color: AppColors.grey400),
+                  const SizedBox(height: 12),
+                  Text(
+                    'no_friends_yet'.tr,
+                    style: TextStyle(fontSize: 15, color: AppColors.grey600),
+                    textAlign: TextAlign.center,
                   ),
+                ],
+              ),
+            );
+          }
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.cardBackground,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
+              boxShadow: [
+                BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2)),
+              ],
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: list.length,
+              separatorBuilder: (_, __) => Divider(height: 1, thickness: 1, color: AppColors.border, indent: 72, endIndent: 16),
+              itemBuilder: (context, index) {
+                final friend = list[index];
+                final user = UserProfileModel(
+                  id: friend.senderUserId ?? friend.id,
+                  name: friend.name,
+                  mutualCount: friend.mutualCount,
+                  profilePicture: friend.avatarPath,
+                );
+                return _FriendCard(
+                  friend: friend,
+                  onTap: () {
+                    controller.loadMyFriends();
+                    controller.loadOtherUserProfile(user.id);
+                    controller.loadOtherUserPosts(user.id);
+                    Get.to(
+                      () => OtherUserProfilePage(
+                        controller: controller,
+                        user: user,
+                        fromRequest: false,
+                      ),
+                    );
+                  },
                 );
               },
-            );
-          },
-        ),
+            ),
+          );
+        }),
       ],
     );
   }
@@ -168,8 +142,8 @@ class FriendsTabView extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text(
-                  'طلبات الصداقة',
+                Text(
+                  'friend_requests_title'.tr,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -198,8 +172,6 @@ class FriendsTabView extends StatelessWidget {
                   ),
               ],
             ),
-            if (count > 0)
-              TextButton(onPressed: () {}, child: Text('show_all'.tr)),
           ],
         ),
         const SizedBox(height: 16),
@@ -242,64 +214,69 @@ class FriendsTabView extends StatelessWidget {
   }
 }
 
-class _SuggestionCard extends StatelessWidget {
-  const _SuggestionCard({required this.user, required this.onTap});
+class _FriendCard extends StatelessWidget {
+  const _FriendCard({required this.friend, required this.onTap});
 
-  final UserProfileModel user;
+  final FriendRequestModel friend;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final initial = user.name.isNotEmpty ? user.name[0] : '؟';
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.cardBackground,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-              child: Text(
-                initial.toUpperCase(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                  fontSize: 18,
+    final initial = friend.name.isNotEmpty ? friend.name[0] : '؟';
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                backgroundImage: (friend.avatarPath != null && friend.avatarPath!.isNotEmpty)
+                    ? NetworkImage(friend.avatarPath!)
+                    : null,
+                child: (friend.avatarPath == null || friend.avatarPath!.isEmpty)
+                    ? Text(
+                        initial.toUpperCase(),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          fontSize: 20,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      friend.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    if (friend.mutualCount > 0) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        friend.mutualCount == 1
+                            ? 'mutual_friend'.tr
+                            : '${friend.mutualCount} ${'mutual_friends'.tr}',
+                        style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.onSurface,
-                    ),
-                  ),
-                  if (user.mutualCount > 0)
-                    Text(
-                      user.mutualCount == 1
-                          ? 'mutual_friend'.tr
-                          : '${user.mutualCount} ${'mutual_friends'.tr}',
-                      style: TextStyle(fontSize: 13, color: AppColors.grey600),
-                    ),
-                ],
-              ),
-            ),
-            Icon(Icons.chevron_left, color: AppColors.grey500),
-          ],
+              Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+            ],
+          ),
         ),
       ),
     );
@@ -333,6 +310,7 @@ class _FriendRequestCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
+          controller.loadMyFriends();
           controller.loadOtherUserProfile(user.id);
           controller.loadOtherUserPosts(user.id);
           Get.to(

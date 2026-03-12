@@ -8,6 +8,7 @@ import '../models/user_profile_model.dart';
 import 'countdown_timer.dart';
 import 'edit_profile_page.dart';
 import 'home_interaction_row.dart';
+import 'profile_post_create_sheet.dart';
 import 'shimmer_loading.dart';
 
 /// شاشة التاب الرابع — الملف الشخصي الاحترافي (الملف الخاص بي).
@@ -34,12 +35,16 @@ class ProfileTabView extends StatelessWidget {
             _buildProfileHeader(p),
             const SizedBox(height: 16),
             _buildActionButtons(context, isOwnProfile: true),
-            if (p.isProfileLocked) ...[
-              const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            _buildProfilePostButton(context),
+            if (controller.isProfileLocked.value) ...[
+              const SizedBox(height: 8),
               _buildPrivacyBanner(context),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _buildAboutSection(p),
+            const SizedBox(height: 8),
+            _buildFriendsSection(context),
             const SizedBox(height: 20),
             _buildTimelineHeader(context),
             const SizedBox(height: 12),
@@ -160,6 +165,27 @@ class ProfileTabView extends StatelessWidget {
     );
   }
 
+  Widget _buildProfilePostButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: ArchiButton(
+        label: 'what_do_you_think'.tr,
+        height: 44,
+        fontSize: 14,
+        icon: Icons.auto_awesome,
+        iconSize: 20,
+        onPressed: () {
+          Get.bottomSheet(
+            ProfilePostCreateSheet(controller: controller),
+            isScrollControlled: true,
+            backgroundColor: AppColors.transparent,
+            ignoreSafeArea: false,
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildActionButtons(
     BuildContext context, {
     required bool isOwnProfile,
@@ -169,58 +195,11 @@ class ProfileTabView extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _gradientButton('إضافة لقصة', Icons.add_circle_outline),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _outlinedButton('تعديل الملف', Icons.edit_outlined, onTap: () {
+            child: _outlinedButton('edit_profile'.tr, Icons.edit_outlined, onTap: () {
               Get.to(() => EditProfilePage(controller: controller));
             }),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: Icon(Icons.more_horiz, color: AppColors.grey600),
-            onPressed: () {},
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _gradientButton(String label, IconData icon) {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {},
-          borderRadius: BorderRadius.circular(10),
-          child: Center(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: AppColors.onPrimary, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.onPrimary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -254,7 +233,7 @@ class ProfileTabView extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'ملفك الشخصي مقفل',
+                'profile_locked'.tr,
                 style: TextStyle(
                   fontSize: 14,
                   color: AppColors.onSurface,
@@ -263,7 +242,7 @@ class ProfileTabView extends StatelessWidget {
               ),
             ),
             Text(
-              'اعرف المزيد',
+              'learn_more'.tr,
               style: TextStyle(
                 fontSize: 13,
                 color: AppColors.primary,
@@ -294,27 +273,6 @@ class ProfileTabView extends StatelessWidget {
               _aboutRow(Icons.school_outlined, p.education!),
             if (p.livesIn != null) _aboutRow(Icons.home_outlined, p.livesIn!),
             if (p.from != null) _aboutRow(Icons.location_on_outlined, p.from!),
-            const SizedBox(height: 12),
-            Text(
-              'عرض معلوماتك العامة',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.primary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.grey700,
-                  side: BorderSide(color: AppColors.grey400),
-                ),
-                child: Text('edit_general_details'.tr),
-              ),
-            ),
           ],
         ),
       ),
@@ -344,11 +302,81 @@ class ProfileTabView extends StatelessWidget {
     );
   }
 
+  Widget _buildFriendsSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Obx(() {
+        final count = controller.myFriends.length;
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              controller.loadMyFriends();
+              controller.selectTab(HomeTab.groups);
+            },
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: AppColors.border),
+                boxShadow: [
+                  BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2)),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.people_rounded, color: AppColors.primary, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'my_friends'.tr,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          count == 0
+                              ? 'no_friends_yet'.tr
+                              : count == 1
+                                  ? 'friend_count_one'.tr
+                                  : '$count ${'friend_count_many'.tr}',
+                          style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+                ],
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
   Widget _buildTimelineHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'posts'.tr,
@@ -358,7 +386,6 @@ class ProfileTabView extends StatelessWidget {
               color: AppColors.onSurface,
             ),
           ),
-          TextButton(onPressed: () {}, child: Text('show_all'.tr)),
         ],
       ),
     );
@@ -537,7 +564,8 @@ class ProfileTabView extends StatelessWidget {
                   ),
                 ],
                 if ((post.budget != null && post.budget!.isNotEmpty) ||
-                    (post.deadline != null && post.deadline!.isNotEmpty)) ...[
+                    (post.deadline != null && post.deadline!.isNotEmpty) ||
+                    (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
                   const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -575,35 +603,41 @@ class ProfileTabView extends StatelessWidget {
                             ],
                           ),
                         ),
+                      if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('مؤقت الصفقة', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              const SizedBox(height: 2),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(post.projectTimer!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ],
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: HomeInteractionRow(
-                        likesCount: post.likesCount,
-                        commentsCount: post.commentsCount,
-                        isLikedValue: post.isLiked,
-                        onLike: () async {
-                          await controller.togglePostLike(post.id);
-                          controller.loadMyProfilePosts();
-                        },
-                        onComment: () =>
-                            controller.openCommentsSheet(post.id),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ArchiButton(
-                        label: 'رفع المشروع ',
-                        height: 44,
-                        fontSize: 14,
-                        onPressed: controller.openUploadPage,
-                      ),
-                    ),
-                  ],
+                HomeInteractionRow(
+                  likesCount: post.likesCount,
+                  commentsCount: post.commentsCount,
+                  isLikedValue: post.isLiked,
+                  onLike: () async {
+                    await controller.togglePostLike(post.id);
+                    controller.loadMyProfilePosts();
+                  },
+                  onComment: () =>
+                      controller.openCommentsSheet(post.id),
                 ),
               ],
             ),

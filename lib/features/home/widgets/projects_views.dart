@@ -158,11 +158,11 @@ class HomePostCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.timer_outlined, size: 18, color: AppColors.primary),
+                            Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
                             const SizedBox(width: 6),
                             Flexible(
                               child: Text(
-                                post?.deadline ?? 'project_deadline'.tr,
+                                post?.projectTimer ?? post?.deadline ?? 'project_deadline'.tr,
                                 style: TextStyle(fontSize: 13, color: AppColors.grey700),
                                 overflow: TextOverflow.ellipsis,
                               ),

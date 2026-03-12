@@ -255,7 +255,7 @@ class OtherUserProfilePage extends StatelessWidget {
           return Row(
             children: [
               Expanded(
-                child: _gradientButton('موافقة', Icons.check, () {
+                child: _gradientButton('accept'.tr, Icons.check, () {
                   controller.acceptFriendRequest(requestId);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -269,7 +269,7 @@ class OtherUserProfilePage extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _outlinedButton('رفض', Icons.close, () {
+                child: _outlinedButton('reject'.tr, Icons.close, () {
                   controller.rejectFriendRequest(requestId);
                   Get.back();
                 }),
@@ -285,15 +285,15 @@ class OtherUserProfilePage extends StatelessWidget {
               color: AppColors.grey300,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Center(
+            child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle, color: AppColors.grey600, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.check_circle, color: AppColors.grey600, size: 20),
+                  const SizedBox(width: 8),
                   Text(
-                    'صديق',
-                    style: TextStyle(
+                    'already_friends'.tr,
+                    style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppColors.onSurface,
                       fontSize: 14,
@@ -312,14 +312,14 @@ class OtherUserProfilePage extends StatelessWidget {
               color: AppColors.grey300,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Center(
+            child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.schedule, color: AppColors.grey600, size: 20),
-                  SizedBox(width: 8),
+                  const Icon(Icons.schedule, color: AppColors.grey600, size: 20),
+                  const SizedBox(width: 8),
                   Text(
-                    'تم إرسال طلب الصداقة',
+                    'friend_request_sent_pending'.tr,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: AppColors.grey700,
@@ -333,7 +333,7 @@ class OtherUserProfilePage extends StatelessWidget {
         }
 
         // زر طلب الصداقة بنفس تصميم الأزرار في البروفايل الشخصي
-        return _gradientButton('طلب صداقة', Icons.person_add_alt_1, () {
+        return _gradientButton('send_friend_request'.tr, Icons.person_add_alt_1, () {
           controller.sendFriendRequest(user.id);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -459,7 +459,6 @@ class OtherUserProfilePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             'المنشورات',
@@ -469,7 +468,6 @@ class OtherUserProfilePage extends StatelessWidget {
               color: AppColors.onSurface,
             ),
           ),
-          TextButton(onPressed: () {}, child: Text('show_all'.tr)),
         ],
       ),
     );
@@ -634,7 +632,8 @@ class OtherUserProfilePage extends StatelessWidget {
                   ),
                 ],
                 if ((post.budget != null && post.budget!.isNotEmpty) ||
-                    (post.deadline != null && post.deadline!.isNotEmpty)) ...[
+                    (post.deadline != null && post.deadline!.isNotEmpty) ||
+                    (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
                   const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,7 +644,7 @@ class OtherUserProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('تكلفة المشروع', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text('project_cost'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
                               const SizedBox(height: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -666,9 +665,30 @@ class OtherUserProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('متبقي حتى انتهاء المشروع', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text('project_deadline_remaining'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
                               const SizedBox(height: 2),
                               CountdownTimer(deadline: post.deadline, iconSize: 18),
+                            ],
+                          ),
+                        ),
+                      if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('deal_timer'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              const SizedBox(height: 2),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(post.projectTimer!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),

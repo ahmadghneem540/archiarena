@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
@@ -302,9 +303,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'تفاصيل التصميم :',
-          style: TextStyle(
+        Text(
+          '${'design_details'.tr}:',
+          style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
             color: AppColors.onSurface,
@@ -352,9 +353,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'المخططات والرسومات :',
-          style: TextStyle(
+        Text(
+          '${'plans_and_drawings'.tr}:',
+          style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
             color: AppColors.onSurface,
@@ -429,22 +430,28 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   Widget _buildCategorizedInfo() {
     final rows = <(String, String)>[];
     if (_post.projectTypes != null && _post.projectTypes!.isNotEmpty) {
-      rows.add(('نوع المشروع:', _post.projectTypes!));
+      rows.add(('${'project_type'.tr}:', _post.projectTypes!));
     }
     if (_post.area != null && _post.area!.isNotEmpty) {
-      rows.add(('المساحة:', _post.area!));
+      rows.add(('${'area'.tr}:', _post.area!));
     }
     if (_post.planStatus != null && _post.planStatus!.isNotEmpty) {
-      rows.add(('حالة المخطط:', _post.planStatus!));
+      rows.add(('${'plan_status'.tr}:', _post.planStatus!));
     }
     if (_post.suitableFor != null && _post.suitableFor!.isNotEmpty) {
-      rows.add(('مناسب لـ:', _post.suitableFor!));
+      rows.add(('${'suitable_for'.tr}:', _post.suitableFor!));
     }
     if (_post.style != null && _post.style!.isNotEmpty) {
-      rows.add(('الطراز:', _post.style!));
+      rows.add(('${'style'.tr}:', _post.style!));
     }
     if (_post.budget != null && _post.budget!.isNotEmpty) {
-      rows.add(('الميزانية:', _post.budget!));
+      rows.add(('${'budget'.tr}:', _post.budget!));
+    }
+    if (_post.deadline != null && _post.deadline!.isNotEmpty) {
+      rows.add(('${'end_date'.tr}:', _post.deadline!));
+    }
+    if (_post.projectTimer != null && _post.projectTimer!.isNotEmpty) {
+      rows.add(('${'deal_timer'.tr}:', _post.projectTimer!));
     }
     if (rows.isEmpty) return const SizedBox.shrink();
     return Container(
@@ -493,12 +500,15 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
 
   Widget _buildActionButton(BuildContext context) {
     return ArchiButton(
-      label: 'تحميل المخطط ونقل إلى الأعمال',
+      label: 'download_plan_and_move'.tr,
       height: 52,
       fontSize: 16,
       icon: Icons.description_outlined,
       iconSize: 22,
-      onPressed: () => Navigator.of(context).pop(),
+      onPressed: () {
+        widget.controller.markPostAsTransferred(_post.id);
+        Navigator.of(context).pop();
+      },
     );
   }
 }

@@ -13,10 +13,13 @@ class HomePostCard1 extends StatelessWidget {
     super.key,
     required this.controller,
     required this.post,
+    this.isInWorks = false,
   });
 
   final HomeController controller;
   final PostModel post;
+  /// true = في تبويب الأعمال (بعد تحميل المخطط) → زر رفع المشروع
+  final bool isInWorks;
 
   /// نفس منطق HomeController.fullImageUrl لتجنب // في الرابط
   String _fullImageUrl(String? url) {
@@ -168,7 +171,8 @@ class HomePostCard1 extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   if ((post.budget != null && post.budget!.isNotEmpty) ||
-                      (post.deadline != null && post.deadline!.isNotEmpty)) ...[
+                      (post.deadline != null && post.deadline!.isNotEmpty) ||
+                      (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
                     const SizedBox(height: 10),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +184,7 @@ class HomePostCard1 extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'تكلفة المشروع',
+                                  'project_cost'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: AppColors.grey600,
@@ -219,7 +223,7 @@ class HomePostCard1 extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'متبقي حتى انتهاء المشروع',
+                                  'project_deadline_remaining'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: AppColors.grey600,
@@ -229,6 +233,45 @@ class HomePostCard1 extends StatelessWidget {
                                 CountdownTimer(
                                   deadline: post.deadline,
                                   iconSize: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'deal_timer'.tr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.grey600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.schedule_outlined,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        post.projectTimer!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.onSurface,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -253,10 +296,12 @@ class HomePostCard1 extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ArchiButton(
-                          label: 'details_and_plans'.tr,
+                          label: isInWorks ? 'upload_project'.tr : 'details_and_plans'.tr,
                           height: 44,
                           fontSize: 14,
-                          onPressed: () => controller.openPostDetailsSheet(post),
+                          onPressed: isInWorks
+                              ? controller.openUploadPage
+                              : () => controller.openPostDetailsSheet(post),
                         ),
                       ),
                     ],

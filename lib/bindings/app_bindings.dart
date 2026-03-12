@@ -21,6 +21,12 @@ import '../features/auth/verify_email/verify_email_view.dart';
 import '../features/auth/verify_email/verify_email_binding.dart';
 import '../features/auth/login/login_view.dart';
 import '../features/auth/login/login_binding.dart';
+import '../features/auth/forgot_password_request/forgot_password_request_view.dart';
+import '../features/auth/forgot_password_request/forgot_password_request_binding.dart';
+import '../features/auth/forgot_password_reset/forgot_password_reset_view.dart';
+import '../features/auth/forgot_password_reset/forgot_password_reset_binding.dart';
+import '../features/auth/change_password/change_password_view.dart';
+import '../features/auth/change_password/change_password_binding.dart';
 import '../features/menu/privacy_security_view.dart';
 import '../features/menu/professional_account_view.dart';
 import '../features/menu/notification_settings_view.dart';
@@ -52,6 +58,21 @@ class AppBindings {
       name: AppRoutes.authLogin,
       page: () => const LoginView(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.forgotPasswordRequest,
+      page: () => const ForgotPasswordRequestView(),
+      binding: ForgotPasswordRequestBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.forgotPasswordReset,
+      page: () => const ForgotPasswordResetView(),
+      binding: ForgotPasswordResetBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.changePassword,
+      page: () => const ChangePasswordView(),
+      binding: ChangePasswordBinding(),
     ),
     GetPage(
       name: AppRoutes.createAccountIntro,
