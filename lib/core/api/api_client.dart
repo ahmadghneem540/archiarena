@@ -33,10 +33,16 @@ class ApiClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final token = await MyServices.getStringValue(ConstData.keyToken);
+          final storageHasToken = token != null && token.isNotEmpty;
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-          _logRequest(options);
+          final headerHasAuth = (options.headers['Authorization']?.toString().isNotEmpty ?? false);
+          _logRequest(
+            options,
+            storageHasToken: storageHasToken,
+            headerHasAuth: headerHasAuth,
+          );
           return handler.next(options);
         },
         onResponse: (response, handler) {
@@ -45,9 +51,6 @@ class ApiClient {
         },
         onError: (error, handler) async {
           _logError(error);
-          if (error.response?.statusCode == 401) {
-            await MyServices.saveStringValue(ConstData.keyToken, '');
-          }
           return handler.next(error);
         },
       ),
@@ -56,12 +59,19 @@ class ApiClient {
     return client;
   }
 
-  static void _logRequest(RequestOptions options) {
+  static void _logRequest(
+    RequestOptions options, {
+    bool storageHasToken = false,
+    bool headerHasAuth = false,
+  }) {
     if (!kDebugMode) return;
     final uri = options.uri.toString();
     final method = options.method;
     debugPrint('┌─────────────── API REQUEST ───────────────');
     debugPrint('│ $method $uri');
+    debugPrint(
+      '│ Authorization: ${headerHasAuth ? 'Bearer ***' : '(غير مرسل)'} | storageToken: ${storageHasToken ? 'موجود' : 'غير موجود'}',
+    );
     if (options.queryParameters.isNotEmpty) {
       debugPrint('│ Query: ${options.queryParameters}');
     }

@@ -77,7 +77,7 @@ class HomePostCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   Text(
-                    'تصميم داخلي',
+                    'category_interior'.tr,
                     style: TextStyle(fontSize: 13, color: AppColors.grey700),
                   ),
                 ],

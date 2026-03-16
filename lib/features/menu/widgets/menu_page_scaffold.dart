@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
-/// سقالة موحدة لصفحات القائمة الفرعية — شريط علوي وعرض RTL.
+/// سقالة موحدة لصفحات القائمة الفرعية — شريط علوي وعرض RTL. تتكيف مع الوضع النهاري/الليلي.
 class MenuPageScaffold extends StatelessWidget {
   const MenuPageScaffold({
     super.key,
@@ -17,21 +17,21 @@ class MenuPageScaffold extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.themeSurface,
           elevation: 0,
           scrolledUnderElevation: 1,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: AppColors.onSurface),
+            icon: Icon(Icons.arrow_back_ios_new, size: 20, color: context.themeOnSurface),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
           ),
           centerTitle: true,

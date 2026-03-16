@@ -27,15 +27,9 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
   String? _selectedCategory;
   bool _isUploading = false;
 
-  final List<String> _categories = [
-    'سكني',
-    'تجاري',
-    'إداري',
-    'تعليمي',
-    'صحي',
-    'ترفيهي',
-    'تصميم داخلي',
-    'آخر',
+  static const List<String> _categoryKeys = [
+    'residential', 'commercial', 'admin', 'education', 'health',
+    'entertainment', 'interior', 'other',
   ];
 
   @override
@@ -219,7 +213,7 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
       controller: _titleController,
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
-        hintText: 'عنوان المشروع',
+        hintText: 'project_title_hint'.tr,
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
@@ -232,7 +226,7 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       maxLines: 3,
       decoration: InputDecoration(
-        hintText: 'وصف المشروع',
+        hintText: 'project_description_hint'.tr,
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
@@ -247,7 +241,7 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       hint: Text('choose_category'.tr),
-      items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+      items: _categoryKeys.map((k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr))).toList(),
       onChanged: (v) => setState(() => _selectedCategory = v),
     );
   }

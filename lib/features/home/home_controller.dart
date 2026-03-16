@@ -6,6 +6,8 @@ import '../../core/constant/const_data.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/services/services.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/services/download_helper.dart';
+import '../../core/services/fcm_service.dart';
 import '../../data/services/auth_api_service.dart';
 import '../../data/services/friends_api_service.dart';
 import '../../data/services/home_api_service.dart';
@@ -119,9 +121,12 @@ class HomeController extends GetxController {
 
   // الطلبات/المشاريع المرفوعة (للشركات)
   final orders = <OrderModel>[].obs;
-  
-  // صور المشاريع (مفتاح: orderId)
+  final isOrdersLoading = false.obs;
+  // العروض على طلب معين (مفتاح: orderId)
   final Map<String, RxList<ProjectImageModel>> orderImages = {};
+  final isOrderProposalsLoading = false.obs;
+  final isDownloadingOrders = false.obs;
+  final isDownloadingOrderImages = false.obs;
 
   bool hasSentFriendRequest(String userId) =>
       sentFriendRequestIds.contains(userId);
@@ -135,7 +140,7 @@ class HomeController extends GetxController {
     if (res.isSuccess) {
       sentFriendRequestIds.add(userId);
     } else {
-      Get.snackbar('فشل', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -184,13 +189,13 @@ class HomeController extends GetxController {
     } else {
       final commentId = int.tryParse(parentId);
       if (commentId == null) {
-        Get.snackbar('خطأ', 'معرف التعليق غير صالح', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar('error'.tr, 'invalid_comment_id'.tr, snackPosition: SnackPosition.BOTTOM);
         return false;
       }
       res = await HomeApiService.replyComment(commentId, body: text);
     }
     if (!res.isSuccess) {
-      Get.snackbar('فشل إرسال التعليق', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('comment_add_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
       return false;
     }
     final comment = _parseCommentFromResponse(res.data);
@@ -216,13 +221,13 @@ class HomeController extends GetxController {
     } else {
       final commentId = int.tryParse(parentId);
       if (commentId == null) {
-        Get.snackbar('خطأ', 'معرف التعليق غير صالح', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar('error'.tr, 'invalid_comment_id'.tr, snackPosition: SnackPosition.BOTTOM);
         return false;
       }
       res = await HomeApiService.replyComment(commentId, audioPath: audioPath);
     }
     if (!res.isSuccess) {
-      Get.snackbar('فشل إرسال التعليق الصوتي', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('comment_voice_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
       return false;
     }
     final comment = _parseCommentFromResponse(res.data, audioDurationSeconds: durationSeconds);
@@ -294,7 +299,7 @@ class HomeController extends GetxController {
           myFriends.add(request);
         }
       } else {
-        Get.snackbar('فشل', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
       }
     }
   }
@@ -328,6 +333,23 @@ class HomeController extends GetxController {
     return PostModel.fromJson(res.data!);
   }
 
+  /// تحميل مخططات المنشور محلياً — يُرجع قائمة مسارات الملفات المحفوظة
+  Future<List<String>> downloadPostPlans(PostModel post) async {
+    final allPlans = <PostPlanItem>[...post.plans, ...post.blueprints];
+    final paths = <String>[];
+    for (var i = 0; i < allPlans.length; i++) {
+      final plan = allPlans[i];
+      final url = fullImageUrl(plan.url) ?? plan.url;
+      if (url.isEmpty) continue;
+      final path = await DownloadHelper.downloadImage(
+        url,
+        'plans/${post.id}/plan_$i',
+      );
+      if (path != null) paths.add(path);
+    }
+    return paths;
+  }
+
   void openPostDetailsSheet(PostModel post) {
     Get.bottomSheet(
       HomePostDetailsSheet(controller: this, post: post),
@@ -342,79 +364,147 @@ class HomeController extends GetxController {
   }
 
   void openOrderDetails(String orderId, String orderTitle) {
+    if (!orderImages.containsKey(orderId)) {
+      orderImages[orderId] = <ProjectImageModel>[].obs;
+    }
     Get.to(() => OrderDetailsView(
           controller: this,
           orderId: orderId,
           orderTitle: orderTitle,
         ));
+    loadOrderProposals(orderId);
   }
 
   RxList<ProjectImageModel> getOrderImages(String orderId) {
     if (!orderImages.containsKey(orderId)) {
-      orderImages[orderId] = _generateSampleImages(orderId).obs;
+      orderImages[orderId] = <ProjectImageModel>[].obs;
     }
     return orderImages[orderId]!;
   }
 
-  void acceptImage(String orderId, String imageId) {
-    final images = orderImages[orderId];
-    if (images == null) return;
-
-    // رفض جميع الصور الأخرى وقبول الصورة المختارة
-    for (var image in images) {
-      if (image.id == imageId) {
-        image.isAccepted.value = true;
-        image.isRejected.value = false;
-      } else {
-        image.isAccepted.value = false;
-        image.isRejected.value = true;
+  /// جلب العروض على طلب من الـ API — GET /home/orders/:orderId/proposals
+  Future<void> loadOrderProposals(String orderId) async {
+    final oid = int.tryParse(orderId);
+    if (oid == null) return;
+    isOrderProposalsLoading.value = true;
+    try {
+      final res = await HomeApiService.getOrderProposals(oid);
+      final list = <ProjectImageModel>[];
+      if (res.isSuccess && res.data != null) {
+        final rawList = res.data!['proposals'] ?? res.data!['data'];
+        if (rawList is List && rawList.isNotEmpty) {
+          for (final e in rawList) {
+            if (e is! Map) continue;
+            final m = Map<String, dynamic>.from(e);
+            final id = '${m['proposal_id'] ?? m['id']}';
+            final status = (m['status']?.toString() ?? '').toLowerCase();
+            final imageUrl = fullImageUrl(
+              m['image_url']?.toString() ?? m['imageUrl']?.toString(),
+            ) ?? '';
+            list.add(ProjectImageModel(
+              id: id,
+              imageUrl: imageUrl,
+              authorName: m['name']?.toString() ?? '—',
+              timeAgo: _formatTimeAgo(m['created_at']),
+              isAccepted: status == 'accepted',
+              isRejected: status == 'rejected',
+            ));
+          }
+        }
       }
+      if (orderImages.containsKey(orderId)) {
+        orderImages[orderId]!.assignAll(list);
+      }
+    } finally {
+      isOrderProposalsLoading.value = false;
     }
   }
 
-  void downloadAllImages(String orderId) {
+  /// قبول عرض (ورفض الباقي) — POST /home/orders/:orderId/proposals/:proposalId/accept
+  Future<void> acceptImage(String orderId, String imageId) async {
+    final oid = int.tryParse(orderId);
+    final pid = int.tryParse(imageId);
+    if (oid == null || pid == null) return;
+    final res = await HomeApiService.acceptProposal(oid, pid);
+    if (res.isSuccess) {
+      await loadOrderProposals(orderId);
+      Get.snackbar('success'.tr, res.message ?? 'accept_offer_success'.tr, snackPosition: SnackPosition.BOTTOM);
+    } else {
+      Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+    }
+  }
+
+  /// تحميل كل صور العروض الخاصة بطلب واحد محلياً
+  Future<void> downloadAllImages(String orderId) async {
     final images = orderImages[orderId];
     if (images == null || images.isEmpty) {
       Get.snackbar(
-        'تنبيه',
-        'لا توجد صور للتحميل',
+        'alert'.tr,
+        'no_images_to_download'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
-    
-    // هنا يمكن إضافة منطق التحميل الفعلي
-    Get.snackbar(
-      'نجح',
-      'تم تحميل ${images.length} صورة',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.primary,
-      colorText: AppColors.onPrimary,
-    );
+    isDownloadingOrderImages.value = true;
+    try {
+      int count = 0;
+      for (var i = 0; i < images.length; i++) {
+        final img = images[i];
+        if (img.imageUrl.isEmpty) continue;
+        final path = await DownloadHelper.downloadImage(
+          img.imageUrl,
+          'orders/$orderId/proposal_$i',
+        );
+        if (path != null) count++;
+      }
+      if (count > 0) {
+        Get.snackbar(
+          'success'.tr,
+          'downloaded_images'.trParams({'count': count.toString()}),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.primary,
+          colorText: AppColors.onPrimary,
+        );
+      } else {
+        Get.snackbar('alert'.tr, 'no_images_downloaded'.tr, snackPosition: SnackPosition.BOTTOM);
+      }
+    } finally {
+      isDownloadingOrderImages.value = false;
+    }
   }
 
-  List<ProjectImageModel> _generateSampleImages(String orderId) {
-    final imageAssets = [
-      'assets/order1.jfif',
-      'assets/order2.jfif',
-      'assets/order3.jfif',
-      'assets/order4.jfif',
-      'assets/order5.jfif',
-      'assets/order6.jfif',
-    ];
-    
-    final authors = ['م كوم', 'م احمد', 'شركة الخلف', 'معلا', 'خالد', 'engAbd'];
-    
-    return List.generate(6, (index) {
-      return ProjectImageModel(
-        id: 'img_${orderId}_$index',
-        imageUrl: imageAssets[index % imageAssets.length],
-        authorName: authors[index % authors.length],
-        timeAgo: 'منذ ساعتين',
-        isAccepted: false,
-        isRejected: false,
-      );
-    });
+  /// تحميل كل الطلبات وصورها الرئيسية محلياً
+  Future<void> downloadAllOrdersAndImages() async {
+    if (orders.isEmpty) {
+      Get.snackbar('alert'.tr, 'no_orders_to_download'.tr, snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    isDownloadingOrders.value = true;
+    try {
+      int count = 0;
+      for (final order in orders) {
+        final url = order.imageUrl;
+        if (url == null || url.isEmpty) continue;
+        final path = await DownloadHelper.downloadImage(
+          url,
+          'orders/${order.id}/main',
+        );
+        if (path != null) count++;
+      }
+      if (count > 0) {
+        Get.snackbar(
+          'success'.tr,
+          'downloaded_orders'.trParams({'count': count.toString()}),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.primary,
+          colorText: AppColors.onPrimary,
+        );
+      } else {
+        Get.snackbar('alert'.tr, 'no_images_downloaded'.tr, snackPosition: SnackPosition.BOTTOM);
+      }
+    } finally {
+      isDownloadingOrders.value = false;
+    }
   }
 
   void selectTab(HomeTab tab) {
@@ -454,6 +544,15 @@ class HomeController extends GetxController {
       } else {
         _loadIsCompanyFromStorage();
       }
+      if (arguments['openOrdersTab'] == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          selectTab(HomeTab.orders);
+          final oid = arguments['orderId']?.toString();
+          if (oid != null && oid.isNotEmpty) {
+            openOrderDetails(oid, arguments['orderTitle']?.toString() ?? 'order'.tr);
+          }
+        });
+      }
     } else {
       _loadIsCompanyFromStorage();
     }
@@ -466,7 +565,18 @@ class HomeController extends GetxController {
     loadFriendRequests();
     loadMyFriends();
     loadNotifications();
-    _addSampleOrders();
+    loadOrders();
+    _registerFcmTokenIfAvailable();
+  }
+
+  /// تحديث توكن FCM على السيرفر عند فتح التطبيق (مستخدمون وشركات) لاستقبال إشعار قبول العرض أو العرض الجديد
+  Future<void> _registerFcmTokenIfAvailable() async {
+    try {
+      final token = await FcmService.getToken();
+      if (token != null && token.isNotEmpty) {
+        await NotificationsApiService.registerFcmToken(token);
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadIsCompanyFromStorage() async {
@@ -529,7 +639,7 @@ class HomeController extends GetxController {
           return FriendRequestModel(
             id: '${requestId ?? senderUserId}',
             senderUserId: senderUserId?.toString(),
-            name: sender['name']?.toString() ?? 'مستخدم',
+            name: sender['name']?.toString() ?? 'user_default'.tr,
             mutualCount: m['mutual_friends_count'] ?? 0,
             timeAgo: _formatTimeAgo(m['created_at']),
             avatarPath: profilePic != null && profilePic.isNotEmpty
@@ -561,8 +671,8 @@ class HomeController extends GetxController {
 
   void _onNewFriendRequestReceived() {
     Get.snackbar(
-      'طلب صداقة جديد',
-      'لديك طلب صداقة جديد. افتح تبويب الأصدقاء للموافقة أو الرفض.',
+      'new_friend_request'.tr,
+      'new_friend_request_body'.tr,
       snackPosition: SnackPosition.TOP,
       duration: const Duration(seconds: 4),
       margin: const EdgeInsets.all(16),
@@ -601,7 +711,7 @@ class HomeController extends GetxController {
             return FriendRequestModel(
               id: friendId?.toString() ?? '',
               senderUserId: friendId?.toString(),
-              name: user['name']?.toString() ?? m['name']?.toString() ?? 'مستخدم',
+              name: user['name']?.toString() ?? m['name']?.toString() ?? 'user_default'.tr,
               mutualCount: int.tryParse('${m['mutual_friends_count'] ?? user['mutual_friends_count'] ?? 0}') ?? 0,
               timeAgo: _formatTimeAgo(m['created_at']),
               avatarPath: profilePic != null && profilePic.isNotEmpty
@@ -635,7 +745,7 @@ class HomeController extends GetxController {
           final profilePic = m['profile_picture']?.toString();
           return UserProfileModel(
             id: '${m['user_id'] ?? m['id']}',
-            name: m['name']?.toString() ?? 'مستخدم',
+            name: m['name']?.toString() ?? 'user_default'.tr,
             username: m['username']?.toString(),
             job: m['professional_title']?.toString() ?? m['job']?.toString(),
             mutualCount: m['mutual_friends_count'] ?? 0,
@@ -669,7 +779,7 @@ class HomeController extends GetxController {
           return NotificationModel(
             id: '${m['notification_id'] ?? m['id']}',
             type: _parseNotificationType(m['type']),
-            senderName: sender['name']?.toString() ?? 'مستخدم',
+            senderName: sender['name']?.toString() ?? 'user_default'.tr,
             message: m['message']?.toString() ?? '',
             timeAgo: _formatTimeAgo(m['created_at']),
           );
@@ -806,7 +916,7 @@ class HomeController extends GetxController {
       final d = res.data!;
       otherUserProfile.value = UserProfileModel(
         id: '${d['user_id'] ?? d['id'] ?? userId}',
-        name: d['name']?.toString() ?? 'مستخدم',
+        name: d['name']?.toString() ?? 'user_default'.tr,
         username: d['username']?.toString(),
         job: d['professional_title'] ?? d['job']?.toString(),
         education: d['education']?.toString(),
@@ -880,7 +990,7 @@ class HomeController extends GetxController {
       isProfileLocked: isProfileLocked,
     );
     if (!res.isSuccess) {
-      Get.snackbar('فشل التحديث', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('update_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
       return false;
     }
     await loadMyProfile();
@@ -904,7 +1014,7 @@ class HomeController extends GetxController {
             final profilePic = m['profile_picture']?.toString();
             return UserProfileModel(
               id: '${m['user_id'] ?? m['id']}',
-              name: m['name']?.toString() ?? 'مستخدم',
+              name: m['name']?.toString() ?? 'user_default'.tr,
               username: m['username']?.toString(),
               job: m['professional_title']?.toString() ?? m['job']?.toString(),
               mutualCount: m['mutual_friends_count'] ?? 0,
@@ -928,57 +1038,69 @@ class HomeController extends GetxController {
     searchResults.clear();
   }
 
-  void _addSampleOrders() {
-    orders.addAll([
-      OrderModel(
-        id: 'o1',
-        title: 'مكتب هندسي',
-        timeAgo: 'منذ ساعتين',
-        imageUrl: 'assets/order1.jfif',
-      ),
-      OrderModel(
-        id: 'o2',
-        title: 'تصميم أعمدة سكنية داخلية',
-        timeAgo: 'منذ 20 د',
-        imageUrl: 'assets/order2.jfif',
-      ),
-      OrderModel(
-        id: 'o3',
-        title: 'فيلا سكنية حديثة',
-        timeAgo: 'منذ 3 ساعات',
-        imageUrl: 'assets/order3.jfif',
-      ),
-      OrderModel(
-        id: 'o4',
-        title: 'مبنى تجاري متعدد الطوابق',
-        timeAgo: 'منذ 5 ساعات',
-        imageUrl: 'assets/order4.jfif',
-      ),
-      OrderModel(
-        id: 'o5',
-        title: 'تصميم مطعم راقي',
-        timeAgo: 'منذ يوم',
-        imageUrl: 'assets/order5.jfif',
-      ),
-      OrderModel(
-        id: 'o6',
-        title: 'شقة سكنية بمساحة 120 م²',
-        timeAgo: 'منذ يومين',
-        imageUrl: 'assets/order6.jfif',
-      ),
-      OrderModel(
-        id: 'o7',
-        title: 'مستشفى خاص',
-        timeAgo: 'منذ 3 أيام',
-        imageUrl: 'assets/order7.jfif',
-      ),
-      OrderModel(
-        id: 'o8',
-        title: 'مدرسة ابتدائية',
-        timeAgo: 'منذ أسبوع',
-        imageUrl: 'assets/order8.jfif',
-      ),
-    ]);
+  /// جلب الطلبات/المشاريع المرفوعة من الـ API (لوحة التحكم)
+  Future<void> loadOrders() async {
+    isOrdersLoading.value = true;
+    try {
+      final res = await HomeApiService.getHomeOrders();
+      if (res.isSuccess && res.data != null) {
+        final rawList = res.data!['orders'] ?? res.data!['data'];
+        if (rawList is List && rawList.isNotEmpty) {
+          final now = DateTime.now();
+          final list = <OrderModel>[];
+          for (final e in rawList) {
+            if (e is! Map) continue;
+            final m = Map<String, dynamic>.from(e);
+            // حساب نهاية المؤقت (إن وُجدت)
+            DateTime? endAt;
+            final createdAtStr = m['created_at']?.toString();
+            final createdAt = createdAtStr != null
+                ? DateTime.tryParse(createdAtStr)
+                : null;
+            final deadlineStr = m['deadline']?.toString() ??
+                m['end_at']?.toString() ??
+                m['ends_at']?.toString();
+            if (deadlineStr != null && deadlineStr.isNotEmpty) {
+              endAt = DateTime.tryParse(deadlineStr);
+            } else if (createdAt != null &&
+                (m['timer_days'] != null ||
+                    m['timer_hours'] != null ||
+                    m['timer_minutes'] != null)) {
+              final days = int.tryParse('${m['timer_days'] ?? 0}') ?? 0;
+              final hours = int.tryParse('${m['timer_hours'] ?? 0}') ?? 0;
+              final minutes =
+                  int.tryParse('${m['timer_minutes'] ?? 0}') ?? 0;
+              endAt = createdAt
+                  .add(Duration(days: days, hours: hours, minutes: minutes));
+            }
+            // إخفاء الطلبات المنتهية
+            if (endAt != null && endAt.isBefore(now)) continue;
+
+            final order = OrderModel.fromJson(
+              m,
+              formatTime: _formatTimeAgo,
+            );
+            final img = order.imageUrl;
+            final fullImg = fullImageUrl(img);
+            list.add(
+              OrderModel(
+                id: order.id,
+                title: order.title,
+                timeAgo: order.timeAgo,
+                imageUrl: fullImg,
+              ),
+            );
+          }
+          orders.value = list;
+        } else {
+          orders.value = [];
+        }
+      } else {
+        orders.value = [];
+      }
+    } finally {
+      isOrdersLoading.value = false;
+    }
   }
 
   void _addSampleComments() {

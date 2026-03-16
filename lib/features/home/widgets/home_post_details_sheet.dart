@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:open_file/open_file.dart';
 
 import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
@@ -41,13 +42,28 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   void initState() {
     super.initState();
     _post = widget.post;
-    widget.controller.loadPostDetails(widget.post.id).then((full) {
-      if (mounted && full != null) {
+    widget.controller.loadPostDetails(widget.post.id).then((full) async {
+      if (!mounted) return;
+      if (full != null) {
         setState(() {
           _post = full;
           _loading = false;
         });
-      } else if (mounted) {
+        final paths = await widget.controller.downloadPostPlans(full);
+        if (!mounted || paths.isEmpty) return;
+        Get.snackbar(
+          'plans_downloaded'.tr,
+          'plans_downloaded_hint'.tr,
+          duration: const Duration(seconds: 3),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.surface,
+          margin: const EdgeInsets.all(12),
+          mainButton: TextButton(
+            onPressed: () => OpenFile.open(paths.first),
+            child: Text('open_file'.tr, style: TextStyle(color: AppColors.primary)),
+          ),
+        );
+      } else {
         setState(() => _loading = false);
       }
     });

@@ -9,7 +9,7 @@ class SplashView extends GetView<SplashController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.themeSurface,
       body: SafeArea(
         child: Center(
           child: Image.asset(

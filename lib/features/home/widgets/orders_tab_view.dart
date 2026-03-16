@@ -18,19 +18,43 @@ class OrdersTabView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'الطلبات',
+            'orders_title'.tr,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.onSurface,
                 ),
           ),
           const SizedBox(height: 24),
-          Text(
-            'المشاريع المرفوعة:',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onSurface,
-                ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'المشاريع المرفوعة:',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurface,
+                    ),
+              ),
+              Obx(() {
+                if (controller.orders.isEmpty) return const SizedBox.shrink();
+                return TextButton.icon(
+                  onPressed: controller.isDownloadingOrders.value
+                      ? null
+                      : () => controller.downloadAllOrdersAndImages(),
+                  icon: controller.isDownloadingOrders.value
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Icon(Icons.download, size: 20, color: AppColors.primary),
+                  label: Text(
+                    controller.isDownloadingOrders.value ? 'downloading'.tr : 'download_all'.tr,
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+                );
+              }),
+            ],
           ),
           const SizedBox(height: 16),
           Obx(() {
@@ -47,7 +71,7 @@ class OrdersTabView extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'لا توجد مشاريع مرفوعة',
+                        'no_orders_uploaded'.tr,
                         style: TextStyle(
                           color: AppColors.grey600,
                           fontSize: 16,
@@ -80,6 +104,7 @@ class OrdersTabView extends StatelessWidget {
   }
 
   Widget _buildOrderCard(OrderModel order) {
+    final imageUrl = order.imageUrl;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -99,24 +124,35 @@ class OrdersTabView extends StatelessWidget {
             // صورة المشروع
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                order.imageUrl,
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 80,
-                    height: 80,
-                    color: AppColors.placeholder1,
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.grey400,
-                      size: 32,
+              child: (imageUrl != null && imageUrl.isNotEmpty)
+                  ? Image.network(
+                      imageUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 80,
+                          height: 80,
+                          color: AppColors.placeholder1,
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.grey400,
+                            size: 32,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      color: AppColors.placeholder1,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.grey400,
+                        size: 32,
+                      ),
                     ),
-                  );
-                },
-              ),
             ),
             const SizedBox(width: 12),
             // معلومات المشروع
@@ -168,7 +204,7 @@ class OrdersTabView extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'عرض',
+                        'view'.tr,
                         style: TextStyle(
                           color: AppColors.onPrimary,
                           fontSize: 14,

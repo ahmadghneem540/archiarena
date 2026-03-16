@@ -21,7 +21,7 @@ class HomeView extends GetView<HomeController> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         body: SafeArea(
           child: Column(
             children: [
@@ -43,12 +43,12 @@ class HomeView extends GetView<HomeController> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.work_outline,
-                                      size: 64, color: AppColors.grey400),
+                                      size: 64, color: context.themeGrey600),
                                   const SizedBox(height: 16),
                                   Text(
                                     'no_posts'.tr,
                                     style: TextStyle(
-                                        fontSize: 16, color: AppColors.grey600),
+                                        fontSize: 16, color: context.themeGrey600),
                                   ),
                                 ],
                               ),
@@ -107,11 +107,11 @@ class HomeView extends GetView<HomeController> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.feed_outlined, size: 64, color: AppColors.grey400),
+                                      Icon(Icons.feed_outlined, size: 64, color: context.themeGrey600),
                                       const SizedBox(height: 16),
                                       Text(
                                         'no_posts'.tr,
-                                        style: TextStyle(fontSize: 16, color: AppColors.grey600),
+                                        style: TextStyle(fontSize: 16, color: context.themeGrey600),
                                       ),
                                     ],
                                   ),
@@ -136,15 +136,15 @@ class HomeView extends GetView<HomeController> {
                     Obx(() {
                       // صفحة رفع المشروع تظهر فوق المحتوى
                       if (controller.showUploadPage.value) {
-                        return Positioned.fill(
+                          return Positioned.fill(
                           child: Material(
-                            color: Colors.white,
+                            color: context.themeSurface,
                             child: Column(
                               children: [
                                 // زر رجوع
                                 Container(
                                   padding: const EdgeInsets.all(12),
-                                  color: AppColors.surface,
+                                  color: context.themeSurface,
                                   child: Row(
                                     children: [
                                       IconButton(

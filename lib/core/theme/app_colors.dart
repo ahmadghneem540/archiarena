@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
+  // ---- Light theme ----
   static const Color primary = Color(0xFF198090); // teal
   static const Color primaryDark = Color(0xFF6ECDDB); // dark blue
 
@@ -33,4 +34,60 @@ class AppColors {
   static const Color link = Color(0xFF007AFF);
 
   static Color get shadowLight => Colors.black.withValues(alpha: 0.06);
+
+  // ---- Dark theme ----
+  static const Color darkSurface = Color(0xFF121212);
+  static const Color darkSurfaceContainer = Color(0xFF1E1E1E);
+  static const Color darkCardBackground = Color(0xFF2C2C2C);
+  static const Color darkInputBackground = Color(0xFF2C2C2C);
+
+  static const Color darkOnSurface = Color(0xFFE8E8E8);
+  static const Color darkOnSurfaceVariant = Color(0xFFB0B0B0);
+
+  static const Color darkBorder = Color(0xFF3A3A3A);
+  static const Color darkBorderLight = Color(0xFF4A4A4A);
+
+  static const Color darkGrey300 = Color(0xFF404040);
+  static const Color darkGrey400 = Color(0xFF606060);
+  static const Color darkGrey500 = Color(0xFF808080);
+  static const Color darkGrey600 = Color(0xFF9E9E9E);
+  static const Color darkGrey700 = Color(0xFFB0B0B0);
+
+  static const Color darkPlaceholder1 = Color(0xFF2A2826);
+  static const Color darkPlaceholder2 = Color(0xFF1E2C2C);
+  static const Color darkPlaceholder3 = Color(0xFF2C2620);
+
+  static Color get darkShadowLight => Colors.black.withValues(alpha: 0.3);
+
+  /// Theme-aware colors: use these in widgets so light/dark switch correctly.
+  static Color surfaceBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkSurface : surface;
+  static Color cardBackgroundBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkCardBackground : cardBackground;
+  static Color onSurfaceBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkOnSurface : onSurface;
+  static Color onSurfaceVariantBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkOnSurfaceVariant : onSurfaceVariant;
+  static Color borderBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBorder : border;
+  static Color grey600By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkGrey600 : grey600;
+  static Color grey700By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkGrey700 : grey700;
+  static Color shadowLightBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkShadowLight : shadowLight;
+  static Color inputBackgroundBy(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkInputBackground : inputBackground;
+}
+
+/// Extension for theme-aware colors in build methods.
+extension ThemeColorsExtension on BuildContext {
+  Color get themeSurface => AppColors.surfaceBy(this);
+  Color get themeCardBackground => AppColors.cardBackgroundBy(this);
+  Color get themeOnSurface => AppColors.onSurfaceBy(this);
+  Color get themeOnSurfaceVariant => AppColors.onSurfaceVariantBy(this);
+  Color get themeBorder => AppColors.borderBy(this);
+  Color get themeGrey600 => AppColors.grey600By(this);
+  Color get themeGrey700 => AppColors.grey700By(this);
+  Color get themeShadowLight => AppColors.shadowLightBy(this);
 }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/api/api_client.dart';
 import '../../../core/constant/const_data.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/fcm_service.dart';
 import '../../../core/services/services.dart';
 import '../../../data/services/auth_api_service.dart';
+import '../../../data/services/notifications_api_service.dart';
 import '../../../data/services/profile_api_service.dart';
 import '../../home/home_controller.dart';
 
@@ -44,6 +47,7 @@ class LoginController extends GetxController {
       );
 
       if (res.isSuccess) {
+        ApiClient.reset();
         bool isCompany = (await MyServices.getStringValue(ConstData.keyIsCompany)) == '1';
         try {
           final profileRes = await ProfileApiService.getMyProfile();
@@ -59,6 +63,7 @@ class LoginController extends GetxController {
             }
           }
         } catch (_) {}
+        await _registerFcmTokenIfAvailable();
         Get.delete<HomeController>(force: true);
         Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
       } else {
@@ -71,6 +76,16 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// تسجيل توكن FCM بعد الدخول (مستخدمون وشركات) ليصلهما الإشعار عند قبول العرض أو وصول عرض جديد
+  Future<void> _registerFcmTokenIfAvailable() async {
+    try {
+      final token = await FcmService.getToken();
+      if (token != null && token.isNotEmpty) {
+        await NotificationsApiService.registerFcmToken(token);
+      }
+    } catch (_) {}
   }
 
   bool? _checkIsCompany(dynamic data) {

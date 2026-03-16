@@ -63,7 +63,179 @@ class HomeApiService {
     }
   }
 
-  /// جلب تفاصيل منشور — GET /home/posts/:id (تفاصيل التصميم، المخططات، الصور)
+  static Future<ApiResponse<Map<String, dynamic>>> getDashboardPosts({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.dashboardPosts,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'orders': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'orders': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// جلب الطلبات — GET /home/orders
+  static Future<ApiResponse<Map<String, dynamic>>> getHomeOrders({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.homeOrders,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'orders': raw, 'data': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {'orders': data, 'data': data},
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// قائمة العروض على طلب — GET /home/orders/:orderId/proposals
+  static Future<ApiResponse<Map<String, dynamic>>> getOrderProposals(
+    int orderId,
+  ) async {
+    try {
+      final res = await _dio.get(ApiEndpoints.homeOrderProposals(orderId));
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        final list = data is List ? data : null;
+        return ApiResponse(
+          status: raw['status'] as int? ?? 200,
+          data: {
+            'proposals': list ?? [],
+            'data': list ?? [],
+            'order': raw['order'],
+          },
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// تقديم عرض على طلب — POST /home/orders/:orderId/proposals (message، image)
+  static Future<ApiResponse<Map<String, dynamic>>> submitProposal(
+    int orderId, {
+    String? message,
+    File? image,
+  }) async {
+    if ((message == null || message.isEmpty) && image == null) {
+      return ApiResponse(
+        status: 400,
+        message: 'يجب إرسال رسالة أو صورة على الأقل',
+      );
+    }
+    try {
+      final map = <String, dynamic>{};
+      if (message != null && message.isNotEmpty) map['message'] = message;
+      if (image != null) {
+        map['image'] = await MultipartFile.fromFile(
+          image.path,
+          filename: image.path.split(RegExp(r'[/\\]')).last,
+        );
+      }
+      final formData = FormData.fromMap(map);
+      final res = await _dio.post(
+        ApiEndpoints.homeOrderSubmitProposal(orderId),
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: raw['status'] as int? ?? res.statusCode ?? 200,
+          data: raw['data'] ?? raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{},
+        message: null,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// قبول عرض (ورفض الباقي) — POST /home/orders/:orderId/proposals/:proposalId/accept
+  static Future<ApiResponse<Map<String, dynamic>>> acceptProposal(
+    int orderId,
+    int proposalId,
+  ) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.homeOrderAcceptProposal(orderId, proposalId),
+      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: raw['status'] as int? ?? res.statusCode ?? 200,
+          data: raw['data'] ?? raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{},
+        message: null,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
   static Future<ApiResponse<Map<String, dynamic>>> getPost(int id) async {
     try {
       final res = await _dio.get(ApiEndpoints.homePosts(id));
@@ -89,8 +261,6 @@ class HomeApiService {
     }
   }
 
-  /// إنشاء منشور (رفع مشروع) — POST /home/posts
-  /// يدعم: budget, deadline, project_timer أو timer_days/timer_hours/timer_minutes
   static Future<ApiResponse<Map<String, dynamic>>> createPost({
     required String title,
     required String category,
@@ -114,15 +284,20 @@ class HomeApiService {
         'title': title,
         'category': category,
         'description': description,
-        if (designDetails != null && designDetails.isNotEmpty) 'design_details': designDetails,
-        if (projectTypes != null && projectTypes.isNotEmpty) 'project_types': projectTypes,
+        if (designDetails != null && designDetails.isNotEmpty)
+          'design_details': designDetails,
+        if (projectTypes != null && projectTypes.isNotEmpty)
+          'project_types': projectTypes,
         if (area != null && area.isNotEmpty) 'area': area,
-        if (planStatus != null && planStatus.isNotEmpty) 'plan_status': planStatus,
-        if (suitableFor != null && suitableFor.isNotEmpty) 'suitable_for': suitableFor,
+        if (planStatus != null && planStatus.isNotEmpty)
+          'plan_status': planStatus,
+        if (suitableFor != null && suitableFor.isNotEmpty)
+          'suitable_for': suitableFor,
         if (style != null && style.isNotEmpty) 'style': style,
         if (budget != null && budget.isNotEmpty) 'budget': budget,
         if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
-        if (projectTimer != null && projectTimer.isNotEmpty) 'project_timer': projectTimer,
+        if (projectTimer != null && projectTimer.isNotEmpty)
+          'project_timer': projectTimer,
         if (timerDays != null) 'timer_days': timerDays,
         if (timerHours != null) 'timer_hours': timerHours,
         if (timerMinutes != null) 'timer_minutes': timerMinutes,
@@ -135,13 +310,16 @@ class HomeApiService {
           final f = images[i];
           final name = f.path.split(RegExp(r'[/\\]')).last;
           formData.files.add(
-            MapEntry('images', await MultipartFile.fromFile(f.path, filename: name)),
+            MapEntry(
+              'images',
+              await MultipartFile.fromFile(f.path, filename: name),
+            ),
           );
         }
       }
 
       final res = await _dio.post(
-        ApiEndpoints.homePosts(),
+        ApiEndpoints.companyCreatePost,
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
@@ -155,7 +333,9 @@ class HomeApiService {
   }
 
   /// إعجاب / إلغاء إعجاب
-  static Future<ApiResponse<Map<String, dynamic>>> toggleLike(int postId) async {
+  static Future<ApiResponse<Map<String, dynamic>>> toggleLike(
+    int postId,
+  ) async {
     try {
       final res = await _dio.post(ApiEndpoints.homePostLike(postId));
       return ApiResponse.fromJson(

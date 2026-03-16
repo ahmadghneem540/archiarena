@@ -403,7 +403,7 @@ class _FriendRequestCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'عرض الملف',
+                  'show_file'.tr,
                   style: TextStyle(
                     fontSize: 12,
                     color: AppColors.primary,

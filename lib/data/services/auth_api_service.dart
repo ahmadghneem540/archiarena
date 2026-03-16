@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:convert';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
@@ -133,6 +134,16 @@ class AuthApiService {
         },
       );
       final raw = res.data as Map<String, dynamic>? ?? {};
+      if (kDebugMode) {
+        debugPrint('┌──────────── AUTH LOGIN RESPONSE ────────────');
+        try {
+          const encoder = JsonEncoder.withIndent('  ');
+          debugPrint(encoder.convert(raw));
+        } catch (_) {
+          debugPrint(raw.toString());
+        }
+        debugPrint('└────────────────────────────────────────────');
+      }
       final apiRes = ApiResponse.fromJson(
         raw,
         fromJsonT: (d) => d as Map<String, dynamic>,
@@ -141,8 +152,20 @@ class AuthApiService {
       if (apiRes.isSuccess) {
         final data = apiRes.data ?? raw;
         final token = _extractToken(data, raw);
+        if (kDebugMode) {
+          final masked = (token == null || token.isEmpty)
+              ? '(null/empty)'
+              : '${token.substring(0, token.length >= 8 ? 8 : token.length)}*** (len=${token.length})';
+          debugPrint('AUTH LOGIN token extracted: $masked');
+        }
         if (token != null && token.isNotEmpty) {
           await MyServices.saveStringValue(ConstData.keyToken, token);
+          if (kDebugMode) {
+            final saved = await MyServices.getStringValue(ConstData.keyToken);
+            debugPrint(
+              'AUTH LOGIN token saved? ${saved != null && saved.isNotEmpty} (len=${saved?.length ?? 0})',
+            );
+          }
           final user = data['user'] ?? raw['user'];
           if (user != null && user['id'] != null) {
             await MyServices.saveStringValue(

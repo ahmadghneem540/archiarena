@@ -47,12 +47,22 @@ class OrderDetailsView extends StatelessWidget {
             ],
           ),
           actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: ElevatedButton.icon(
-                onPressed: () => controller.downloadAllImages(orderId),
-                icon: const Icon(Icons.download, size: 18),
-                label: Text('download_all'.tr),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Obx(() => ElevatedButton.icon(
+                  onPressed: controller.isDownloadingOrderImages.value
+                      ? null
+                      : () => controller.downloadAllImages(orderId),
+                  icon: controller.isDownloadingOrderImages.value
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.onPrimary),
+                        )
+                      : const Icon(Icons.download, size: 18),
+                  label: Text(
+                    controller.isDownloadingOrderImages.value ? 'downloading'.tr : 'download_all'.tr,
+                  ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,
@@ -61,16 +71,19 @@ class OrderDetailsView extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
-              ),
+              )),
             ),
           ],
         ),
         body: Obx(() {
+          if (controller.isOrderProposalsLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
           final images = controller.getOrderImages(orderId);
           if (images.isEmpty) {
             return Center(
               child: Text(
-                'لا توجد صور',
+                'no_proposals_on_order'.tr,
                 style: TextStyle(color: AppColors.grey600),
               ),
             );
@@ -189,21 +202,37 @@ class OrderDetailsView extends StatelessWidget {
                             Colors.transparent,
                             BlendMode.color,
                           ),
-                    child: Image.asset(
-                      image.imageUrl,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: AppColors.placeholder1,
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.grey400,
-                            size: 32,
+                    child: (image.imageUrl.startsWith('http'))
+                        ? Image.network(
+                            image.imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: AppColors.placeholder1,
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: AppColors.grey400,
+                                  size: 32,
+                                ),
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            image.imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: AppColors.placeholder1,
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: AppColors.grey400,
+                                  size: 32,
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ),
                 if (isRejected)
@@ -255,10 +284,10 @@ class OrderDetailsView extends StatelessWidget {
                 ),
                 child: Text(
                   isAccepted
-                      ? 'مقبول'
+                      ? 'accepted'.tr
                       : isRejected
-                          ? 'مرفوض'
-                          : 'قبول',
+                          ? 'rejected'.tr
+                          : 'accept_offer'.tr,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,

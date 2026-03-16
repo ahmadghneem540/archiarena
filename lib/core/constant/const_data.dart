@@ -12,6 +12,7 @@ class ConstData {
   static const String keyUserId = 'user_id';
   static const String keyUser = 'user_data';
   static const String keyLocale = 'app_locale';
+  static const String keyThemeMode = 'app_theme_mode'; // 'light' | 'dark' | 'system'
   static const String keyIsCompany = 'is_company';
   static const String privacyPolicyText = '''
 نحن نحترم خصوصيتك ونلتزم بحماية بياناتك الشخصية وفقًا للأنظمة المعمول بها في المملكة العربية السعودية. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية المعلومات عند استخدامك لتطبيقنا لخدمات النقل اللوجستي.

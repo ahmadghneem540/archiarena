@@ -108,7 +108,7 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
                   Icon(Icons.person_off_outlined, size: 64, color: AppColors.grey400),
                   const SizedBox(height: 16),
                   Text(
-                    'لا توجد نتائج',
+                    'no_results'.tr,
                     style: TextStyle(fontSize: 15, color: AppColors.grey600),
                   ),
                 ],

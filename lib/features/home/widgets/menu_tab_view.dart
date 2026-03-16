@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../home_controller.dart';
 
 /// شاشة التاب السادس — القائمة (الإعدادات والخيارات).
@@ -18,9 +19,9 @@ class MenuTabView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 16),
-          _buildHeader(),
+          _buildHeader(context),
           const SizedBox(height: 28),
-          _buildSectionTitle('الحساب'),
+          _buildSectionTitle(context, 'account'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
@@ -38,7 +39,7 @@ class MenuTabView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('التفضيلات'),
+          _buildSectionTitle(context, 'preferences'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
@@ -49,16 +50,16 @@ class MenuTabView extends StatelessWidget {
                 subtitle: _currentLanguageSubtitle(),
                 onTap: () => Get.toNamed(AppRoutes.menuLanguage),
               ),
-              _MenuItem(
+              Obx(() => _MenuItem(
                 icon: Icons.dark_mode_outlined,
-                title: 'المظهر',
-                subtitle: 'فاتح',
+                title: 'appearance'.tr,
+                subtitle: Get.find<ThemeController>().currentThemeLabel,
                 onTap: () => Get.toNamed(AppRoutes.menuAppearance),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('الدعم'),
+          _buildSectionTitle(context, 'support'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
@@ -81,7 +82,7 @@ class MenuTabView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('حول التطبيق'),
+          _buildSectionTitle(context, 'about_app'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
@@ -109,31 +110,31 @@ class MenuTabView extends StatelessWidget {
     return 'lang_english'.tr;
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'القائمة',
+        Text(
+          'menu'.tr,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.grey600,
+          color: context.themeGrey600,
         ),
       ),
     );
@@ -145,12 +146,12 @@ class MenuTabView extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: context.themeBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: context.themeShadowLight,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -169,7 +170,7 @@ class MenuTabView extends StatelessWidget {
                 Divider(
                   height: 1,
                   thickness: 1,
-                  color: AppColors.border,
+                  color: context.themeBorder,
                   indent: 56,
                   endIndent: 12,
                 ),
@@ -232,6 +233,8 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final grey500 = isDark ? AppColors.darkGrey500 : AppColors.grey500;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -257,10 +260,10 @@ class _MenuItem extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: context.themeOnSurface,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -269,7 +272,7 @@ class _MenuItem extends StatelessWidget {
                         subtitle!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                         ),
                       ),
                     ],
@@ -278,7 +281,7 @@ class _MenuItem extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_left_rounded,
-                color: AppColors.grey500,
+                color: grey500,
                 size: 24,
               ),
             ],

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// مؤقت تنازلي يعرض الوقت المتبقي حتى تاريخ الانتهاء (أيام، ساعات، دقائق).
@@ -77,7 +78,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
   String _formatRemaining() {
     if (_endAt == null) return widget.deadline ?? '—';
     if (_remaining == null) return '...';
-    if (_remaining!.inSeconds <= 0) return 'منتهي';
+    if (_remaining!.inSeconds <= 0) return 'timer_ended'.tr;
     final d = _remaining!.inDays;
     final h = _remaining!.inHours % 24;
     final m = _remaining!.inMinutes % 60;

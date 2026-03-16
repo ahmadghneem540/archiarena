@@ -26,6 +26,25 @@ class ApiEndpoints {
   static String homeCommentReply(int commentId) =>
       '/home/comments/$commentId/reply';
 
+  // ========== Home / Orders ==========
+  /// قسم الطلبات — GET
+  static const String homeOrders = '/home/orders';
+  /// قائمة العروض على طلب — GET
+  static String homeOrderProposals(int orderId) =>
+      '/home/orders/$orderId/proposals';
+  /// تقديم عرض — POST (formData: message, image)
+  static String homeOrderSubmitProposal(int orderId) =>
+      '/home/orders/$orderId/proposals';
+  /// قبول عرض (ورفض الباقي) — POST
+  static String homeOrderAcceptProposal(int orderId, int proposalId) =>
+      '/home/orders/$orderId/proposals/$proposalId/accept';
+
+  // ========== Dashboard / Orders ==========
+  /// قائمة المشاريع المرفوعة — GET
+  static const String dashboardPosts = '/dashboard/posts';
+  /// رفع مشروع من تطبيق الشركة (نفس توكن تسجيل الدخول)
+  static const String companyCreatePost = '/home/company/posts';
+
   // ========== Friends ==========
   static const String friendsRequestsCount = '/friends/requests/count';
   static const String friendsRequests = '/friends/requests';
@@ -52,6 +71,8 @@ class ApiEndpoints {
   static const String notificationsUnreadCount =
       '/notifications/unread-count';
   static const String notifications = '/notifications';
+  /// تسجيل توكن FCM لإرسال الإشعارات (مستخدمون وشركات)
+  static const String registerFcmToken = '/profile/me/fcm-token';
   static String notificationRead(int id) => '/notifications/$id/read';
   static const String notificationsReadAll = '/notifications/read-all';
   static String notificationDelete(int id) => '/notifications/$id';

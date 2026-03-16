@@ -88,7 +88,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
       // يمكن لاحقاً إضافة تعليق بصورة عبر نموذج يدعم imagePath
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('تم اختيار صورة من المعرض: ${file.name}'),
+          content: Text('${'image_from_gallery'.tr}: ${file.name}'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -102,8 +102,8 @@ class _CommentsSheetState extends State<CommentsSheet> {
         defaultTargetPlatform != TargetPlatform.iOS) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('التسجيل الصوتي متاح على الهاتف فقط (Android / iOS)'),
+          SnackBar(
+            content: Text('voice_record_mobile_only'.tr),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -146,8 +146,8 @@ class _CommentsSheetState extends State<CommentsSheet> {
       if (!hasPermission) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('يُرجى منح صلاحية الميكروفون للتسجيل'),
+            SnackBar(
+              content: Text('grant_microphone'.tr),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -177,12 +177,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
     } on MissingPluginException {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'التسجيل الصوتي غير متاح. شغّل التطبيق على جهاز Android أو iOS بعد إعادة البناء (flutter clean ثم flutter run).',
-            ),
+          SnackBar(
+            content: Text('voice_record_not_available'.tr),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 4),
+            duration: const Duration(seconds: 4),
           ),
         );
       }
@@ -190,7 +188,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('فشل بدء التسجيل: $e'),
+            content: Text('${'voice_record_start_failed'.tr}: $e'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -234,9 +232,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
               const SizedBox(height: 12),
               _buildHandle(),
               const SizedBox(height: 8),
-              const Text(
-                'التعليقات',
-                style: TextStyle(
+              Text(
+                'comments_title'.tr,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.onSurface,
@@ -300,7 +298,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
               child: Row(
                 children: [
                   Text(
-                    'الرد على $_replyingToName',
+                    'reply_to'.trParams({'name': _replyingToName ?? ''}),
                     style: TextStyle(
                       fontSize: 13,
                       color: AppColors.primary,
@@ -329,7 +327,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
                   color: AppColors.primary,
                   size: 28,
                 ),
-                tooltip: _showIcons ? 'إخفاء الخيارات' : 'إظهار خيارات التعليق',
+                tooltip: _showIcons ? 'hide_options'.tr : 'show_comment_options'.tr,
                 onPressed: () => setState(() => _showIcons = !_showIcons),
               ),
               if (_showIcons) ...[
@@ -520,14 +518,14 @@ class _CommentTile extends StatelessWidget {
                             child: InkWell(
                               onTap: () => onReply(comment),
                               borderRadius: BorderRadius.circular(8),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
                                   vertical: 6,
                                 ),
                                 child: Text(
-                                  'الرد',
-                                  style: TextStyle(
+                                  'reply'.tr,
+                                  style: const TextStyle(
                                     color: AppColors.onPrimary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -575,7 +573,7 @@ class _CommentTile extends StatelessWidget {
         Icon(Icons.audiotrack, color: AppColors.primary, size: 28),
         const SizedBox(width: 8),
         Text(
-          'تعليق صوتي',
+          'voice_comment'.tr,
           style: TextStyle(fontSize: 13, color: AppColors.grey700),
         ),
       ],

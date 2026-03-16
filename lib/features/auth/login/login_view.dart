@@ -13,7 +13,7 @@ class LoginView extends GetView<LoginController> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         body: SafeArea(
           child: CustomScrollView(
             slivers: [

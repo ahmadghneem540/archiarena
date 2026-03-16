@@ -31,15 +31,9 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   String? _selectedCategory;
   bool _isUploading = false;
 
-  final List<String> _categories = [
-    'سكني',
-    'تجاري',
-    'إداري',
-    'تعليمي',
-    'صحي',
-    'ترفيهي',
-    'تصميم داخلي',
-    'آخر',
+  static const List<String> _categoryKeys = [
+    'residential', 'commercial', 'admin', 'education', 'health',
+    'entertainment', 'interior', 'other',
   ];
 
   @override
@@ -337,15 +331,15 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   Widget _buildTitleField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'عنوان المشروع *',
-        style: TextStyle(fontWeight: FontWeight.w600),
+      Text(
+        'project_title_required'.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       const SizedBox(height: 8),
       TextField(
         controller: _titleController,
         textDirection: TextDirection.rtl,
-        decoration: const InputDecoration(hintText: 'أدخل عنوان المشروع'),
+        decoration: InputDecoration(hintText: 'enter_project_title'.tr),
       ),
     ],
   );
@@ -353,16 +347,16 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   Widget _buildDescriptionField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'شرح المشروع *',
-        style: TextStyle(fontWeight: FontWeight.w600),
+      Text(
+        'project_description_label'.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       const SizedBox(height: 8),
       TextField(
         controller: _descriptionController,
         textDirection: TextDirection.rtl,
         maxLines: 4,
-        decoration: const InputDecoration(hintText: 'وصف المشروع وتفاصيله'),
+        decoration: InputDecoration(hintText: 'project_description_hint'.tr),
       ),
     ],
   );
@@ -417,8 +411,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       DropdownButtonFormField<String>(
         value: _selectedCategory,
         hint: Text('choose_category'.tr),
-        items: _categories
-            .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+        items: _categoryKeys
+            .map((k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr)))
             .toList(),
         onChanged: (v) => setState(() => _selectedCategory = v),
       ),

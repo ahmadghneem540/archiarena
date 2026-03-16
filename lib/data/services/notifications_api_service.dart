@@ -105,6 +105,29 @@ class NotificationsApiService {
     }
   }
 
+  /// تسجيل توكن FCM للسيرفر (مستخدمون وشركات) — لاستقبال الإشعارات عند قبول العرض أو وصول عرض جديد
+  static Future<ApiResponse<Map<String, dynamic>>> registerFcmToken(
+    String fcmToken,
+  ) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.registerFcmToken,
+        data: {'fcm_token': fcmToken},
+      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: raw['status'] as int? ?? res.statusCode ?? 200,
+          data: raw['data'] ?? raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(status: res.statusCode ?? 200, data: {}, message: null);
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
   static ApiResponse<Map<String, dynamic>> _handleError(DioException e) {
     final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
