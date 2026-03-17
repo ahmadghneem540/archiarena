@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'dart:convert';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
@@ -43,7 +44,7 @@ class AuthApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -60,13 +61,13 @@ class AuthApiService {
     try {
       dynamic data;
       if (licenseFile != null) {
-        data = FormData.fromMap({
+        data = dio.FormData.fromMap({
           'company_name': companyName,
           'email': email,
           'phone': phone,
           'password': password,
           'company_foundation': companyFoundation ?? '',
-          'license_files': await MultipartFile.fromFile(
+          'license_files': await dio.MultipartFile.fromFile(
             licenseFile.path,
             filename: licenseFile.path.split(RegExp(r'[/\\]')).last,
           ),
@@ -86,14 +87,14 @@ class AuthApiService {
         ApiEndpoints.authRegisterCompany,
         data: data,
         options: licenseFile != null
-            ? Options(contentType: 'multipart/form-data')
+            ? dio.Options(contentType: 'multipart/form-data')
             : null,
       );
       return ApiResponse.fromJson(
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -115,7 +116,7 @@ class AuthApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -183,7 +184,7 @@ class AuthApiService {
         }
       }
       return apiRes;
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -219,11 +220,17 @@ class AuthApiService {
     return null;
   }
 
-  static ApiResponse<Map<String, dynamic>> _handleError(DioException e) {
+  static ApiResponse<Map<String, dynamic>> _handleError(dio.DioException e) {
     final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
     String? message;
-    if (data is Map) {
+    // رسالة واضحة عند انتهاء مهلة الاتصال (على الموبايل أو شبكة بطيئة)
+    if (e.type == dio.DioExceptionType.receiveTimeout ||
+        e.type == dio.DioExceptionType.connectionTimeout ||
+        e.type == dio.DioExceptionType.sendTimeout) {
+      message = 'error_connection_timeout'.tr;
+    }
+    if (message == null && data is Map) {
       message = data['message']?.toString() ??
           data['error']?.toString() ??
           data['msg']?.toString();
@@ -268,7 +275,7 @@ class AuthApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -299,7 +306,7 @@ class AuthApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
@@ -321,7 +328,7 @@ class AuthApiService {
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-    } on DioException catch (e) {
+    } on dio.DioException catch (e) {
       debugPrint('[ChangePassword] DioException: ${e.type}');
       debugPrint('[ChangePassword] Status: ${e.response?.statusCode}');
       debugPrint('[ChangePassword] Response: ${e.response?.data}');
@@ -334,7 +341,7 @@ class AuthApiService {
   static Future<void> logout() async {
     try {
       await _dio.post(ApiEndpoints.authLogout);
-    } on DioException catch (_) {
+    } on dio.DioException catch (_) {
       // حتى لو فشل الطلب (شبكة أو 401) نكمل مسح البيانات محلياً
     }
     await MyServices.saveStringValue(ConstData.keyToken, '');

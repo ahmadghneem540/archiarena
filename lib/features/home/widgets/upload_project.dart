@@ -250,16 +250,16 @@ class UploadProjectPage extends StatelessWidget {
                       }
                       isLoading.value = true;
                       try {
-                        final res = await HomeApiService.createPost(
+                        final res = await HomeApiService.createCompanyPost(
                           title: 'مشروع',
-                          category: 'آخر',
+                          category: 'other',
                           description: '—',
                           images: [file],
                         );
                         if (res.isSuccess) {
                           Get.back();
                           homeController.closeUploadPage();
-                          homeController.loadPosts();
+                          homeController.loadOrders();
                           Get.snackbar(
                             'success'.tr,
                             'upload_project_success'.tr,

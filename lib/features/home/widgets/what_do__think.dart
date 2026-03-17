@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -21,13 +22,10 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _budgetController = TextEditingController();
-  final _deadlineController = TextEditingController();
-  final _timerDaysController = TextEditingController();
-  final _timerHoursController = TextEditingController();
-  final _timerMinutesController = TextEditingController();
 
   final List<File> _images = [];
   static const int _maxImages = 10;
+  File? _planPdf;
   String? _selectedCategory;
   bool _isUploading = false;
 
@@ -41,10 +39,6 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     _titleController.dispose();
     _descriptionController.dispose();
     _budgetController.dispose();
-    _deadlineController.dispose();
-    _timerDaysController.dispose();
-    _timerHoursController.dispose();
-    _timerMinutesController.dispose();
     super.dispose();
   }
 
@@ -64,17 +58,17 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     setState(() => _images.removeAt(index));
   }
 
-  void _pickPlanFile() {
-    Get.snackbar(
-      'info'.tr,
-      'plan_pdf_soon'.tr,
-      snackPosition: SnackPosition.BOTTOM,
+  Future<void> _pickPlanFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: false,
     );
-  }
-
-  int? _parseInt(String? s) {
-    if (s == null || s.trim().isEmpty) return null;
-    return int.tryParse(s.trim());
+    if (result == null || result.files.isEmpty) return;
+    final path = result.files.single.path;
+    if (path != null && mounted) {
+      setState(() => _planPdf = File(path));
+    }
   }
 
   Future<void> _submitProject() async {
@@ -101,10 +95,6 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     setState(() => _isUploading = true);
 
     try {
-      final timerDays = _parseInt(_timerDaysController.text);
-      final timerHours = _parseInt(_timerHoursController.text);
-      final timerMinutes = _parseInt(_timerMinutesController.text);
-
       final res = await HomeApiService.createPost(
         title: title,
         category: _selectedCategory!,
@@ -112,13 +102,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
         budget: _budgetController.text.trim().isEmpty
             ? null
             : _budgetController.text.trim(),
-        deadline: _deadlineController.text.trim().isEmpty
-            ? null
-            : _deadlineController.text.trim(),
-        timerDays: timerDays,
-        timerHours: timerHours,
-        timerMinutes: timerMinutes,
         images: _images,
+        planPdf: _planPdf,
       );
 
       if (!mounted) return;
@@ -169,10 +154,6 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   _buildCategoryDropdown(),
                   const SizedBox(height: 16),
                   _buildBudgetField(),
-                  const SizedBox(height: 16),
-                  _buildDeadlineField(),
-                  const SizedBox(height: 16),
-                  _buildTimerSection(),
                   const SizedBox(height: 16),
                   _buildPlanFileSection(),
                   const SizedBox(height: 24),
@@ -276,58 +257,6 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     );
   }
 
-  Widget _buildTimerSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'project_timer_label'.tr,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _timerDaysController,
-                keyboardType: TextInputType.number,
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  hintText: 'timer_days_hint'.tr,
-                  prefixIcon: const Icon(Icons.calendar_today, size: 20),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _timerHoursController,
-                keyboardType: TextInputType.number,
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  hintText: 'timer_hours_hint'.tr,
-                  prefixIcon: const Icon(Icons.schedule, size: 20),
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _timerMinutesController,
-                keyboardType: TextInputType.number,
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  hintText: 'timer_minutes_hint'.tr,
-                  prefixIcon: const Icon(Icons.timer_outlined, size: 20),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   Widget _buildTitleField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -381,25 +310,6 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     ],
   );
 
-  Widget _buildDeadlineField() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        'project_deadline'.tr,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
-      const SizedBox(height: 8),
-      TextField(
-        controller: _deadlineController,
-        textDirection: TextDirection.rtl,
-        decoration: InputDecoration(
-          hintText: 'enter_deadline'.tr,
-          prefixIcon: const Icon(Icons.timer_outlined, size: 22),
-        ),
-      ),
-    ],
-  );
-
   Widget _buildCategoryDropdown() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -422,15 +332,33 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   Widget _buildPlanFileSection() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'ملف مخطط المشروع (اختياري)',
-        style: TextStyle(fontWeight: FontWeight.w600),
+      Text(
+        'upload_plan_pdf'.tr,
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       const SizedBox(height: 8),
-      OutlinedButton.icon(
-        onPressed: _pickPlanFile,
-        icon: const Icon(Icons.upload_file),
-        label: Text('upload_plan_pdf'.tr),
+      Row(
+        children: [
+          OutlinedButton.icon(
+            onPressed: _pickPlanFile,
+            icon: const Icon(Icons.upload_file),
+            label: Text(_planPdf == null ? 'upload_plan_pdf'.tr : 'استبدال'),
+          ),
+          if (_planPdf != null) ...[
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _planPdf!.path.split(RegExp(r'[/\\]')).last,
+                style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, size: 20),
+              onPressed: () => setState(() => _planPdf = null),
+            ),
+          ],
+        ],
       ),
     ],
   );

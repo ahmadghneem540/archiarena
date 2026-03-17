@@ -100,6 +100,55 @@ class HomeApiService {
     }
   }
 
+  /// رفع مشروع إلى قسم الطلبات فقط — POST /home/company/posts
+  /// يُستخدم من زر "رفع المشروع" فقط. يظهر في واجهة الطلبات وليس في آخر الأخبار.
+  /// الحقول المطلوبة: title, category, description. الصور وباقي الحقول اختيارية.
+  static Future<ApiResponse<Map<String, dynamic>>> createCompanyPost({
+    required String title,
+    required String category,
+    required String description,
+    String? area,
+    String? style,
+    String? budget,
+    String? deadline,
+    List<File>? images,
+  }) async {
+    try {
+      final map = <String, dynamic>{
+        'title': title,
+        'category': category,
+        'description': description,
+        if (area != null && area.isNotEmpty) 'area': area,
+        if (style != null && style.isNotEmpty) 'style': style,
+        if (budget != null && budget.isNotEmpty) 'budget': budget,
+        if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
+      };
+      final formData = FormData.fromMap(map);
+      if (images != null && images.isNotEmpty) {
+        for (var i = 0; i < images.length && i < 10; i++) {
+          final f = images[i];
+          final name = f.path.split(RegExp(r'[/\\]')).last;
+          final multipart = await MultipartFile.fromFile(f.path, filename: name);
+          if (i == 0) {
+            formData.files.add(MapEntry('image', multipart));
+          } else {
+            formData.files.add(MapEntry('images[]', multipart));
+          }
+        }
+      }
+      final res = await _dio.post(
+        ApiEndpoints.companyCreatePost,
+        data: formData,
+      );
+      return ApiResponse.fromJson(
+        res.data as Map<String, dynamic>,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
   /// جلب الطلبات — GET /home/orders
   static Future<ApiResponse<Map<String, dynamic>>> getHomeOrders({
     int page = 1,
@@ -261,6 +310,8 @@ class HomeApiService {
     }
   }
 
+  /// نشر منشور في آخر الأخبار — POST /home/posts (قسم الشركات، زر "بماذا تفكر").
+  /// يدعم رفع صور وملف PDF (مخطط المشروع).
   static Future<ApiResponse<Map<String, dynamic>>> createPost({
     required String title,
     required String category,
@@ -272,12 +323,8 @@ class HomeApiService {
     String? suitableFor,
     String? style,
     String? budget,
-    String? deadline,
-    String? projectTimer,
-    int? timerDays,
-    int? timerHours,
-    int? timerMinutes,
     List<File>? images,
+    File? planPdf,
   }) async {
     try {
       final map = <String, dynamic>{
@@ -295,12 +342,6 @@ class HomeApiService {
           'suitable_for': suitableFor,
         if (style != null && style.isNotEmpty) 'style': style,
         if (budget != null && budget.isNotEmpty) 'budget': budget,
-        if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
-        if (projectTimer != null && projectTimer.isNotEmpty)
-          'project_timer': projectTimer,
-        if (timerDays != null) 'timer_days': timerDays,
-        if (timerHours != null) 'timer_hours': timerHours,
-        if (timerMinutes != null) 'timer_minutes': timerMinutes,
       };
 
       final formData = FormData.fromMap(map);
@@ -309,19 +350,28 @@ class HomeApiService {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];
           final name = f.path.split(RegExp(r'[/\\]')).last;
-          formData.files.add(
-            MapEntry(
-              'images',
-              await MultipartFile.fromFile(f.path, filename: name),
-            ),
-          );
+          final multipart = await MultipartFile.fromFile(f.path, filename: name);
+          if (i == 0) {
+            formData.files.add(MapEntry('image', multipart));
+          } else {
+            formData.files.add(MapEntry('images[]', multipart));
+          }
         }
       }
 
+      if (planPdf != null) {
+        final name = planPdf.path.split(RegExp(r'[/\\]')).last;
+        formData.files.add(
+          MapEntry(
+            'plan_file',
+            await MultipartFile.fromFile(planPdf.path, filename: name),
+          ),
+        );
+      }
+
       final res = await _dio.post(
-        ApiEndpoints.companyCreatePost,
+        ApiEndpoints.homePosts(),
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
       );
       return ApiResponse.fromJson(
         res.data as Map<String, dynamic>,
@@ -486,10 +536,17 @@ class HomeApiService {
     final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
     String? message;
-    if (data is Map && data['message'] != null) {
-      message = data['message'].toString();
-    } else {
-      message = e.message ?? 'حدث خطأ في الاتصال';
+    if (data is Map) {
+      message = data['message']?.toString() ??
+          data['error']?.toString() ??
+          data['msg']?.toString();
+    }
+    if (message == null || message.isEmpty) {
+      if (status >= 500 && status < 600) {
+        message = 'خطأ من الخادم. حاول مرة أخرى لاحقاً.';
+      } else {
+        message = e.message ?? 'حدث خطأ في الاتصال';
+      }
     }
     return ApiResponse(status: status, message: message);
   }

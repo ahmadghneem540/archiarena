@@ -170,7 +170,8 @@ class FriendsApiService {
     }
   }
 
-  /// قائمة الأصدقاء
+  /// قائمة الأصدقاء (من وافقوا على الصداقة) — GET /friends
+  /// الاستجابة قد تكون: { "data": [...] } أو { "friends": [...] } أو مصفوفة مباشرة.
   static Future<ApiResponse<Map<String, dynamic>>> getFriends({
     int page = 1,
     int limit = 20,
@@ -180,9 +181,26 @@ class FriendsApiService {
         ApiEndpoints.friends,
         queryParameters: {'page': page, 'limit': limit},
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
-        fromJsonT: (d) => d as Map<String, dynamic>,
+      final raw = res.data;
+      final status = res.statusCode ?? 200;
+      final message = raw is Map ? raw['message'] as String? : null;
+
+      List<dynamic> list = [];
+      if (raw is List) {
+        list = raw;
+      } else if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        final friends = raw['friends'];
+        if (data is List) list = data;
+        else if (friends is List) list = friends;
+        else if (data is Map && data['friends'] is List) list = data['friends'] as List;
+        else if (data is Map && data['data'] is List) list = data['data'] as List;
+      }
+
+      return ApiResponse(
+        status: status,
+        data: {'friends': list, 'data': list},
+        message: message,
       );
     } on DioException catch (e) {
       return _handleError(e);
