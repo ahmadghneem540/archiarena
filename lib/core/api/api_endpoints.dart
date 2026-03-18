@@ -39,10 +39,18 @@ class ApiEndpoints {
   static String homeOrderAcceptProposal(int orderId, int proposalId) =>
       '/home/orders/$orderId/proposals/$proposalId/accept';
 
+  // ========== Home / Works (الأعمال) ==========
+  /// جلب أعمال المستخدم — GET
+  static const String homeWorks = '/home/works';
+  /// إضافة منشور إلى الأعمال — POST
+  static const String homeWorksAdd = '/home/works';
+  /// حذف منشور من الأعمال — DELETE
+  static String homeWorksDelete(int postId) => '/home/works/$postId';
+
   // ========== Dashboard / Orders ==========
   /// قائمة المشاريع المرفوعة — GET
   static const String dashboardPosts = '/dashboard/posts';
-  /// رفع مشروع من تطبيق الشركة (نفس توكن تسجيل الدخول)
+  /// رفع مشروع إلى الطلبات — للمستخدمين العاديين والشركات (نفس المسار للجميع)
   static const String companyCreatePost = '/home/company/posts';
 
   // ========== Friends ==========

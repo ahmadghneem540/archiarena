@@ -304,6 +304,53 @@ class HomePostCard1 extends StatelessWidget {
                               : () => controller.openPostDetailsSheet(post),
                         ),
                       ),
+                      if (isInWorks) ...[
+                        const SizedBox(width: 8),
+                        Material(
+                          color: AppColors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              final confirm = await Get.dialog<bool>(
+                                AlertDialog(
+                                  title: Text('remove_from_works'.tr),
+                                  content: Text('remove_from_works_confirm'.tr),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(result: false),
+                                      child: Text('cancel'.tr),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Get.back(result: true),
+                                      child: Text('remove_from_works'.tr),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                final removed = await controller.removePostFromWorks(post.id);
+                                if (removed) {
+                                  Get.snackbar(
+                                    'success'.tr,
+                                    'removed_from_works'.tr,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: AppColors.surface,
+                                    margin: const EdgeInsets.all(12),
+                                  );
+                                }
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.delete_outline,
+                                size: 24,
+                                color: AppColors.error,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],

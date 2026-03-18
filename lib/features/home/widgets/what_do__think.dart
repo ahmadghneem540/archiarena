@@ -22,6 +22,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _budgetController = TextEditingController();
+  final _timerDaysController = TextEditingController();
+  final _timerHoursController = TextEditingController();
 
   final List<File> _images = [];
   static const int _maxImages = 10;
@@ -39,6 +41,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     _titleController.dispose();
     _descriptionController.dispose();
     _budgetController.dispose();
+    _timerDaysController.dispose();
+    _timerHoursController.dispose();
     super.dispose();
   }
 
@@ -94,6 +98,15 @@ class _WhatDoThinkState extends State<WhatDoThink> {
 
     setState(() => _isUploading = true);
 
+    int? timerDays;
+    int? timerHours;
+    final daysStr = _timerDaysController.text.trim();
+    final hoursStr = _timerHoursController.text.trim();
+    if (daysStr.isNotEmpty) timerDays = int.tryParse(daysStr);
+    if (hoursStr.isNotEmpty) timerHours = int.tryParse(hoursStr);
+    if (timerDays != null && timerDays < 0) timerDays = 0;
+    if (timerHours != null && timerHours < 0) timerHours = 0;
+
     try {
       final res = await HomeApiService.createPost(
         title: title,
@@ -102,6 +115,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
         budget: _budgetController.text.trim().isEmpty
             ? null
             : _budgetController.text.trim(),
+        timerDays: timerDays,
+        timerHours: timerHours,
         images: _images,
         planPdf: _planPdf,
       );
@@ -154,6 +169,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   _buildCategoryDropdown(),
                   const SizedBox(height: 16),
                   _buildBudgetField(),
+                  const SizedBox(height: 16),
+                  _buildDealTimerSection(),
                   const SizedBox(height: 16),
                   _buildPlanFileSection(),
                   const SizedBox(height: 24),
@@ -309,6 +326,90 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       ),
     ],
   );
+
+  /// مؤقت الصفقة (اختياري) — أيام وساعات فقط
+  Widget _buildDealTimerSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.schedule_outlined, size: 20, color: AppColors.grey600),
+            const SizedBox(width: 8),
+            Text(
+              'project_timer_label'.tr,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurface,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _timerDaysController,
+                  textDirection: TextDirection.rtl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'timer_days_hint'.tr,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                    suffixIcon: Icon(
+                      Icons.calendar_today_outlined,
+                      size: 20,
+                      color: AppColors.grey500,
+                    ),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: AppColors.border,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _timerHoursController,
+                  textDirection: TextDirection.rtl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: 'timer_hours_hint'.tr,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 14,
+                    ),
+                    suffixIcon: Icon(
+                      Icons.access_time_outlined,
+                      size: 20,
+                      color: AppColors.grey500,
+                    ),
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildCategoryDropdown() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,

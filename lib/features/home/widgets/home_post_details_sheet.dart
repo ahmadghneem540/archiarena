@@ -29,6 +29,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
 
   late PostModel _post;
   bool _loading = true;
+  bool _isDownloadingAndAdding = false;
 
   static String _fullImageUrl(String? url) {
     if (url == null || url.isEmpty) return '';
@@ -42,30 +43,12 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   void initState() {
     super.initState();
     _post = widget.post;
-    widget.controller.loadPostDetails(widget.post.id).then((full) async {
+    widget.controller.loadPostDetails(widget.post.id).then((full) {
       if (!mounted) return;
-      if (full != null) {
-        setState(() {
-          _post = full;
-          _loading = false;
-        });
-        final paths = await widget.controller.downloadPostPlans(full);
-        if (!mounted || paths.isEmpty) return;
-        Get.snackbar(
-          'plans_downloaded'.tr,
-          'plans_downloaded_hint'.tr,
-          duration: const Duration(seconds: 3),
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: AppColors.surface,
-          margin: const EdgeInsets.all(12),
-          mainButton: TextButton(
-            onPressed: () => OpenFile.open(paths.first),
-            child: Text('open_file'.tr, style: TextStyle(color: AppColors.primary)),
-          ),
-        );
-      } else {
-        setState(() => _loading = false);
-      }
+      setState(() {
+        if (full != null) _post = full;
+        _loading = false;
+      });
     });
   }
 
@@ -515,15 +498,90 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   }
 
   Widget _buildActionButton(BuildContext context) {
+    if (_isDownloadingAndAdding) {
+      return SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: Material(
+          color: AppColors.transparent,
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'downloading'.tr,
+                    style: const TextStyle(
+                      color: AppColors.onPrimary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return ArchiButton(
       label: 'download_plan_and_move'.tr,
       height: 52,
       fontSize: 16,
       icon: Icons.description_outlined,
       iconSize: 22,
-      onPressed: () {
-        widget.controller.markPostAsTransferred(_post.id);
-        Navigator.of(context).pop();
+      onPressed: () async {
+        setState(() => _isDownloadingAndAdding = true);
+        try {
+          final paths = await widget.controller.downloadPostPlans(_post);
+          if (!mounted) return;
+          if (paths.isNotEmpty) {
+            Get.snackbar(
+              'plans_downloaded'.tr,
+              'plans_downloaded_hint'.tr,
+              duration: const Duration(seconds: 3),
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.surface,
+              margin: const EdgeInsets.all(12),
+              mainButton: TextButton(
+                onPressed: () => OpenFile.open(paths.first),
+                child: Text('open_file'.tr, style: TextStyle(color: AppColors.primary)),
+              ),
+            );
+          }
+          final added = await widget.controller.addPostToWorks(_post.id);
+          if (!mounted) return;
+          if (added) {
+            Get.snackbar(
+              'plans_downloaded'.tr,
+              'post_added_to_works'.tr,
+              duration: const Duration(seconds: 2),
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: AppColors.surface,
+              margin: const EdgeInsets.all(12),
+            );
+          }
+        } finally {
+          if (mounted) setState(() => _isDownloadingAndAdding = false);
+        }
       },
     );
   }

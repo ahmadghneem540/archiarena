@@ -33,7 +33,6 @@ class HomeHeader extends StatelessWidget {
           height: 52,
           child: Obx(() {
             final _ = controller.currentTab.value;
-            final isCompany = controller.isCompany.value;
             return Row(
               children: [
                 Expanded(
@@ -52,11 +51,10 @@ class HomeHeader extends StatelessWidget {
                     iconOutlined: Icons.work_outline,
                   ),
                 ),
-                // أيقونة الطلبات (فقط للشركات)
-                if (isCompany)
-                  Expanded(
-                    child: _HomeOrderTabIcon(controller: controller),
-                  ),
+                // أيقونة الطلبات — للمستخدمين العاديين والشركات
+                Expanded(
+                  child: _HomeOrderTabIcon(controller: controller),
+                ),
                 Expanded(
                   child: _HomeGroupsTabIcon(controller: controller),
                 ),

@@ -49,22 +49,14 @@ class HomeController extends GetxController {
 
   // المنشورات من الـ API
   final posts = <PostModel>[].obs;
-  /// منشورات تم نقلها إلى الأعمال بعد تحميل المخطط
-  final transferredPostIds = <int>[].obs;
 
-  /// منشورات الصفحة الرئيسية (لم تُنقل بعد)
-  List<PostModel> get mainFeedPosts =>
-      posts.where((p) => !transferredPostIds.contains(p.id)).toList();
+  /// منشورات الصفحة الرئيسية (آخر الأخبار)
+  List<PostModel> get mainFeedPosts => posts;
 
-  /// منشورات تبويب الأعمال (بعد تحميل المخطط ونقلها)
-  List<PostModel> get worksPosts =>
-      posts.where((p) => transferredPostIds.contains(p.id)).toList();
+  /// منشورات تبويب الأعمال — من GET /home/works
+  final worksPosts = <PostModel>[].obs;
+  final isWorksLoading = false.obs;
 
-  void markPostAsTransferred(int postId) {
-    if (!transferredPostIds.contains(postId)) {
-      transferredPostIds.add(postId);
-    }
-  }
   final isPostsLoading = false.obs;
   final isProfileLoading = false.obs;
   final isProfilePostsLoading = false.obs;
@@ -511,8 +503,10 @@ class HomeController extends GetxController {
     currentTab.value = tab;
     switch (tab) {
       case HomeTab.home:
-      case HomeTab.work:
         loadPosts();
+        break;
+      case HomeTab.work:
+        loadWorks();
         break;
       case HomeTab.groups:
         loadFriendRequests();
@@ -617,6 +611,49 @@ class HomeController extends GetxController {
     } finally {
       isPostsLoading.value = false;
     }
+  }
+
+  /// جلب أعمال المستخدم من GET /home/works
+  Future<void> loadWorks() async {
+    isWorksLoading.value = true;
+    try {
+      final res = await HomeApiService.getWorks(page: 1, limit: 20);
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['data'] ?? res.data!['posts'];
+        if (list is List && list.isNotEmpty) {
+          worksPosts.value = list
+              .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
+              .whereType<PostModel>()
+              .toList();
+        } else {
+          worksPosts.value = [];
+        }
+      } else {
+        worksPosts.value = [];
+      }
+    } finally {
+      isWorksLoading.value = false;
+    }
+  }
+
+  /// إضافة منشور إلى الأعمال — POST /home/works ثم تحديث القائمة
+  Future<bool> addPostToWorks(int postId) async {
+    final res = await HomeApiService.addPostToWorks(postId);
+    if (res.isSuccess) {
+      await loadWorks();
+      return true;
+    }
+    return false;
+  }
+
+  /// حذف منشور من الأعمال — DELETE /home/works/:postId
+  Future<bool> removePostFromWorks(int postId) async {
+    final res = await HomeApiService.deletePostFromWorks(postId);
+    if (res.isSuccess) {
+      await loadWorks();
+      return true;
+    }
+    return false;
   }
 
   /// آخر عدد طلبات معروف — لمعرفة وجود طلبات جديدة وإشعار المستخدم.

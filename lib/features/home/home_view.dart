@@ -33,7 +33,7 @@ class HomeView extends GetView<HomeController> {
                       // المحتوى الأساسي حسب التبويب
                       if (controller.currentTab.value == HomeTab.work) {
                         return Obx(() {
-                          if (controller.isPostsLoading.value) {
+                          if (controller.isWorksLoading.value) {
                             return buildShimmerPostList(4);
                           }
                           final posts = controller.worksPosts;

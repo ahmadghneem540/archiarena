@@ -100,9 +100,10 @@ class HomeApiService {
     }
   }
 
-  /// رفع مشروع إلى قسم الطلبات فقط — POST /home/company/posts
-  /// يُستخدم من زر "رفع المشروع" فقط. يظهر في واجهة الطلبات وليس في آخر الأخبار.
-  /// الحقول المطلوبة: title, category, description. الصور وباقي الحقول اختيارية.
+  /// رفع مشروع إلى قسم الطلبات — POST /home/company/posts
+  /// يُستخدم من زر "رفع المشروع" للمستخدمين العاديين والشركات (نفس المسار للجميع).
+  /// يظهر في واجهة الطلبات. الحقول المطلوبة: title, category, description. الصور اختيارية.
+  /// الباكند يجب أن يقبل الطلب من أي حساب (شخصي أو شركة) مرتبط بالتوكن.
   static Future<ApiResponse<Map<String, dynamic>>> createCompanyPost({
     required String title,
     required String category,
@@ -323,6 +324,8 @@ class HomeApiService {
     String? suitableFor,
     String? style,
     String? budget,
+    int? timerDays,
+    int? timerHours,
     List<File>? images,
     File? planPdf,
   }) async {
@@ -342,6 +345,9 @@ class HomeApiService {
           'suitable_for': suitableFor,
         if (style != null && style.isNotEmpty) 'style': style,
         if (budget != null && budget.isNotEmpty) 'budget': budget,
+        if (timerDays != null && timerDays >= 0) 'timer_days': timerDays,
+        if (timerHours != null && timerHours >= 0) 'timer_hours': timerHours,
+        if (timerDays != null || timerHours != null) 'timer_minutes': 0,
       };
 
       final formData = FormData.fromMap(map);
@@ -525,6 +531,101 @@ class HomeApiService {
       return ApiResponse(
         status: res.statusCode ?? 200,
         data: <String, dynamic>{'data': raw},
+        message: null,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  // ========== الأعمال (Works) ==========
+
+  /// جلب أعمال المستخدم — GET /home/works
+  static Future<ApiResponse<Map<String, dynamic>>> getWorks({
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final res = await _dio.get(
+        ApiEndpoints.homeWorks,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final raw = res.data;
+      if (raw is List) {
+        return ApiResponse(
+          status: 200,
+          data: {'data': raw, 'posts': raw},
+          message: null,
+        );
+      }
+      if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          return ApiResponse(
+            status: raw['status'] as int? ?? 200,
+            data: {
+              'data': data,
+              'posts': data,
+              'pagination': raw['pagination'],
+            },
+            message: raw['message'] as String?,
+          );
+        }
+        return ApiResponse.fromJson(
+          raw,
+          fromJsonT: (d) => d as Map<String, dynamic>,
+        );
+      }
+      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// إضافة منشور إلى الأعمال — POST /home/works
+  static Future<ApiResponse<Map<String, dynamic>>> addPostToWorks(
+    int postId,
+  ) async {
+    try {
+      final res = await _dio.post(
+        ApiEndpoints.homeWorksAdd,
+        data: {'post_id': postId},
+      );
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{},
+        message: null,
+      );
+    } on DioException catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  /// حذف منشور من الأعمال — DELETE /home/works/:postId
+  static Future<ApiResponse<Map<String, dynamic>>> deletePostFromWorks(
+    int postId,
+  ) async {
+    try {
+      final res = await _dio.delete(ApiEndpoints.homeWorksDelete(postId));
+      final raw = res.data;
+      if (raw is Map<String, dynamic>) {
+        return ApiResponse(
+          status: res.statusCode ?? 200,
+          data: raw,
+          message: raw['message']?.toString(),
+        );
+      }
+      return ApiResponse(
+        status: res.statusCode ?? 200,
+        data: <String, dynamic>{},
         message: null,
       );
     } on DioException catch (e) {

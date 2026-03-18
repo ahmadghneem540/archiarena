@@ -120,10 +120,26 @@ class UploadProjectPage extends StatelessWidget {
     );
   }
 
+  static const List<MapEntry<String, String>> _categoryOptions = [
+    MapEntry('residential', 'category_residential'),
+    MapEntry('commercial', 'category_commercial'),
+    MapEntry('admin', 'category_admin'),
+    MapEntry('education', 'category_education'),
+    MapEntry('health', 'category_health'),
+    MapEntry('entertainment', 'category_entertainment'),
+    MapEntry('interior', 'category_interior'),
+    MapEntry('other', 'category_other'),
+  ];
+
   void _showUploadSheet(BuildContext context, HomeController homeController) {
     final imageFile = Rxn<File>();
     final isLoading = false.obs;
+    final title = ''.obs;
+    final description = ''.obs;
+    final categoryValue = 'other'.obs;
     final picker = ImagePicker();
+    final titleController = TextEditingController();
+    final descController = TextEditingController();
 
     Get.bottomSheet(
       Directionality(
@@ -152,6 +168,51 @@ class UploadProjectPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
+                TextField(
+                  controller: titleController,
+                  onChanged: (v) => title.value = v,
+                  decoration: InputDecoration(
+                    labelText: 'project_title_hint'.tr,
+                    hintText: 'enter_project_title'.tr,
+                    border: const OutlineInputBorder(),
+                  ),
+                  textDirection: TextDirection.rtl,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  onChanged: (v) => description.value = v,
+                  decoration: InputDecoration(
+                    labelText: 'project_description_label'.tr,
+                    hintText: 'project_description_hint'.tr,
+                    border: const OutlineInputBorder(),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 3,
+                  textDirection: TextDirection.rtl,
+                ),
+                const SizedBox(height: 12),
+                Obx(
+                  () => DropdownButtonFormField<String>(
+                    value: categoryValue.value,
+                    decoration: InputDecoration(
+                      labelText: 'project_type'.tr,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: _categoryOptions
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e.key,
+                            child: Text(e.value.tr),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (v) {
+                      if (v != null) categoryValue.value = v;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Obx(
                   () {
                     final file = imageFile.value;
@@ -248,12 +309,30 @@ class UploadProjectPage extends StatelessWidget {
                         );
                         return;
                       }
+                      final titleStr = titleController.text.trim();
+                      final descStr = descController.text.trim();
+                      if (titleStr.isEmpty) {
+                        Get.snackbar(
+                          'alert'.tr,
+                          'upload_project_title_required'.tr,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+                      if (descStr.isEmpty) {
+                        Get.snackbar(
+                          'alert'.tr,
+                          'upload_project_description_required'.tr,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
                       isLoading.value = true;
                       try {
                         final res = await HomeApiService.createCompanyPost(
-                          title: 'مشروع',
-                          category: 'other',
-                          description: '—',
+                          title: titleStr,
+                          category: categoryValue.value,
+                          description: descStr,
                           images: [file],
                         );
                         if (res.isSuccess) {
@@ -286,6 +365,9 @@ class UploadProjectPage extends StatelessWidget {
         ),
       ),
       isScrollControlled: true,
-    );
+    ).then((_) {
+      titleController.dispose();
+      descController.dispose();
+    });
   }
 }
