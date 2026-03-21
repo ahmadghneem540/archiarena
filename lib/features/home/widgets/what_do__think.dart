@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/api/api_response.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../data/services/home_api_service.dart';
 import '../../../widget/gradient_button.dart';
@@ -108,23 +109,40 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     if (timerHours != null && timerHours < 0) timerHours = 0;
 
     try {
-      final res = await HomeApiService.createPost(
-        title: title,
-        category: _selectedCategory!,
-        description: description,
-        budget: _budgetController.text.trim().isEmpty
-            ? null
-            : _budgetController.text.trim(),
-        timerDays: timerDays,
-        timerHours: timerHours,
-        images: _images,
-        planPdf: _planPdf,
-      );
+      final isCompany = widget.controller.isCompany.value;
+      final ApiResponse<Map<String, dynamic>> res;
+
+      if (isCompany) {
+        // الشركات: POST /home/company/posts — ينشئ الطلب + المجلد، والباكند يعرضه أيضاً في الصفحة الرئيسية
+        final budgetStr = _budgetController.text.trim();
+        res = await HomeApiService.createCompanyPost(
+          title: title,
+          category: _selectedCategory!,
+          description: description,
+          budget: budgetStr.isEmpty ? null : budgetStr,
+          images: _images.isNotEmpty ? _images : null,
+        );
+      } else {
+        // المستخدمون العاديون: POST /home/posts
+        res = await HomeApiService.createPost(
+          title: title,
+          category: _selectedCategory!,
+          description: description,
+          budget: _budgetController.text.trim().isEmpty
+              ? null
+              : _budgetController.text.trim(),
+          timerDays: timerDays,
+          timerHours: timerHours,
+          images: _images,
+          planPdf: _planPdf,
+        );
+      }
 
       if (!mounted) return;
 
       if (res.isSuccess) {
         widget.controller.loadPosts();
+        if (isCompany) widget.controller.loadOrders();
         Get.back();
         Get.snackbar(
           'success'.tr,

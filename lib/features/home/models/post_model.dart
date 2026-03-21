@@ -44,6 +44,7 @@ class PostPlanItem {
 class PostModel {
   PostModel({
     required this.id,
+    this.orderId,
     required this.title,
     this.description,
     this.category,
@@ -70,6 +71,8 @@ class PostModel {
   });
 
   final int id;
+  /// معرف الطلب المرتبط (للطلبات/المشاريع من الشركات). يُستخدم عند تقديم عرض.
+  final int? orderId;
   final String title;
   final String? description;
   final String? category;
@@ -101,8 +104,10 @@ class PostModel {
     final plansRaw = json['plans'];
     final blueprintsRaw = json['blueprints'];
     final attachmentsRaw = json['attachments'];
+    final orderIdRaw = json['order_id'] ?? json['orderId'];
     return PostModel(
       id: id is int ? id : int.tryParse('${id}') ?? 0,
+      orderId: orderIdRaw != null ? int.tryParse('$orderIdRaw') : null,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
       category: json['category']?.toString(),

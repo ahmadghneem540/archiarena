@@ -23,6 +23,7 @@ import 'models/user_profile_model.dart';
 import 'widgets/comments_sheet.dart';
 import 'widgets/home_post_details_sheet.dart';
 import 'widgets/order_details_view.dart';
+import 'widgets/upload_project.dart';
 
 enum HomeTab { home, work, orders, groups, profile, notifications, menu }
 
@@ -32,7 +33,12 @@ class HomeController extends GetxController {
   // نوع المستخدم: true للشركات، false للأشخاص
   final RxBool isCompany = false.obs; // يمكن تغييرها حسب نوع المستخدم المسجل
 
-  void openUploadPage() {
+  /// فتح صفحة رفع المشروع. إن وُجد post (من صفحة الأعمال) يُفتح نموذج تقديم عرض على ذلك المشروع.
+  void openUploadPage({PostModel? post}) {
+    if (post != null) {
+      UploadProjectPage.showProposalSheet(post, this);
+      return;
+    }
     showUploadPage.value = true;
   }
 
@@ -375,12 +381,21 @@ class HomeController extends GetxController {
   }
 
   /// جلب العروض على طلب من الـ API — GET /home/orders/:orderId/proposals
+  /// الباكند يُرجع 403 إذا المستخدم ليس صاحب الطلب
   Future<void> loadOrderProposals(String orderId) async {
     final oid = int.tryParse(orderId);
     if (oid == null) return;
     isOrderProposalsLoading.value = true;
     try {
       final res = await HomeApiService.getOrderProposals(oid);
+      if (res.status == 403) {
+        Get.snackbar(
+          'alert'.tr,
+          res.message ?? 'orders_company_only'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
       final list = <ProjectImageModel>[];
       if (res.isSuccess && res.data != null) {
         final rawList = res.data!['proposals'] ?? res.data!['data'];
@@ -508,6 +523,9 @@ class HomeController extends GetxController {
       case HomeTab.work:
         loadWorks();
         break;
+      case HomeTab.orders:
+        if (isCompany.value) loadOrders();
+        break;
       case HomeTab.groups:
         loadFriendRequests();
         loadMyFriends();
@@ -520,8 +538,6 @@ class HomeController extends GetxController {
         loadNotifications();
         break;
       case HomeTab.menu:
-        break;
-      default:
         break;
     }
   }
@@ -1076,10 +1092,20 @@ class HomeController extends GetxController {
   }
 
   /// جلب الطلبات/المشاريع المرفوعة من الـ API (لوحة التحكم)
+  /// الباكند يُرجع 403 إذا المستخدم ليس شركة
   Future<void> loadOrders() async {
     isOrdersLoading.value = true;
     try {
       final res = await HomeApiService.getHomeOrders();
+      if (res.status == 403) {
+        orders.value = [];
+        Get.snackbar(
+          'alert'.tr,
+          res.message ?? 'orders_company_only'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
       if (res.isSuccess && res.data != null) {
         final rawList = res.data!['orders'] ?? res.data!['data'];
         if (rawList is List && rawList.isNotEmpty) {

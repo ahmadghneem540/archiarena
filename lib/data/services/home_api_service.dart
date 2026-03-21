@@ -239,7 +239,11 @@ class HomeApiService {
       final res = await _dio.post(
         ApiEndpoints.homeOrderSubmitProposal(orderId),
         data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        options: Options(
+          contentType: 'multipart/form-data',
+          sendTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 120),
+        ),
       );
       final raw = res.data;
       if (raw is Map<String, dynamic>) {
@@ -551,32 +555,41 @@ class HomeApiService {
         queryParameters: {'page': page, 'limit': limit},
       );
       final raw = res.data;
+      List? list;
       if (raw is List) {
+        list = raw;
+      } else if (raw is Map<String, dynamic>) {
+        final data = raw['data'];
+        if (data is List) {
+          list = data;
+        } else if (data is Map && data['posts'] is List) {
+          list = data['posts'] as List;
+        } else if (data is Map && data['data'] is List) {
+          list = data['data'] as List;
+        } else if (raw['posts'] is List) {
+          list = raw['posts'] as List;
+        } else if (raw['works'] is List) {
+          list = raw['works'] as List;
+        }
+      }
+      if (list != null) {
         return ApiResponse(
-          status: 200,
-          data: {'data': raw, 'posts': raw},
-          message: null,
+          status: raw is Map ? (raw['status'] as int? ?? 200) : 200,
+          data: {
+            'data': list,
+            'posts': list,
+            if (raw is Map && raw['pagination'] != null) 'pagination': raw['pagination'],
+          },
+          message: raw is Map ? raw['message']?.toString() : null,
         );
       }
       if (raw is Map<String, dynamic>) {
-        final data = raw['data'];
-        if (data is List) {
-          return ApiResponse(
-            status: raw['status'] as int? ?? 200,
-            data: {
-              'data': data,
-              'posts': data,
-              'pagination': raw['pagination'],
-            },
-            message: raw['message'] as String?,
-          );
-        }
         return ApiResponse.fromJson(
           raw,
           fromJsonT: (d) => d as Map<String, dynamic>,
         );
       }
-      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+      return ApiResponse(status: 0, data: {'data': [], 'posts': []}, message: 'صيغة استجابة غير متوقعة');
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -590,6 +603,7 @@ class HomeApiService {
       final res = await _dio.post(
         ApiEndpoints.homeWorksAdd,
         data: {'post_id': postId},
+        options: Options(contentType: Headers.jsonContentType),
       );
       final raw = res.data;
       if (raw is Map<String, dynamic>) {
@@ -637,7 +651,12 @@ class HomeApiService {
     final status = e.response?.statusCode ?? 0;
     final data = e.response?.data;
     String? message;
-    if (data is Map) {
+    if (e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.sendTimeout) {
+      message = 'انتهت مهلة الاتصال. تحقق من الإنترنت وحاول مرة أخرى.';
+    }
+    if (message == null && data is Map) {
       message = data['message']?.toString() ??
           data['error']?.toString() ??
           data['msg']?.toString();

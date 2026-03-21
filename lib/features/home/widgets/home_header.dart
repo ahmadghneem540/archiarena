@@ -51,10 +51,13 @@ class HomeHeader extends StatelessWidget {
                     iconOutlined: Icons.work_outline,
                   ),
                 ),
-                // أيقونة الطلبات — للمستخدمين العاديين والشركات
-                Expanded(
-                  child: _HomeOrderTabIcon(controller: controller),
-                ),
+                // أيقونة الطلبات — للشركات فقط
+                Obx(() {
+                  if (!controller.isCompany.value) return const SizedBox.shrink();
+                  return Expanded(
+                    child: _HomeOrderTabIcon(controller: controller),
+                  );
+                }),
                 Expanded(
                   child: _HomeGroupsTabIcon(controller: controller),
                 ),

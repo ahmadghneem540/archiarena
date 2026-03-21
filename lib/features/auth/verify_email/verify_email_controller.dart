@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/api/api_client.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/routes/app_routes.dart';
+import '../../../core/services/services.dart';
 import '../../../data/services/auth_api_service.dart';
 
 class VerifyEmailController extends GetxController {
@@ -10,6 +13,7 @@ class VerifyEmailController extends GetxController {
   final resendCooldown = 0.obs;
 
   String get email => Get.arguments?['email'] as String? ?? '';
+  bool get isCompany => Get.arguments?['isCompany'] == true;
 
   String get code => codeController.text.replaceAll(' ', '').trim();
 
@@ -48,14 +52,28 @@ class VerifyEmailController extends GetxController {
         code: codeValue,
       );
       if (res.isSuccess) {
-        Get.snackbar(
-          'تم بنجاح',
-          'تم التحقق من بريدك الإلكتروني. يمكنك تسجيل الدخول الآن.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Get.theme.colorScheme.primary,
-          colorText: Get.theme.colorScheme.onPrimary,
-        );
-        Get.offAllNamed(AppRoutes.authLogin);
+        // إذا رجع الـ API توكناً (تسجيل تلقائي) انتقل للرئيسية مباشرة
+        final token = await MyServices.getStringValue(ConstData.keyToken);
+        if (token != null && token.isNotEmpty) {
+          ApiClient.reset();
+          Get.snackbar(
+            'تم بنجاح',
+            'تم التحقق من بريدك الإلكتروني.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Get.theme.colorScheme.primary,
+            colorText: Get.theme.colorScheme.onPrimary,
+          );
+          Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
+        } else {
+          Get.snackbar(
+            'تم بنجاح',
+            'تم التحقق من بريدك الإلكتروني. يمكنك تسجيل الدخول الآن.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Get.theme.colorScheme.primary,
+            colorText: Get.theme.colorScheme.onPrimary,
+          );
+          Get.offAllNamed(AppRoutes.authLogin);
+        }
       } else {
         Get.snackbar(
           'فشل التحقق',

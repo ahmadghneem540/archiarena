@@ -163,13 +163,11 @@ class _TapItem extends StatelessWidget {
   const _TapItem({
     required this.icon,
     required this.title,
-    this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
-  final String? subtitle;
   final VoidCallback onTap;
 
   @override
@@ -188,10 +186,6 @@ class _TapItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.grey600)),
-                  ],
                 ],
               ),
             ),

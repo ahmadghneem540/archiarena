@@ -90,16 +90,35 @@ class AuthApiService {
             ? dio.Options(contentType: 'multipart/form-data')
             : null,
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
+      final raw = res.data as Map<String, dynamic>? ?? {};
+      final apiRes = ApiResponse.fromJson(
+        raw,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
+      // تخزين التوكن إذا رجعته الـ API (مثل تسجيل الدخول)
+      if (apiRes.isSuccess) {
+        final responseData = apiRes.data ?? raw;
+        final token = _extractToken(responseData, raw);
+        if (token != null && token.isNotEmpty) {
+          await MyServices.saveStringValue(ConstData.keyToken, token);
+          final user = responseData['user'] ?? raw['user'];
+          if (user != null && user['id'] != null) {
+            await MyServices.saveStringValue(
+              ConstData.keyUserId,
+              user['id'].toString(),
+            );
+          }
+          await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
+        }
+      }
+      return apiRes;
     } on dio.DioException catch (e) {
       return _handleError(e);
     }
   }
 
   /// التحقق من البريد الإلكتروني
+  /// إذا رجع الـ API توكناً يتم تخزينه (تسجيل تلقائي بعد التحقق)
   static Future<ApiResponse<Map<String, dynamic>>> verifyEmail({
     required String email,
     required String code,
@@ -112,10 +131,33 @@ class AuthApiService {
           'code': code,
         },
       );
-      return ApiResponse.fromJson(
-        res.data as Map<String, dynamic>,
+      final raw = res.data as Map<String, dynamic>? ?? {};
+      final apiRes = ApiResponse.fromJson(
+        raw,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
+      if (apiRes.isSuccess) {
+        final responseData = apiRes.data ?? raw;
+        final token = _extractToken(responseData, raw);
+        if (token != null && token.isNotEmpty) {
+          await MyServices.saveStringValue(ConstData.keyToken, token);
+          final user = responseData['user'] ?? raw['user'];
+          if (user != null && user['id'] != null) {
+            await MyServices.saveStringValue(
+              ConstData.keyUserId,
+              user['id'].toString(),
+            );
+          }
+          final apiIsCompany = _extractIsCompany(responseData, raw, user);
+          if (apiIsCompany != null) {
+            await MyServices.saveStringValue(
+              ConstData.keyIsCompany,
+              apiIsCompany ? '1' : '0',
+            );
+          }
+        }
+      }
+      return apiRes;
     } on dio.DioException catch (e) {
       return _handleError(e);
     }
@@ -246,6 +288,10 @@ class AuthApiService {
           }
         }
       }
+    }
+    // رسالة واضحة لأخطاء الخادم (503, 502, 500) بدل التفاصيل التقنية
+    if (message == null && status >= 500 && status < 600) {
+      message = 'error_server_unavailable'.tr;
     }
     message ??= e.message ?? 'حدث خطأ في الاتصال';
     return ApiResponse(

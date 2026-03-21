@@ -73,6 +73,13 @@ class LoginController extends GetxController {
           snackPosition: SnackPosition.BOTTOM,
         );
       }
+    } catch (_) {
+      // معالجة أي خطأ غير متوقع (مثل 503 من getMyProfile أو أخطاء شبكة)
+      Get.snackbar(
+        'فشل تسجيل الدخول',
+        'error_server_unavailable'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }

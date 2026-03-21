@@ -300,7 +300,7 @@ class HomePostCard1 extends StatelessWidget {
                           height: 44,
                           fontSize: 14,
                           onPressed: isInWorks
-                              ? controller.openUploadPage
+                              ? () => controller.openUploadPage(post: post)
                               : () => controller.openPostDetailsSheet(post),
                         ),
                       ),

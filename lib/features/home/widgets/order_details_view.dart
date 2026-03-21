@@ -81,16 +81,28 @@ class OrderDetailsView extends StatelessWidget {
           }
           final images = controller.getOrderImages(orderId);
           if (images.isEmpty) {
-            return Center(
-              child: Text(
-                'no_proposals_on_order'.tr,
-                style: TextStyle(color: AppColors.grey600),
+            return RefreshIndicator(
+              onRefresh: () => controller.loadOrderProposals(orderId),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Text(
+                      'no_proposals_on_order'.tr,
+                      style: TextStyle(color: AppColors.grey600),
+                    ),
+                  ),
+                ),
               ),
             );
           }
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: GridView.builder(
+          return RefreshIndicator(
+            onRefresh: () => controller.loadOrderProposals(orderId),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -105,6 +117,7 @@ class OrderDetailsView extends StatelessWidget {
                 return _buildImageCard(image, orderId);
               },
             ),
+          ),
           );
         }),
       ),
