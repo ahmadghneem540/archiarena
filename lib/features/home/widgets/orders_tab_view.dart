@@ -24,14 +24,14 @@ class OrdersTabView extends StatelessWidget {
                   color: AppColors.onSurface,
                 ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'المشاريع المرفوعة:',
+                'العروض المقدمة لمشاريعك:',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: AppColors.onSurface,
                     ),
               ),
@@ -43,8 +43,8 @@ class OrdersTabView extends StatelessWidget {
                       : () => controller.downloadAllOrdersAndImages(),
                   icon: controller.isDownloadingOrders.value
                       ? SizedBox(
-                          width: 18,
-                          height: 18,
+                          width: 10,
+                          height: 10,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Icon(Icons.download, size: 20, color: AppColors.primary),
@@ -87,6 +87,11 @@ class OrdersTabView extends StatelessWidget {
                 controller.orders.length,
                 (index) {
                   final order = controller.orders[index];
+
+                  if (controller.getOrderImages(order.id).isEmpty) {
+                    return const SizedBox(); // لا تعرض الطلب إذا لا يوجد عروض
+                  }
+
                   return Padding(
                     padding: EdgeInsets.only(
                       bottom: index < controller.orders.length - 1 ? 12 : 0,

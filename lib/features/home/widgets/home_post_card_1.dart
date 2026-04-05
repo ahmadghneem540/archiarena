@@ -36,6 +36,8 @@ class HomePostCard1 extends StatelessWidget {
         ? post.authorName!.substring(0, 1).toUpperCase()
         : 'A';
     final imageUrl = _fullImageUrl(post.imageUrl);
+    print("ORDER ID = ${post.orderId}");
+
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -304,6 +306,7 @@ class HomePostCard1 extends StatelessWidget {
                               : () => controller.openPostDetailsSheet(post),
                         ),
                       ),
+
                       if (isInWorks) ...[
                         const SizedBox(width: 8),
                         Material(
@@ -372,4 +375,5 @@ class HomePostCard1 extends StatelessWidget {
       ),
     );
   }
+
 }

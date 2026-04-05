@@ -132,217 +132,10 @@ class UploadProjectPage extends StatelessWidget {
     MapEntry('other', 'category_other'),
   ];
 
-  /// نموذج تقديم عرض على مشروع (من صفحة الأعمال) — صورة فقط حسب المواصفات
+  /// نموذج تقديم عرض على مشروع (من صفحة الأعمال) — رسالة + صورة
   static void showProposalSheet(PostModel post, HomeController controller) {
-    final imageFile = Rxn<File>();
-    final isLoading = false.obs;
-    final picker = ImagePicker();
-
     Get.bottomSheet(
-      Directionality(
-        textDirection: TextDirection.rtl,
-        child: Container(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(Get.context!).padding.bottom + 16,
-          ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  '${'submit_proposal'.tr} — ${post.title}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 16),
-                // شروط رفع المشروع
-                Obx(() {
-                  final conditions = controller.uploadConditions;
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'الشروط:',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        if (conditions.isEmpty)
-                          Text(
-                            '• احصل على تقييم كامل بعلامة ناجح',
-                            style: TextStyle(color: AppColors.grey700),
-                          )
-                        else
-                          ...conditions.map(
-                            (c) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text('• $c'),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                }),
-                const SizedBox(height: 16),
-                Obx(
-                  () {
-                    final file = imageFile.value;
-                    return Column(
-                      children: [
-                        if (file != null)
-                          Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.file(
-                                  file,
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              Positioned(
-                                top: 8,
-                                left: 8,
-                                child: GestureDetector(
-                                  onTap: () => imageFile.value = null,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      size: 20,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        else
-                          GestureDetector(
-                            onTap: () async {
-                              final x = await picker.pickImage(
-                                source: ImageSource.gallery,
-                                imageQuality: 90,
-                              );
-                              if (x != null) {
-                                imageFile.value = File(x.path);
-                              }
-                            },
-                            child: Container(
-                              width: double.infinity,
-                              height: 180,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: AppColors.border),
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppColors.cardBackground,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    size: 48,
-                                    color: AppColors.grey500,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'choose_proposal_image'.tr,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.grey600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                Obx(
-                  () => ArchiButton(
-                    label: isLoading.value ? 'uploading'.tr : 'submit_proposal'.tr,
-                    onPressed: () async {
-                      if (isLoading.value) return;
-                      final file = imageFile.value;
-                      if (file == null) {
-                        Get.snackbar(
-                          'alert'.tr,
-                          'proposal_image_required'.tr,
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
-                        return;
-                      }
-                      isLoading.value = true;
-                      try {
-                        // استخدم order_id إن وُجد (للطلبات)، وإلا post.id
-                        final orderId = post.orderId ?? post.id;
-                        final res = await HomeApiService.submitProposal(
-                          orderId,
-                          image: file,
-                        );
-                        if (res.isSuccess) {
-                          Get.back();
-                          Get.snackbar(
-                            'success'.tr,
-                            'proposal_submitted_success'.tr,
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: AppColors.primary,
-                            colorText: AppColors.onPrimary,
-                          );
-                        } else {
-                          Get.snackbar(
-                            'error'.tr,
-                            res.message ?? 'proposal_submit_failed'.tr,
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
-                        }
-                      } finally {
-                        isLoading.value = false;
-                      }
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      _ProposalOfferSheet(post: post, controller: controller),
       isScrollControlled: true,
     );
   }
@@ -585,5 +378,280 @@ class UploadProjectPage extends StatelessWidget {
       titleController.dispose();
       descController.dispose();
     });
+  }
+}
+
+/// شيت تقديم العرض — StatefulWidget لربط [TextEditingController] بدورة حياة الويدجت وتجنب dispose مبكر.
+class _ProposalOfferSheet extends StatefulWidget {
+  const _ProposalOfferSheet({
+    required this.post,
+    required this.controller,
+  });
+
+  final PostModel post;
+  final HomeController controller;
+
+  @override
+  State<_ProposalOfferSheet> createState() => _ProposalOfferSheetState();
+}
+
+class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
+  final Rxn<File> imageFile = Rxn<File>();
+  final RxBool isLoading = false.obs;
+  final ImagePicker _picker = ImagePicker();
+  late final TextEditingController _messageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _messageController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final post = widget.post;
+    final controller = widget.controller;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 16,
+          bottom: MediaQuery.of(context).padding.bottom + 16,
+        ),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                '${'submit_proposal'.tr} — ${post.title}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 16),
+              Obx(() {
+                final conditions = controller.uploadConditions;
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'الشروط:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (conditions.isEmpty)
+                        Text(
+                          '• احصل على تقييم كامل بعلامة ناجح',
+                          style: TextStyle(color: AppColors.grey700),
+                        )
+                      else
+                        ...conditions.map(
+                          (c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text('• $c'),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _messageController,
+                decoration: InputDecoration(
+                  labelText: 'رسالة العرض',
+                  hintText: 'اكتب تفاصيل عرضك هنا',
+                  border: const OutlineInputBorder(),
+                  alignLabelWithHint: true,
+                ),
+                maxLines: 4,
+                textDirection: TextDirection.rtl,
+              ),
+              const SizedBox(height: 16),
+              Obx(
+                () {
+                  final file = imageFile.value;
+                  return Column(
+                    children: [
+                      if (file != null)
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                file,
+                                width: double.infinity,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              child: GestureDetector(
+                                onTap: () => imageFile.value = null,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () async {
+                            final x = await _picker.pickImage(
+                              source: ImageSource.gallery,
+                              imageQuality: 90,
+                            );
+                            if (x != null) {
+                              imageFile.value = File(x.path);
+                            }
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 180,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: AppColors.border),
+                              borderRadius: BorderRadius.circular(12),
+                              color: AppColors.cardBackground,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 48,
+                                  color: AppColors.grey500,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'choose_proposal_image'.tr,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.grey600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+              Obx(
+                () => ArchiButton(
+                  label:
+                      isLoading.value ? 'uploading'.tr : 'submit_proposal'.tr,
+                  onPressed: () async {
+                    if (isLoading.value) return;
+                    final message = _messageController.text.trim();
+                    final file = imageFile.value;
+                    if (message.isEmpty) {
+                      Get.snackbar(
+                        'alert'.tr,
+                        'يرجى كتابة رسالة العرض',
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                      return;
+                    }
+                    if (file == null) {
+                      Get.snackbar(
+                        'alert'.tr,
+                        'proposal_image_required'.tr,
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                      return;
+                    }
+                    isLoading.value = true;
+                    try {
+                      final orderId = post.orderId ?? post.id;
+
+                      if (orderId <= 0) {
+                        Get.snackbar(
+                          'error'.tr,
+                          'لا يمكن تقديم عرض على هذا المشروع',
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                        return;
+                      }
+
+                      final res = await HomeApiService.submitProposal(
+                        orderId,
+                        message: message,
+                        image: file,
+                      );
+                      if (res.isSuccess) {
+                        Get.back();
+                        Get.snackbar(
+                          'success'.tr,
+                          'proposal_submitted_success'.tr,
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: AppColors.primary,
+                          colorText: AppColors.onPrimary,
+                        );
+                      } else {
+                        Get.snackbar(
+                          'error'.tr,
+                          res.message ?? 'proposal_submit_failed'.tr,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
+                    } finally {
+                      isLoading.value = false;
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

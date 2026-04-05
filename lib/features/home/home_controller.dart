@@ -575,7 +575,9 @@ class HomeController extends GetxController {
     loadFriendRequests();
     loadMyFriends();
     loadNotifications();
-    loadOrders();
+    if (!isCompany.value) {
+      loadOrders();
+    }
     _registerFcmTokenIfAvailable();
   }
 

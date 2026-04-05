@@ -51,7 +51,7 @@ class ApiEndpoints {
   /// قائمة المشاريع المرفوعة — GET
   static const String dashboardPosts = '/dashboard/posts';
   /// رفع مشروع إلى الطلبات — للمستخدمين العاديين والشركات (نفس المسار للجميع)
-  static const String companyCreatePost = '/home/company/posts';
+  static const String companyCreatePost = '/home/posts';
 
   // ========== Friends ==========
   static const String friendsRequestsCount = '/friends/requests/count';
