@@ -18,10 +18,8 @@ class HomePostCard1 extends StatelessWidget {
 
   final HomeController controller;
   final PostModel post;
-  /// true = في تبويب الأعمال (بعد تحميل المخطط) → زر رفع المشروع
   final bool isInWorks;
 
-  /// نفس منطق HomeController.fullImageUrl لتجنب // في الرابط
   String _fullImageUrl(String? url) {
     if (url == null || url.isEmpty) return '';
     if (url.startsWith('http')) return url;
@@ -38,11 +36,10 @@ class HomePostCard1 extends StatelessWidget {
     final imageUrl = _fullImageUrl(post.imageUrl);
     print("ORDER ID = ${post.orderId}");
 
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground, // ⭐ أصبح رمادي في الداكن
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -86,10 +83,10 @@ class HomePostCard1 extends StatelessWidget {
                       children: [
                         Text(
                           post.authorName ?? post.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: 15,
-                            color: AppColors.onSurface,
+                            color: context.themeOnSurface,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -97,7 +94,7 @@ class HomePostCard1 extends StatelessWidget {
                           post.createdAt ?? '',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.grey600,
+                            color: context.themeGrey600,
                           ),
                         ),
                       ],
@@ -106,7 +103,10 @@ class HomePostCard1 extends StatelessWidget {
                   if (post.category != null && post.category!.isNotEmpty)
                     Text(
                       post.category!,
-                      style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.themeGrey700,
+                      ),
                     ),
                 ],
               ),
@@ -122,28 +122,28 @@ class HomePostCard1 extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: imageUrl.isNotEmpty
                     ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildPlaceholder();
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: AppColors.placeholder1,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            ),
-                          );
-                        },
-                      )
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildPlaceholder();
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      color: AppColors.placeholder1,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    );
+                  },
+                )
                     : _buildPlaceholder(),
               ),
             ),
@@ -155,10 +155,10 @@ class HomePostCard1 extends StatelessWidget {
                 children: [
                   Text(
                     post.authorName ?? post.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: AppColors.onSurface,
+                      color: context.themeOnSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -166,7 +166,7 @@ class HomePostCard1 extends StatelessWidget {
                     post.description ?? post.title,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.grey700,
+                      color: context.themeGrey700,
                       height: 1.4,
                     ),
                     maxLines: 3,
@@ -189,7 +189,7 @@ class HomePostCard1 extends StatelessWidget {
                                   'project_cost'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.grey600,
+                                    color: context.themeGrey600,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -208,7 +208,7 @@ class HomePostCard1 extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.onSurface,
+                                          color: context.themeOnSurface,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -228,7 +228,7 @@ class HomePostCard1 extends StatelessWidget {
                                   'project_deadline_remaining'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.grey600,
+                                    color: context.themeGrey600,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -249,7 +249,7 @@ class HomePostCard1 extends StatelessWidget {
                                   'deal_timer'.tr,
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.grey600,
+                                    color: context.themeGrey600,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -268,7 +268,7 @@ class HomePostCard1 extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: AppColors.onSurface,
+                                          color: context.themeOnSurface,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -306,7 +306,6 @@ class HomePostCard1 extends StatelessWidget {
                               : () => controller.openPostDetailsSheet(post),
                         ),
                       ),
-
                       if (isInWorks) ...[
                         const SizedBox(width: 8),
                         Material(
@@ -336,7 +335,7 @@ class HomePostCard1 extends StatelessWidget {
                                     'success'.tr,
                                     'removed_from_works'.tr,
                                     snackPosition: SnackPosition.BOTTOM,
-                                    backgroundColor: AppColors.surface,
+                                    backgroundColor: context.themeCardBackground,
                                     margin: const EdgeInsets.all(12),
                                   );
                                 }
@@ -375,5 +374,4 @@ class HomePostCard1 extends StatelessWidget {
       ),
     );
   }
-
 }

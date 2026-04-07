@@ -28,12 +28,12 @@ class MenuTabView extends StatelessWidget {
             children: [
               _MenuItem(
                 icon: Icons.person_outline_rounded,
-                title: 'تعديل الملف الشخصي',
+                title: 'edit_profile_title'.tr,
                 onTap: () => controller.selectTab(HomeTab.profile),
               ),
               _MenuItem(
                 icon: Icons.lock_outline_rounded,
-                title: 'الخصوصية والأمان',
+                title: 'privacy_security'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuPrivacySecurity),
               ),
             ],
@@ -66,17 +66,17 @@ class MenuTabView extends StatelessWidget {
             children: [
               _MenuItem(
                 icon: Icons.help_outline_rounded,
-                title: 'المساعدة والدعم',
+                title: 'support'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuHelpSupport),
               ),
               _MenuItem(
                 icon: Icons.feedback_outlined,
-                title: 'إرسال ملاحظات',
+                title: 'send_feedback'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuFeedback),
               ),
               _MenuItem(
                 icon: Icons.description_outlined,
-                title: 'الشروط وسياسة الخصوصية',
+                title: 'terms_and_privacy_policy'.tr,
                 onTap: () => Get.toNamed(AppRoutes.termsAndPrivacy),
               ),
             ],
@@ -89,8 +89,8 @@ class MenuTabView extends StatelessWidget {
             children: [
               _MenuItem(
                 icon: Icons.info_outline_rounded,
-                title: 'حول archiarena',
-                subtitle: 'الإصدار 1.0.0',
+                title: 'about_app'.tr,
+                subtitle: 'الإصدار 1.0.0'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuAbout),
               ),
             ],
@@ -202,8 +202,8 @@ class MenuTabView extends StatelessWidget {
             children: [
               Icon(Icons.logout_rounded, color: AppColors.error, size: 22),
               const SizedBox(width: 8),
-              const Text(
-                'تسجيل الخروج',
+               Text(
+                'logout'.tr,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

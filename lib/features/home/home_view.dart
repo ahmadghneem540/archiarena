@@ -30,30 +30,35 @@ class HomeView extends GetView<HomeController> {
                 child: Stack(
                   children: [
                     Obx(() {
-                      // المحتوى الأساسي حسب التبويب
                       if (controller.currentTab.value == HomeTab.work) {
                         return Obx(() {
                           if (controller.isWorksLoading.value) {
                             return buildShimmerPostList(4);
                           }
+
                           final posts = controller.worksPosts;
+
                           if (posts.isEmpty) {
                             return Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.work_outline,
-                                      size: 64, color: context.themeGrey600),
+                                      size: 64,
+                                      color: context.themeGrey600),
                                   const SizedBox(height: 16),
                                   Text(
                                     'no_posts'.tr,
                                     style: TextStyle(
-                                        fontSize: 16, color: context.themeGrey600),
+                                      fontSize: 16,
+                                      color: context.themeGrey600,
+                                    ),
                                   ),
                                 ],
                               ),
                             );
                           }
+
                           return ListView.builder(
                             itemCount: posts.length,
                             itemBuilder: (context, index) {
@@ -66,19 +71,23 @@ class HomeView extends GetView<HomeController> {
                           );
                         });
                       }
+
                       if (controller.currentTab.value == HomeTab.orders) {
                         return OrdersTabView(controller: controller);
                       }
+
                       if (controller.currentTab.value == HomeTab.groups) {
                         return ListView(
                           children: [FriendsTabView(controller: controller)],
                         );
                       }
+
                       if (controller.currentTab.value == HomeTab.profile) {
                         return ListView(
                           children: [ProfileTabView(controller: controller)],
                         );
                       }
+
                       if (controller.currentTab.value ==
                           HomeTab.notifications) {
                         return ListView(
@@ -87,11 +96,13 @@ class HomeView extends GetView<HomeController> {
                           ],
                         );
                       }
+
                       if (controller.currentTab.value == HomeTab.menu) {
                         return ListView(
                           children: [MenuTabView(controller: controller)],
                         );
                       }
+
                       return Column(
                         children: [
                           HomeSearchBar(controller: controller),
@@ -101,22 +112,30 @@ class HomeView extends GetView<HomeController> {
                               if (controller.isPostsLoading.value) {
                                 return buildShimmerPostList(4);
                               }
+
                               final posts = controller.mainFeedPosts;
+
                               if (posts.isEmpty) {
                                 return Center(
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.feed_outlined, size: 64, color: context.themeGrey600),
+                                      Icon(Icons.feed_outlined,
+                                          size: 64,
+                                          color: context.themeGrey600),
                                       const SizedBox(height: 16),
                                       Text(
                                         'no_posts'.tr,
-                                        style: TextStyle(fontSize: 16, color: context.themeGrey600),
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: context.themeGrey600,
+                                        ),
                                       ),
                                     ],
                                   ),
                                 );
                               }
+
                               return ListView.builder(
                                 padding: const EdgeInsets.only(bottom: 24),
                                 itemCount: posts.length,
@@ -124,7 +143,6 @@ class HomeView extends GetView<HomeController> {
                                   return HomePostCard1(
                                     controller: controller,
                                     post: posts[index],
-                                    isInWorks: false,
                                   );
                                 },
                               );
@@ -133,32 +151,36 @@ class HomeView extends GetView<HomeController> {
                         ],
                       );
                     }),
+
+                    /// صفحة رفع المشروع
                     Obx(() {
-                      // صفحة رفع المشروع تظهر فوق المحتوى
                       if (controller.showUploadPage.value) {
-                          return Positioned.fill(
+                        return Positioned.fill(
                           child: Material(
                             color: context.themeSurface,
                             child: Column(
                               children: [
-                                // زر رجوع
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   color: context.themeSurface,
                                   child: Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.arrow_back),
+                                        icon: Icon(
+                                          Icons.arrow_back,
+                                          color: context.themeOnSurface,
+                                        ),
                                         onPressed: () {
                                           controller.closeUploadPage();
                                         },
                                       ),
                                       const SizedBox(width: 8),
-                                      const Text(
+                                      Text(
                                         'رفع المشروع',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
+                                          color: context.themeOnSurface,
                                         ),
                                       ),
                                     ],
@@ -170,6 +192,7 @@ class HomeView extends GetView<HomeController> {
                           ),
                         );
                       }
+
                       return const SizedBox.shrink();
                     }),
                   ],

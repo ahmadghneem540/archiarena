@@ -14,7 +14,7 @@ class HomeSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
           CircleAvatar(
@@ -48,7 +48,7 @@ class HomeSearchBar extends StatelessWidget {
                             textDirection: TextDirection.rtl,
                             style: const TextStyle(fontSize: 15, color: Colors.black),
                             decoration: InputDecoration(
-                              hintText: 'بحث عن مستخدمين أو تصاميم',
+                              hintText: 'search_users_hint'.tr,
                               hintStyle: TextStyle(
                                 color: AppColors.grey600,
                                 fontSize: 15,
@@ -72,8 +72,8 @@ class HomeSearchBar extends StatelessWidget {
                         height: 44,
                         child: ArchiButton(
                           label: 'what_do_you_think'.tr,
-                          fontSize: 12,
-                          height: 44,
+                          fontSize: 5,
+                          height: 34,
                           icon: Icons.auto_awesome,
                           onPressed: () {
                             Navigator.push(

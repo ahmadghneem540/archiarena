@@ -21,7 +21,9 @@ class ProfessionalAccountView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: Row(
                 children: [
@@ -32,25 +34,33 @@ class ProfessionalAccountView extends StatelessWidget {
                       color: AppColors.primary.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.badge_rounded, color: AppColors.primary, size: 28),
+                    child: const Icon(
+                      Icons.badge_rounded,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'حساب مهني',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.onSurface,
+                            color: context.themeOnSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           'professional_account_desc_short'.tr,
-                          style: TextStyle(fontSize: 13, color: AppColors.grey700, height: 1.35),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: context.themeGrey700,
+                            height: 1.35,
+                          ),
                         ),
                       ],
                     ),
@@ -58,27 +68,37 @@ class ProfessionalAccountView extends StatelessWidget {
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
+
             _buildOption(
+              context: context,
               icon: Icons.work_outline_rounded,
               title: 'link_professional_account'.tr,
               subtitle: 'link_professional_desc'.tr,
               onTap: () {},
             ),
+
             const SizedBox(height: 12),
+
             _buildOption(
+              context: context,
               icon: Icons.verified_outlined,
               title: 'verify_account'.tr,
               subtitle: 'verify_account_desc'.tr,
               onTap: () {},
             ),
+
             const SizedBox(height: 12),
+
             _buildOption(
+              context: context,
               icon: Icons.analytics_outlined,
               title: 'account_stats'.tr,
               subtitle: 'account_stats_desc'.tr,
               onTap: () {},
             ),
+
             const SizedBox(height: 32),
           ],
         ),
@@ -87,6 +107,7 @@ class ProfessionalAccountView extends StatelessWidget {
   }
 
   Widget _buildOption({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -100,9 +121,9 @@ class ProfessionalAccountView extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
           ),
           child: Row(
             children: [
@@ -120,13 +141,30 @@ class ProfessionalAccountView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.themeOnSurface,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.grey600)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.themeGrey600,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+              Icon(
+                Icons.chevron_left_rounded,
+                color: context.themeGrey600,
+                size: 24,
+              ),
             ],
           ),
         ),

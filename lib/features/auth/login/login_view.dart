@@ -89,10 +89,11 @@ class LoginView extends GetView<LoginController> {
 
   /// كارد يحتوي الحقول والأزرار
   Widget _buildFormCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: isDark ? const Color(0xFF3A3A3A) : AppColors.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -118,30 +119,43 @@ class LoginView extends GetView<LoginController> {
 
   Widget _buildPhoneOrEmailField(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextField(
       controller: controller.phoneOrEmailController,
       keyboardType: TextInputType.emailAddress,
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
         hintText: 'login_or_email'.tr,
-        hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.border),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.white70 : AppColors.grey500,
+          fontSize: 16,
         ),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.border),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF555555) : Colors.transparent,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
         ),
-        focusedBorder: UnderlineInputBorder(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
-      style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+      style: TextStyle(
+        fontSize: 16,
+        color: isDark ? Colors.white : AppColors.onSurface,
+      ),
     );
   }
 
   Widget _buildPasswordField(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Obx(
       () => TextField(
         controller: controller.passwordController,
@@ -149,14 +163,22 @@ class LoginView extends GetView<LoginController> {
         textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
         decoration: InputDecoration(
           hintText: 'password'.tr,
-          hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          hintStyle: TextStyle(
+            color: isDark ? Colors.white70 : AppColors.grey500,
+            fontSize: 16,
           ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          filled: true,
+          fillColor: isDark ? const Color(0xFF555555) : Colors.transparent,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
           ),
-          focusedBorder: UnderlineInputBorder(
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: AppColors.primary, width: 1.5),
           ),
           suffixIcon: IconButton(
@@ -164,13 +186,16 @@ class LoginView extends GetView<LoginController> {
               controller.obscurePassword.value
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: AppColors.grey500,
+              color: isDark ? Colors.white70 : AppColors.grey500,
             ),
             onPressed: controller.togglePasswordVisibility,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-        style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+        style: TextStyle(
+          fontSize: 16,
+          color: isDark ? Colors.white : AppColors.onSurface,
+        ),
       ),
     );
   }

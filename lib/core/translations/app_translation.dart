@@ -140,6 +140,7 @@ class AppTranslations extends Translations {
       'account_stats': 'إحصائيات الحساب',
       'feedback_placeholder': 'اقتراح أو فكرة',
       'send_feedback': 'إرسال الملاحظات',
+      'terms_and_privacy_policy': 'الشروط وسياسة الخصوصية',
       // General
       'success': 'نجاح',
       'error': 'خطأ',
@@ -361,6 +362,8 @@ class AppTranslations extends Translations {
       'voice_record_not_available': 'التسجيل الصوتي غير متاح. شغّل التطبيق على جهاز Android أو iOS بعد إعادة البناء.',
       'voice_record_start_failed': 'فشل بدء التسجيل',
       'reply_to': 'الرد على :name',
+      'notifications': 'الإشعارات',
+      'no_notifications': 'لا توجد إشعارات جديدة',
     },
     'en': {
       'choose_language': 'Choose Language',
@@ -715,6 +718,9 @@ class AppTranslations extends Translations {
       'voice_record_not_available': 'Voice recording is not available. Run the app on an Android or iOS device after rebuilding.',
       'voice_record_start_failed': 'Failed to start recording',
       'reply_to': 'Reply to :name',
+      'notifications': 'Notifications',
+      'no_notifications': 'No new notifications',
+      'terms_and_privacy_policy': 'Terms and Privacy Policy',
     },
     'de': {
       'choose_language': 'Sprache wählen',
@@ -1068,6 +1074,9 @@ class AppTranslations extends Translations {
       'voice_record_not_available': 'Sprachaufnahme nicht verfügbar. App auf Android- oder iOS-Gerät nach Neuaufbau starten.',
       'voice_record_start_failed': 'Aufnahme konnte nicht gestartet werden',
       'reply_to': 'Antwort an :name',
+      'notifications': 'benachrichtigungen',
+      'no_notifications': 'Keine Benachrichtigungen',
+      'terms_and_privacy_policy': 'Bedingungen und Datenschutzbestimmungen',
     },
   };
 }

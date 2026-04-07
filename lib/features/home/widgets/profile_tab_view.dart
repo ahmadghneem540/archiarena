@@ -154,10 +154,10 @@ class ProfileTabView extends StatelessWidget {
         children: [
           Text(
             displayName.isNotEmpty ? displayName : '—',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
+              color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
             ),
           ),
         ],
@@ -223,7 +223,9 @@ class ProfileTabView extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Get.isDarkMode
+              ? Colors.grey.shade800
+              : AppColors.cardBackground,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: AppColors.border),
         ),
@@ -236,7 +238,7 @@ class ProfileTabView extends StatelessWidget {
                 'profile_locked'.tr,
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.onSurface,
+                  color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -261,7 +263,9 @@ class ProfileTabView extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: Get.isDarkMode
+              ? Colors.grey.shade800
+              : AppColors.cardBackground,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
@@ -290,9 +294,9 @@ class ProfileTabView extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.onSurface,
+                color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
                 height: 1.3,
               ),
             ),
@@ -318,7 +322,9 @@ class ProfileTabView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: Get.isDarkMode
+                    ? Colors.grey.shade800
+                    : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.border),
                 boxShadow: [
@@ -383,7 +389,7 @@ class ProfileTabView extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
+                color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
             ),
           ),
         ],
@@ -412,14 +418,20 @@ class ProfileTabView extends StatelessWidget {
           child: Container(
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.cardBackground,
+              color: Get.isDarkMode
+                  ? Colors.grey.shade900
+                  : AppColors.cardBackground,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(
+                color: Get.isDarkMode
+                    ? Colors.grey.shade700
+                    : AppColors.border,
+              ),
             ),
             child: Center(
               child: Text(
                 'لا توجد منشورات بعد',
-                style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                style: TextStyle(fontSize: 14, color:  Get.isDarkMode ? Colors.white : AppColors.onSurface,),
               ),
             ),
           ),
@@ -438,14 +450,17 @@ class ProfileTabView extends StatelessWidget {
     final imageUrl = post.imageUrl != null && post.imageUrl!.isNotEmpty
         ? HomeController.fullImageUrl(post.imageUrl)
         : null;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Get.isDarkMode ? Colors.grey.shade900 : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: Get.isDarkMode
+                ? Colors.black.withOpacity(0.6)
+                : AppColors.shadowLight,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -468,8 +483,8 @@ class ProfileTabView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       (controller.myProfile.name.isNotEmpty
-                              ? controller.myProfile.name[0]
-                              : '؟')
+                          ? controller.myProfile.name[0]
+                          : '؟')
                           .toUpperCase(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -486,10 +501,12 @@ class ProfileTabView extends StatelessWidget {
                     children: [
                       Text(
                         controller.myProfile.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
-                          color: AppColors.onSurface,
+                          color: Get.isDarkMode
+                              ? Colors.white
+                              : AppColors.onSurface,
                         ),
                       ),
                       if (post.createdAt != null)
@@ -497,7 +514,9 @@ class ProfileTabView extends StatelessWidget {
                           post.createdAt!,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.grey600,
+                            color: Get.isDarkMode
+                                ? Colors.grey.shade400
+                                : AppColors.grey600,
                           ),
                         ),
                     ],
@@ -506,11 +525,17 @@ class ProfileTabView extends StatelessWidget {
                 if (post.category != null)
                   Text(
                     post.category!,
-                    style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Get.isDarkMode
+                          ? Colors.grey.shade400
+                          : AppColors.grey700,
+                    ),
                   ),
               ],
             ),
           ),
+
           if (imageUrl != null && imageUrl.isNotEmpty)
             Container(
               height: 220,
@@ -537,6 +562,7 @@ class ProfileTabView extends StatelessWidget {
                 ),
               ),
             ),
+
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -544,80 +570,152 @@ class ProfileTabView extends StatelessWidget {
               children: [
                 Text(
                   post.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    color: AppColors.onSurface,
+                    color:
+                    Get.isDarkMode ? Colors.white : AppColors.onSurface,
                   ),
                 ),
-                if (post.description != null && post.description!.isNotEmpty) ...[
+
+                if (post.description != null &&
+                    post.description!.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
                     post.description!,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.grey700,
+                      color: Get.isDarkMode
+                          ? Colors.grey.shade300
+                          : AppColors.grey700,
                       height: 1.4,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
+
                 if ((post.budget != null && post.budget!.isNotEmpty) ||
                     (post.deadline != null && post.deadline!.isNotEmpty) ||
-                    (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
+                    (post.projectTimer != null &&
+                        post.projectTimer!.isNotEmpty)) ...[
                   const SizedBox(height: 10),
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (post.budget != null && post.budget!.isNotEmpty)
+                      if (post.budget != null &&
+                          post.budget!.isNotEmpty)
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('تكلفة المشروع', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text(
+                                'تكلفة المشروع',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Get.isDarkMode
+                                      ? Colors.grey.shade400
+                                      : AppColors.grey600,
+                                ),
+                              ),
                               const SizedBox(height: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.account_balance_wallet_outlined, size: 18, color: AppColors.primary),
+                                  Icon(
+                                    Icons
+                                        .account_balance_wallet_outlined,
+                                    size: 18,
+                                    color: AppColors.primary,
+                                  ),
                                   const SizedBox(width: 6),
                                   Flexible(
-                                    child: Text(post.budget!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      post.budget!,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Get.isDarkMode
+                                            ? Colors.white
+                                            : AppColors.onSurface,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                      if (post.deadline != null && post.deadline!.isNotEmpty)
+
+                      if (post.deadline != null &&
+                          post.deadline!.isNotEmpty)
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('متبقي حتى انتهاء المشروع', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text(
+                                'متبقي حتى انتهاء المشروع',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Get.isDarkMode
+                                      ? Colors.grey.shade400
+                                      : AppColors.grey600,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              CountdownTimer(deadline: post.deadline, iconSize: 18),
+                              CountdownTimer(
+                                  deadline: post.deadline,
+                                  iconSize: 18),
                             ],
                           ),
                         ),
-                      if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+
+                      if (post.projectTimer != null &&
+                          post.projectTimer!.isNotEmpty)
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('مؤقت الصفقة', style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text(
+                                'مؤقت الصفقة',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Get.isDarkMode
+                                      ? Colors.grey.shade400
+                                      : AppColors.grey600,
+                                ),
+                              ),
                               const SizedBox(height: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                  Icon(
+                                    Icons.schedule_outlined,
+                                    size: 18,
+                                    color: AppColors.primary,
+                                  ),
                                   const SizedBox(width: 6),
                                   Flexible(
-                                    child: Text(post.projectTimer!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
+                                    child: Text(
+                                      post.projectTimer!,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Get.isDarkMode
+                                            ? Colors.white
+                                            : AppColors.onSurface,
+                                      ),
+                                      overflow:
+                                      TextOverflow.ellipsis,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -627,7 +725,9 @@ class ProfileTabView extends StatelessWidget {
                     ],
                   ),
                 ],
+
                 const SizedBox(height: 12),
+
                 HomeInteractionRow(
                   likesCount: post.likesCount,
                   commentsCount: post.commentsCount,
@@ -646,5 +746,4 @@ class ProfileTabView extends StatelessWidget {
       ),
     );
   }
-
 }

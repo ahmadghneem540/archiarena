@@ -10,40 +10,55 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
   @override
   Widget build(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
+
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(
               isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
               size: 20,
+              color: context.themeOnSurface,
             ),
             onPressed: () => Get.back(),
           ),
-          title: Text('terms_and_privacy'.tr),
+          title: Text(
+            'terms_and_privacy'.tr,
+            style: TextStyle(color: context.themeOnSurface),
+          ),
+          backgroundColor: context.themeSurface,
+          elevation: 0,
         ),
+
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 const SizedBox(height: 32),
+
                 Text(
                   'finish_registration'.tr,
-                  style: Theme.of(context).textTheme.headlineLarge,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: context.themeOnSurface,
+                  ),
                 ),
+
                 const SizedBox(height: 20),
+
                 RichText(
                   textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                   text: TextSpan(
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurface),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: context.themeOnSurface,
+                    ),
                     children: [
                       TextSpan(text: '${'by_clicking_register'.tr} '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
@@ -58,7 +73,9 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
+
                       const TextSpan(text: ' '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
@@ -73,7 +90,9 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
+
                       const TextSpan(text: ' '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
@@ -88,24 +107,32 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
+
                       const TextSpan(text: '.'),
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 32),
+
                 Obx(
-                  () => ArchiButton(
-                    label: controller.isLoading.value ? 'loading_register'.tr : 'register'.tr,
+                      () => ArchiButton(
+                    label: controller.isLoading.value
+                        ? 'loading_register'.tr
+                        : 'register'.tr,
                     onPressed: () {
-                      if (!controller.isLoading.value) controller.signUp();
+                      if (!controller.isLoading.value) {
+                        controller.signUp();
+                      }
                     },
                   ),
                 ),
 
                 const SizedBox(height: 16),
+
                 Center(
                   child: Obx(
-                    () => TextButton(
+                        () => TextButton(
                       onPressed: controller.isLoading.value
                           ? null
                           : controller.signUpWithoutUpdatingContact,
@@ -113,20 +140,25 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                         'register_without_contacts'.tr,
                         style: TextStyle(
                           fontSize: 15,
-                          color: AppColors.onSurfaceVariant,
+                          color: context.themeGrey600,
                         ),
                       ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 40),
+
                 Text(
                   'archiarena_vision'.tr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.5),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: context.themeGrey700,
+                  ),
                   textAlign: TextAlign.center,
                 ),
+
                 const SizedBox(height: 32),
               ],
             ),

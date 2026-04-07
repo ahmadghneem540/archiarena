@@ -27,7 +27,7 @@ class FriendsTabView extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
           ),
           const SizedBox(height: 24),
@@ -46,10 +46,10 @@ class FriendsTabView extends StatelessWidget {
       children: [
         Text(
           'my_friends'.tr,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -70,7 +70,9 @@ class FriendsTabView extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: context.isDarkMode
+                    ? Colors.grey.shade800
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.border),
               ),
@@ -80,7 +82,7 @@ class FriendsTabView extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'no_friends_yet'.tr,
-                    style: TextStyle(fontSize: 15, color: AppColors.grey600),
+                    style: TextStyle(fontSize: 15, color: context.themeGrey600),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -89,18 +91,28 @@ class FriendsTabView extends StatelessWidget {
           }
           return Container(
             decoration: BoxDecoration(
-              color: AppColors.cardBackground,
+              color: context.themeCardBackground,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: context.themeBorder),
               boxShadow: [
-                BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2)),
+                BoxShadow(
+                  color: context.themeShadowLight,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
               ],
             ),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: list.length,
-              separatorBuilder: (_, __) => Divider(height: 1, thickness: 1, color: AppColors.border, indent: 72, endIndent: 16),
+              separatorBuilder: (_, __) => Divider(
+                height: 1,
+                thickness: 1,
+                color: context.themeBorder,
+                indent: 72,
+                endIndent: 16,
+              ),
               itemBuilder: (context, index) {
                 final friend = list[index];
                 final user = UserProfileModel(
@@ -256,10 +268,10 @@ class _FriendCard extends StatelessWidget {
                   children: [
                     Text(
                       friend.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: context.themeOnSurface,
                       ),
                     ),
                     if (friend.mutualCount > 0) ...[
@@ -268,7 +280,7 @@ class _FriendCard extends StatelessWidget {
                         friend.mutualCount == 1
                             ? 'mutual_friend'.tr
                             : '${friend.mutualCount} ${'mutual_friends'.tr}',
-                        style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                        style: TextStyle(fontSize: 13, color: context.themeGrey600),
                       ),
                     ],
                   ],
@@ -304,10 +316,20 @@ class _FriendRequestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.isDarkMode
+            ? Colors.grey.shade800
+            : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: context.themeBorder),
+        boxShadow: [
+          BoxShadow(
+            color: context.themeShadowLight,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
+
       child: InkWell(
         onTap: () {
           controller.loadMyFriends();

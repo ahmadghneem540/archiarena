@@ -23,7 +23,7 @@ void main() async {
   String localeCode = savedLocale ?? '';
   if (localeCode.isEmpty) {
     final deviceLang = WidgetsBinding.instance.platformDispatcher.locale.languageCode.toLowerCase();
-    localeCode = ['ar', 'en', 'de'].contains(deviceLang) ? deviceLang : 'ar';
+    localeCode = ['ar', 'en', 'de'].contains(deviceLang) ? deviceLang : 'de';
   }
   final savedTheme = await MyServices.getStringValue(ConstData.keyThemeMode);
   ThemeMode initialThemeMode = ThemeMode.system;

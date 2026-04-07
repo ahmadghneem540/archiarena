@@ -39,17 +39,17 @@ class NotificationsTabView extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'الإشعارات',
+        Text(
+          'notifications'.tr,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
+            color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
           ),
         ),
         IconButton(
           onPressed: () {},
-          icon: Icon(Icons.search, color: AppColors.onSurface, size: 26),
+          icon: Icon(Icons.search, color: Get.isDarkMode ? Colors.white : AppColors.onSurface, size: 26),
         ),
       ],
     );
@@ -62,7 +62,7 @@ class NotificationsTabView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(32),
           child: Text(
-            'لا توجد إشعارات جديدة',
+            'no_notifications'.tr,
             style: TextStyle(fontSize: 15, color: AppColors.grey600),
           ),
         ),
@@ -72,12 +72,12 @@ class NotificationsTabView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'جديد',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.onSurface,
+              color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
           ),
         ),
         const SizedBox(height: 16),

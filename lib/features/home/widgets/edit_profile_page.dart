@@ -8,7 +8,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../data/services/profile_api_service.dart';
 import '../home_controller.dart';
 
-/// شاشة تعديل الملف الشخصي — PUT /profile/me ورفع صورة البروفايل/الغلاف.
 class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key, required this.controller});
 
@@ -109,12 +108,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final p = widget.controller.myProfile;
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.themeSurface,
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -125,7 +125,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
           ),
           actions: [
@@ -133,11 +133,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onPressed: _isSaving ? null : _save,
               child: _isSaving
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text('save'.tr, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+                  : Text(
+                'save'.tr,
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -166,22 +172,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ],
                 ),
                 const SizedBox(height: 24),
+
                 _sectionTitle('basic_data'.tr),
                 const SizedBox(height: 8),
+
                 _textField(
                   controller: _nameController,
                   label: 'full_name'.tr,
                   hint: 'enter_name'.tr,
                   icon: Icons.person_outline,
                 ),
+
                 const SizedBox(height: 12),
+
                 _textField(
                   controller: _usernameController,
                   label: 'username'.tr,
                   hint: 'hint_username'.tr,
                   icon: Icons.alternate_email,
                 ),
+
                 const SizedBox(height: 12),
+
                 _textField(
                   controller: _bioController,
                   label: 'bio'.tr,
@@ -189,63 +201,81 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   icon: Icons.info_outline,
                   maxLines: 3,
                 ),
+
                 const SizedBox(height: 24),
+
                 _sectionTitle('work_section'.tr),
                 const SizedBox(height: 8),
+
                 _textField(
                   controller: _jobController,
                   label: 'job_title'.tr,
                   hint: 'hint_job'.tr,
                   icon: Icons.work_outline,
                 ),
+
                 const SizedBox(height: 12),
+
                 _textField(
                   controller: _companyController,
                   label: 'company'.tr,
                   hint: 'hint_company'.tr,
                   icon: Icons.business_outlined,
                 ),
+
                 const SizedBox(height: 12),
+
                 _textField(
                   controller: _educationController,
                   label: 'education'.tr,
                   hint: 'hint_education'.tr,
                   icon: Icons.school_outlined,
                 ),
+
                 const SizedBox(height: 24),
+
                 _sectionTitle('location_section'.tr),
                 const SizedBox(height: 8),
+
                 _textField(
                   controller: _livesInController,
                   label: 'location'.tr,
                   hint: 'hint_location'.tr,
                   icon: Icons.location_on_outlined,
                 ),
+
                 const SizedBox(height: 12),
+
                 _textField(
                   controller: _fromController,
                   label: 'origin'.tr,
                   hint: 'hint_location'.tr,
                   icon: Icons.place_outlined,
                 ),
+
                 const SizedBox(height: 24),
+
                 _sectionTitle('privacy_section'.tr),
                 const SizedBox(height: 8),
+
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
+                    color: context.themeCardBackground,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: context.themeBorder),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.lock_outline, size: 22, color: AppColors.grey600),
+                      Icon(Icons.lock_outline, size: 22, color: context.themeGrey600),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'lock_profile'.tr,
-                          style: TextStyle(fontSize: 15, color: AppColors.onSurface),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: context.themeOnSurface,
+                          ),
                         ),
                       ),
                       Switch(
@@ -256,6 +286,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 32),
               ],
             ),
@@ -268,10 +299,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
-        color: AppColors.onSurface,
+        color: context.themeOnSurface,
       ),
     );
   }
@@ -288,9 +319,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
         child: Container(
           height: 100,
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -303,15 +334,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Icon(Icons.add_photo_alternate, color: AppColors.grey500, size: 40),
+                    errorBuilder: (_, __, ___) =>
+                        Icon(Icons.add_photo_alternate, color: context.themeGrey600, size: 40),
                   ),
                 )
               else
-                Icon(Icons.add_photo_alternate, color: AppColors.grey500, size: 40),
+                Icon(Icons.add_photo_alternate, color: context.themeGrey600, size: 40),
+
               const SizedBox(height: 6),
+
               Text(
                 label,
-                style: TextStyle(fontSize: 12, color: AppColors.grey600),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: context.themeGrey600,
+                ),
               ),
             ],
           ),
@@ -334,16 +371,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, size: 22, color: AppColors.grey600),
+        prefixIcon: Icon(icon, size: 22, color: context.themeGrey600),
         filled: true,
-        fillColor: AppColors.inputBackground,
+        fillColor: context.themeCardBackground,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: context.themeBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: BorderSide(color: context.themeBorder),
         ),
       ),
     );

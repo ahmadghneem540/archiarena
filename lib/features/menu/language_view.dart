@@ -24,6 +24,7 @@ class LanguageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentCode = Get.locale?.languageCode ?? 'ar';
+
     return MenuPageScaffold(
       title: 'language'.tr,
       child: SingleChildScrollView(
@@ -33,26 +34,40 @@ class LanguageView extends StatelessWidget {
           children: [
             Text(
               'choose_app_language'.tr,
-              style: TextStyle(fontSize: 14, color: AppColors.grey600, height: 1.4),
+              style: TextStyle(
+                fontSize: 14,
+                color: context.themeGrey600,
+                height: 1.4,
+              ),
             ),
+
             const SizedBox(height: 16),
+
             Container(
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: context.themeCardBackground,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border),
-                boxShadow: [BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2))],
+                border: Border.all(color: context.themeBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  )
+                ],
               ),
               child: Column(
                 children: _options.asMap().entries.map((e) {
                   final opt = e.value;
                   final isSelected = opt.code == currentCode;
                   final isLast = e.key == _options.length - 1;
+
                   final label = opt.code == 'ar'
                       ? 'lang_arabic'.tr
                       : opt.code == 'de'
-                          ? 'lang_german'.tr
-                          : 'lang_english'.tr;
+                      ? 'lang_german'.tr
+                      : 'lang_english'.tr;
+
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -60,7 +75,8 @@ class LanguageView extends StatelessWidget {
                         onTap: () => _selectLanguage(opt.code),
                         borderRadius: BorderRadius.circular(14),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
                           child: Row(
                             children: [
                               Expanded(
@@ -68,23 +84,40 @@ class LanguageView extends StatelessWidget {
                                   label,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                    color: isSelected ? AppColors.primary : AppColors.onSurface,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : context.themeOnSurface,
                                   ),
                                 ),
                               ),
                               if (isSelected)
-                                Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  color: AppColors.primary,
+                                  size: 22,
+                                ),
                             ],
                           ),
                         ),
                       ),
-                      if (!isLast) Divider(height: 1, thickness: 1, color: AppColors.border, indent: 16, endIndent: 16),
+
+                      if (!isLast)
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: context.themeBorder,
+                          indent: 16,
+                          endIndent: 16,
+                        ),
                     ],
                   );
                 }).toList(),
               ),
             ),
+
             const SizedBox(height: 32),
           ],
         ),

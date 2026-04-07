@@ -27,21 +27,24 @@ class HelpSupportView extends StatelessWidget {
                   ],
                 ),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.support_agent_rounded, color: AppColors.primary, size: 28),
+                      Icon(Icons.support_agent_rounded,
+                          color: AppColors.primary, size: 28),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         'كيف نساعدك؟',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.onSurface,
+                          color: context.themeOnSurface,
                         ),
                       ),
                     ],
@@ -49,37 +52,54 @@ class HelpSupportView extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'تصفح الأسئلة الشائعة أو تواصل مع فريق الدعم للحصول على مساعدة سريعة.',
-                    style: TextStyle(fontSize: 14, color: AppColors.grey700, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.themeGrey700,
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
             ),
+
             const SizedBox(height: 24),
+
             _buildLink(
+              context: context,
               icon: Icons.help_outline_rounded,
               title: 'الأسئلة الشائعة',
               onTap: () {},
             ),
+
             const SizedBox(height: 12),
+
             _buildLink(
+              context: context,
               icon: Icons.mail_outline_rounded,
               title: 'تواصل معنا',
               subtitle: 'support@archiarena.com',
               onTap: () {},
             ),
+
             const SizedBox(height: 12),
+
             _buildLink(
+              context: context,
               icon: Icons.chat_bubble_outline_rounded,
               title: 'الدردشة المباشرة',
               subtitle: 'متاحة من 9 صباحاً - 6 مساءً',
               onTap: () {},
             ),
+
             const SizedBox(height: 12),
+
             _buildLink(
+              context: context,
               icon: Icons.description_outlined,
               title: 'مركز المساعدة',
               onTap: () {},
             ),
+
             const SizedBox(height: 32),
           ],
         ),
@@ -88,6 +108,7 @@ class HelpSupportView extends StatelessWidget {
   }
 
   Widget _buildLink({
+    required BuildContext context,
     required IconData icon,
     required String title,
     String? subtitle,
@@ -101,9 +122,9 @@ class HelpSupportView extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
           ),
           child: Row(
             children: [
@@ -121,15 +142,32 @@ class HelpSupportView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: context.themeOnSurface,
+                      ),
+                    ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 2),
-                      Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.grey600)),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: context.themeGrey600,
+                        ),
+                      ),
                     ],
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+              Icon(
+                Icons.chevron_left_rounded,
+                color: context.themeGrey600,
+                size: 24,
+              ),
             ],
           ),
         ),
