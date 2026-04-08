@@ -333,6 +333,12 @@ class HomeApiService {
     List<File>? images,
     File? planPdf,
   }) async {
+    print("=== createPost called ===");
+    print("title: $title");
+    print("category: $category");
+    print("description: $description");
+    print("timerDays: $timerDays");
+    print("timerHours: $timerHours");
     try {
       final map = <String, dynamic>{
         'title': title,
@@ -355,7 +361,7 @@ class HomeApiService {
       };
 
       final formData = FormData.fromMap(map);
-
+      print("map before files: $map");
       if (images != null && images.isNotEmpty) {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];

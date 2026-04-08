@@ -181,30 +181,33 @@ class ProfileApiService {
   /// إنشاء منشور للملف الشخصي — POST /profile/me/posts (يظهر في الملف فقط)
   static Future<ApiResponse<Map<String, dynamic>>> createProfilePost({
     required String title,
-    required String description,
-    required String category,
     List<File>? images,
   }) async {
     try {
       final formData = FormData.fromMap({
         'title': title,
-        'description': description,
-        'category': category,
       });
+
       if (images != null && images.isNotEmpty) {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];
           final name = f.path.split(RegExp(r'[/\\]')).last;
+
           formData.files.add(
-            MapEntry('images', await MultipartFile.fromFile(f.path, filename: name)),
+            MapEntry(
+              'images',
+              await MultipartFile.fromFile(f.path, filename: name),
+            ),
           );
         }
       }
+
       final res = await _dio.post(
         ApiEndpoints.profileMePosts,
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
+
       return ApiResponse.fromJson(
         res.data as Map<String, dynamic>,
         fromJsonT: (d) => d as Map<String, dynamic>,

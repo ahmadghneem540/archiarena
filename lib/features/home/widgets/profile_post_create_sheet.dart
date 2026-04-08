@@ -21,21 +21,21 @@ class ProfilePostCreateSheet extends StatefulWidget {
 class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
   final ImagePicker _imagePicker = ImagePicker();
   final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  //final _descriptionController = TextEditingController();
   final List<File> _images = [];
   static const int _maxImages = 10;
-  String? _selectedCategory;
+  //String? _selectedCategory;
   bool _isUploading = false;
 
-  static const List<String> _categoryKeys = [
-    'residential', 'commercial', 'admin', 'education', 'health',
-    'entertainment', 'interior', 'other',
-  ];
+  // static const List<String> _categoryKeys = [
+  //   'residential', 'commercial', 'admin', 'education', 'health',
+  //   'entertainment', 'interior', 'other',
+  // ];
 
   @override
   void dispose() {
     _titleController.dispose();
-    _descriptionController.dispose();
+    // _descriptionController.dispose();
     super.dispose();
   }
 
@@ -56,7 +56,7 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
 
   Future<void> _submit() async {
     final title = _titleController.text.trim();
-    final description = _descriptionController.text.trim();
+  //  final description = _descriptionController.text.trim();
 
     if (_images.isEmpty) {
       Get.snackbar('alert'.tr, 'upload_project_main_image_required'.tr, snackPosition: SnackPosition.BOTTOM);
@@ -66,22 +66,22 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
       Get.snackbar('alert'.tr, 'upload_project_title_required'.tr, snackPosition: SnackPosition.BOTTOM);
       return;
     }
-    if (description.isEmpty) {
-      Get.snackbar('alert'.tr, 'upload_project_description_required'.tr, snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
-    if (_selectedCategory == null) {
-      Get.snackbar('alert'.tr, 'upload_project_category_required'.tr, snackPosition: SnackPosition.BOTTOM);
-      return;
-    }
+    // if (description.isEmpty) {
+    //   Get.snackbar('alert'.tr, 'upload_project_description_required'.tr, snackPosition: SnackPosition.BOTTOM);
+    //   return;
+    // }
+    // if (_selectedCategory == null) {
+    //   Get.snackbar('alert'.tr, 'upload_project_category_required'.tr, snackPosition: SnackPosition.BOTTOM);
+    //   return;
+    // }
 
     setState(() => _isUploading = true);
 
     try {
       final res = await ProfileApiService.createProfilePost(
         title: title,
-        description: description,
-        category: _selectedCategory!,
+        // description: description,
+        // category: _selectedCategory!,
         images: _images,
       );
 
@@ -119,9 +119,9 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
           top: 16,
           bottom: MediaQuery.of(context).padding.bottom + 16,
         ),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: Get.isDarkMode ? const Color(0xFF1E1E1E) : AppColors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -130,16 +130,20 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
             children: [
               Text(
                 'what_do_you_think'.tr,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
+                ),
               ),
               const SizedBox(height: 16),
               _buildImagesSection(),
               const SizedBox(height: 16),
               _buildTitleField(isRtl),
-              const SizedBox(height: 12),
-              _buildDescriptionField(isRtl),
-              const SizedBox(height: 12),
-              _buildCategoryDropdown(),
+              // const SizedBox(height: 12),
+              // _buildDescriptionField(isRtl),
+              // const SizedBox(height: 12),
+              // _buildCategoryDropdown(),
               const SizedBox(height: 24),
               ArchiButton(
                 label: _isUploading ? 'uploading'.tr : 'upload_project'.tr,
@@ -194,11 +198,11 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppColors.placeholder2,
+                      color: Get.isDarkMode ? Colors.grey.shade900 : AppColors.placeholder2,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: Icon(Icons.add_photo_alternate_outlined, color: AppColors.grey600, size: 28),
+                    child: Icon(Icons.add_photo_alternate_outlined, color: Get.isDarkMode ? Colors.grey.shade400 : AppColors.grey600, size: 28),
                   ),
                 ),
             ],
@@ -214,35 +218,42 @@ class _ProfilePostCreateSheetState extends State<ProfilePostCreateSheet> {
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
         hintText: 'project_title_hint'.tr,
-        border: const OutlineInputBorder(),
+        filled: true,
+        fillColor: Get.isDarkMode ? Colors.grey.shade900 : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Get.isDarkMode ? Colors.grey.shade700 : AppColors.border,
+          ),
+        ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     );
   }
 
-  Widget _buildDescriptionField(bool isRtl) {
-    return TextField(
-      controller: _descriptionController,
-      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      maxLines: 3,
-      decoration: InputDecoration(
-        hintText: 'project_description_hint'.tr,
-        border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-    );
-  }
+  // Widget _buildDescriptionField(bool isRtl) {
+  //   return TextField(
+  //     controller: _descriptionController,
+  //     textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+  //     maxLines: 3,
+  //     decoration: InputDecoration(
+  //       hintText: 'project_description_hint'.tr,
+  //       border: const OutlineInputBorder(),
+  //       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  //     ),
+  //   );
+  // }
 
-  Widget _buildCategoryDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedCategory,
-      decoration: const InputDecoration(
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      ),
-      hint: Text('choose_category'.tr),
-      items: _categoryKeys.map((k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr))).toList(),
-      onChanged: (v) => setState(() => _selectedCategory = v),
-    );
-  }
+  // Widget _buildCategoryDropdown() {
+  //   return DropdownButtonFormField<String>(
+  //     value: _selectedCategory,
+  //     decoration: const InputDecoration(
+  //       border: OutlineInputBorder(),
+  //       contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  //     ),
+  //     hint: Text('choose_category'.tr),
+  //     items: _categoryKeys.map((k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr))).toList(),
+  //     onChanged: (v) => setState(() => _selectedCategory = v),
+  //   );
+  // }
 }
