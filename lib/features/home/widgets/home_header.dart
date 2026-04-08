@@ -136,6 +136,7 @@ class _HomeOrderTabIcon extends StatelessWidget {
           isSelected ? 'assets/order_icon.png' : 'assets/order_icon_out.png',
           width: 24,
           height: 24,
+          color: isSelected ? AppColors.primary : AppColors.grey600,
           errorBuilder: (context, error, stackTrace) {
             // في حالة عدم وجود الصورة، استخدم أيقونة بديلة
             return Icon(

@@ -568,16 +568,9 @@ class HomeController extends GetxController {
     }
 
     loadMyProfile();
-    loadMyProfilePosts();
     _addSampleComments();
-    loadUploadConditions();
     loadPosts();
-    loadFriendRequests();
-    loadMyFriends();
-    loadNotifications();
-    if (isCompany.value) {
-      loadOrders();
-    }
+    // باقي البيانات (الأعمال/الطلبات/الأصدقاء/الإشعارات/منشورات البروفايل) تُحمّل عند فتح تبويبها فقط عبر selectTab()
     _registerFcmTokenIfAvailable();
   }
 
@@ -926,8 +919,6 @@ class HomeController extends GetxController {
       if (profileIsCompany) {
         isCompany.value = true;
         MyServices.saveStringValue(ConstData.keyIsCompany, '1');
-        // بعد تحديد أن الحساب شركة، حمّل الطلبات مباشرة
-        loadOrders();
       } else if (profileIsPersonal) {
         isCompany.value = false;
         MyServices.saveStringValue(ConstData.keyIsCompany, '0');

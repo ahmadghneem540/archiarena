@@ -4,7 +4,7 @@ import 'home_controller.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    // استخدام put بدلاً من lazyPut لضمان وجود Controller فوراً
-    Get.put<HomeController>(HomeController());
+    // إنشاء الـ controller عند دخول /home فقط، ويُحذف تلقائياً عند الخروج (SmartManagement)
+    Get.lazyPut<HomeController>(() => HomeController(), fenix: false);
   }
 }
