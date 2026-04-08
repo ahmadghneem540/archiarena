@@ -13,7 +13,7 @@ class OrdersTabView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -21,7 +21,7 @@ class OrdersTabView extends StatelessWidget {
             'orders_title'.tr,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
+                color: context.themeOnSurface,
                 ),
           ),
           SizedBox(height: 24),
@@ -29,10 +29,11 @@ class OrdersTabView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'العروض المقدمة لمشاريعك:',
+                'orders_offers_for_your_projects'.tr,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w400,
+                    color: context.themeOnSurface,
+                  fontSize: 8
                     ),
               ),
               Obx(() {
@@ -47,7 +48,7 @@ class OrdersTabView extends StatelessWidget {
                           height: 10,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Icon(Icons.download, size: 20, color: AppColors.primary),
+                      : Icon(Icons.download, size: 10, color: AppColors.primary),
                   label: Text(
                     controller.isDownloadingOrders.value ? 'downloading'.tr : 'download_all'.tr,
                     style: TextStyle(color: AppColors.primary),
@@ -73,7 +74,7 @@ class OrdersTabView extends StatelessWidget {
                       Text(
                         'no_orders_uploaded'.tr,
                         style: TextStyle(
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                           fontSize: 16,
                         ),
                       ),
@@ -88,15 +89,11 @@ class OrdersTabView extends StatelessWidget {
                 (index) {
                   final order = controller.orders[index];
 
-                  if (controller.getOrderImages(order.id).isEmpty) {
-                    return const SizedBox(); // لا تعرض الطلب إذا لا يوجد عروض
-                  }
-
                   return Padding(
                     padding: EdgeInsets.only(
                       bottom: index < controller.orders.length - 1 ? 12 : 0,
                     ),
-                    child: _buildOrderCard(order),
+                    child: _buildOrderCard(context, order),
                   );
                 },
               ),
@@ -108,15 +105,16 @@ class OrdersTabView extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(OrderModel order) {
+  Widget _buildOrderCard(BuildContext context, OrderModel order) {
     final imageUrl = order.imageUrl;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.themeBorder),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: context.themeShadowLight,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -180,7 +178,7 @@ class OrdersTabView extends StatelessWidget {
                     order.timeAgo,
                     style: TextStyle(
                       fontSize: 13,
-                      color: AppColors.grey600,
+                      color: context.themeGrey600,
                     ),
                   ),
                 ],

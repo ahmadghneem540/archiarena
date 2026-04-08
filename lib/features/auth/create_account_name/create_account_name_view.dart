@@ -20,7 +20,7 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(
@@ -189,8 +189,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 fontSize: 18,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );
@@ -221,8 +221,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 fontSize: 16,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );
@@ -256,8 +256,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 fontSize: 18,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );

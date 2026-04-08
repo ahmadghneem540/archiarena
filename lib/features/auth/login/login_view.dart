@@ -112,6 +112,8 @@ class LoginView extends GetView<LoginController> {
           _buildLoginButton(context),
           const SizedBox(height: 16),
           _buildForgotPassword(context),
+          const SizedBox(height: 8),
+          _buildCreateAccountLink(context),
         ],
       ),
     );
@@ -231,6 +233,36 @@ class LoginView extends GetView<LoginController> {
       child: Text(
         'forgot_password'.tr,
         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _buildCreateAccountLink(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextButton(
+      onPressed: controller.createNewAccount,
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            fontSize: 14,
+            color: isDark ? Colors.white70 : AppColors.grey700,
+          ),
+          children: [
+            TextSpan(text: 'no_account_question'.tr),
+            const TextSpan(text: ' '),
+            TextSpan(
+              text: 'create_account'.tr,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryDark,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

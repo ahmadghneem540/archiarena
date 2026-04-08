@@ -65,9 +65,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       textDirection: TextDirection.rtl,
       child: Container(
         height: screenHeight * 0.90,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.themeSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
           top: false,
@@ -75,7 +75,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
-              _buildHandle(),
+              _buildHandle(context),
               Flexible(
                 child: _loading
                     ? const Center(child: CircularProgressIndicator())
@@ -114,12 +114,12 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(BuildContext context) {
     return Container(
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: AppColors.grey300,
+        color: context.themeBorder,
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -157,15 +157,15 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
             children: [
               Text(
                 _post.authorName ?? 'مستخدم',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
-                  color: AppColors.onSurface,
+                  color: context.themeOnSurface,
                 ),
               ),
               Text(
                 _post.createdAt ?? '',
-                style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                style: TextStyle(fontSize: 14, color: context.themeGrey600),
               ),
             ],
           ),
@@ -173,10 +173,10 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
         if (_post.category != null && _post.category!.isNotEmpty)
           Text(
             _post.category!,
-            style: TextStyle(fontSize: 14, color: AppColors.grey700),
+            style: TextStyle(fontSize: 14, color: context.themeGrey700),
           ),
         const SizedBox(width: 8),
-        Icon(Icons.more_vert, size: 24, color: AppColors.grey600),
+        Icon(Icons.more_vert, size: 24, color: context.themeGrey600),
       ],
     );
   }
@@ -204,7 +204,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: AppColors.placeholder1,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkPlaceholder1
+            : AppColors.placeholder1,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -224,10 +226,12 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: AppColors.placeholder1,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? AppColors.darkPlaceholder1
+            : AppColors.placeholder1,
       ),
       child: Center(
-        child: Icon(Icons.image_outlined, size: 64, color: AppColors.grey500),
+        child: Icon(Icons.image_outlined, size: 64, color: context.themeGrey600),
       ),
     );
   }
@@ -256,7 +260,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                 width: isActive ? 24 : 8,
                 height: 8,
                 decoration: BoxDecoration(
-                  color: isActive ? AppColors.primary : AppColors.grey300,
+                  color: isActive ? AppColors.primary : context.themeBorder,
                   borderRadius: BorderRadius.circular(4),
                 ),
               );
@@ -273,10 +277,10 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       children: [
         Text(
           _post.title,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
         if (_post.description != null && _post.description!.isNotEmpty) ...[
@@ -285,7 +289,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
             _post.description!,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.grey700,
+              color: context.themeGrey700,
               height: 1.5,
             ),
           ),
@@ -304,10 +308,10 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       children: [
         Text(
           '${'design_details'.tr}:',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
         const SizedBox(height: 10),
@@ -321,7 +325,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                   '• ',
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.grey700,
+                    color: context.themeGrey700,
                     height: 1.5,
                   ),
                 ),
@@ -330,7 +334,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                     line.trim(),
                     style: TextStyle(
                       fontSize: 15,
-                      color: AppColors.grey700,
+                      color: context.themeGrey700,
                       height: 1.5,
                     ),
                   ),
@@ -354,10 +358,10 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       children: [
         Text(
           '${'plans_and_drawings'.tr}:',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 15,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
         const SizedBox(height: 10),
@@ -379,8 +383,8 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          color: AppColors.cardBackground,
-                          border: Border.all(color: AppColors.border),
+                          color: context.themeCardBackground,
+                          border: Border.all(color: context.themeBorder),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
@@ -412,7 +416,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                         ),
                       ),
                     ],
@@ -456,8 +460,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.themeBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,7 +479,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                         r.$1,
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -482,9 +487,9 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                     Expanded(
                       child: Text(
                         r.$2,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.onSurface,
+                          color: context.themeOnSurface,
                         ),
                       ),
                     ),
@@ -559,7 +564,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
               'plans_downloaded_hint'.tr,
               duration: const Duration(seconds: 3),
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.surface,
+              backgroundColor: context.themeCardBackground,
               margin: const EdgeInsets.all(12),
               mainButton: TextButton(
                 onPressed: () => OpenFile.open(paths.first),
@@ -575,7 +580,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
               'post_added_to_works'.tr,
               duration: const Duration(seconds: 2),
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: AppColors.surface,
+              backgroundColor: context.themeCardBackground,
               margin: const EdgeInsets.all(12),
             );
           }

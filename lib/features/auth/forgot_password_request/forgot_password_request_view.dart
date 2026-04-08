@@ -14,9 +14,9 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.themeSurface,
           elevation: 0,
           leading: IconButton(
             icon: Icon(
@@ -27,8 +27,8 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
           ),
           title: Text(
             'forgot_password'.tr,
-            style: const TextStyle(
-              color: AppColors.onSurface,
+            style: TextStyle(
+              color: context.themeOnSurface,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
@@ -76,14 +76,14 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
           'forgot_password_title'.tr,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
               ),
         ),
         const SizedBox(height: 8),
         Text(
           'forgot_password_desc'.tr,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.grey600,
+                color: context.themeGrey600,
                 height: 1.5,
               ),
         ),
@@ -96,8 +96,9 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: context.themeBorder),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -113,6 +114,7 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
               children: [
                 Expanded(
                   child: _buildToggleChip(
+                    context: context,
                     label: 'email'.tr,
                     selected: controller.useEmail.value,
                     onTap: () {
@@ -123,6 +125,7 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildToggleChip(
+                    context: context,
                     label: 'phone_number'.tr,
                     selected: !controller.useEmail.value,
                     onTap: () {
@@ -145,26 +148,26 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
                 hintText: controller.useEmail.value
                     ? 'email'.tr
                     : 'phone_number'.tr,
-                hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
+                hintStyle: TextStyle(color: context.themeGrey600, fontSize: 16),
                 prefixIcon: Icon(
                   controller.useEmail.value
                       ? Icons.email_outlined
                       : Icons.phone_outlined,
-                  color: AppColors.grey500,
+                  color: context.themeGrey600,
                   size: 22,
                 ),
                 border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: context.themeBorder),
                 ),
                 enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(color: context.themeBorder),
                 ),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: AppColors.primary, width: 1.5),
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+              style: TextStyle(fontSize: 16, color: context.themeOnSurface),
             ),
           ),
           const SizedBox(height: 24),
@@ -185,6 +188,7 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
   }
 
   Widget _buildToggleChip({
+    required BuildContext context,
     required String label,
     required bool selected,
     required VoidCallback onTap,
@@ -192,7 +196,7 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
     return Material(
       color: selected
           ? AppColors.primary.withValues(alpha: 0.15)
-          : AppColors.inputBackground,
+          : AppColors.inputBackgroundBy(context),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -205,7 +209,7 @@ class ForgotPasswordRequestView extends GetView<ForgotPasswordRequestController>
             style: TextStyle(
               fontSize: 14,
               fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-              color: selected ? AppColors.primary : AppColors.grey600,
+              color: selected ? AppColors.primary : context.themeGrey600,
             ),
           ),
         ),

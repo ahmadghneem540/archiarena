@@ -15,7 +15,7 @@ class CreateAccountCompanyDescribeView
           ? TextDirection.rtl
           : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -40,7 +40,7 @@ class CreateAccountCompanyDescribeView
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 24),
-                _uploadArea(),
+                _uploadArea(context),
                 const SizedBox(height: 16),
                 ArchiButton(
                   label: 'upload'.tr,
@@ -64,7 +64,7 @@ class CreateAccountCompanyDescribeView
     );
   }
 
-  Widget _uploadArea() {
+  Widget _uploadArea(BuildContext context) {
     return Obx(() {
       final file = controller.licenseFile.value;
       return InkWell(
@@ -74,7 +74,7 @@ class CreateAccountCompanyDescribeView
           height: 180,
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColors.border,
+              color: context.themeBorder,
               style: BorderStyle.solid,
             ),
             borderRadius: BorderRadius.circular(12),

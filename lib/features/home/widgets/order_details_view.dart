@@ -22,8 +22,9 @@ class OrderDetailsView extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
+          backgroundColor: context.themeSurface,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Get.back(),
@@ -90,7 +91,7 @@ class OrderDetailsView extends StatelessWidget {
                   child: Center(
                     child: Text(
                       'no_proposals_on_order'.tr,
-                      style: TextStyle(color: AppColors.grey600),
+                      style: TextStyle(color: context.themeGrey600),
                     ),
                   ),
                 ),
@@ -114,7 +115,7 @@ class OrderDetailsView extends StatelessWidget {
               itemCount: images.length,
               itemBuilder: (context, index) {
                 final image = images[index];
-                return _buildImageCard(image, orderId);
+                return _buildImageCard(context, image, orderId);
               },
             ),
           ),
@@ -124,26 +125,30 @@ class OrderDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildImageCard(ProjectImageModel image, String orderId) {
+  Widget _buildImageCard(
+    BuildContext context,
+    ProjectImageModel image,
+    String orderId,
+  ) {
     return Obx(() {
       final isAccepted = image.isAccepted.value;
       final isRejected = image.isRejected.value;
     
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isAccepted 
               ? AppColors.primary 
               : isRejected 
                   ? AppColors.error 
-                  : AppColors.border,
+                  : context.themeBorder,
           width: isAccepted || isRejected ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: context.themeShadowLight,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -176,10 +181,10 @@ class OrderDetailsView extends StatelessWidget {
                     children: [
                       Text(
                         image.authorName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.onSurface,
+                          color: context.themeOnSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -188,7 +193,7 @@ class OrderDetailsView extends StatelessWidget {
                         image.timeAgo,
                         style: TextStyle(
                           fontSize: 10,
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                         ),
                       ),
                     ],

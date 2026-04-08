@@ -220,9 +220,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
       textDirection: TextDirection.rtl,
       child: Container(
         height: screenHeight * 0.75,
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.themeSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SafeArea(
           top: false,
@@ -230,14 +230,14 @@ class _CommentsSheetState extends State<CommentsSheet> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
-              _buildHandle(),
+              _buildHandle(context),
               const SizedBox(height: 8),
               Text(
                 'comments_title'.tr,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
+                  color: context.themeOnSurface,
                 ),
               ),
               const SizedBox(height: 16),
@@ -266,12 +266,12 @@ class _CommentsSheetState extends State<CommentsSheet> {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(BuildContext context) {
     return Container(
       width: 40,
       height: 4,
       decoration: BoxDecoration(
-        color: AppColors.grey300,
+        color: context.themeBorder,
         borderRadius: BorderRadius.circular(2),
       ),
     );
@@ -286,8 +286,8 @@ class _CommentsSheetState extends State<CommentsSheet> {
         top: 12,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+        color: context.themeSurface,
+        border: Border(top: BorderSide(color: context.themeBorder)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -311,7 +311,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
                     child: Icon(
                       Icons.close,
                       size: 18,
-                      color: AppColors.grey600,
+                      color: context.themeGrey600,
                     ),
                   ),
                 ],
@@ -344,10 +344,10 @@ class _CommentsSheetState extends State<CommentsSheet> {
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
                       _formatDuration(_recordingSeconds),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: context.themeOnSurface,
                         fontFeatures: [FontFeature.tabularFigures()],
                       ),
                     ),
@@ -364,8 +364,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.inputBackground,
+                    color: AppColors.inputBackgroundBy(context),
                     borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: context.themeBorder),
                   ),
                   child: TextField(
                     controller: _textController,
@@ -373,7 +374,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
                     decoration: InputDecoration(
                       hintText: 'اكتب تعليقاً...',
                       hintStyle: TextStyle(
-                        color: AppColors.grey600,
+                        color: context.themeGrey600,
                         fontSize: 15,
                       ),
                       border: InputBorder.none,
@@ -404,7 +405,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
               const SizedBox(width: 8),
               CircleAvatar(
                 radius: 20,
-                backgroundColor: AppColors.grey300,
+                backgroundColor: context.themeBorder,
                 child: Text(
                   'أ',
                   style: TextStyle(
@@ -462,11 +463,12 @@ class _CommentTile extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.cardBackground,
+                    color: context.themeCardBackground,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: context.themeBorder),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadowLight,
+                        color: context.themeShadowLight,
                         blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
@@ -497,10 +499,10 @@ class _CommentTile extends StatelessWidget {
                           Expanded(
                             child: Text(
                               comment.authorName,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
-                                color: AppColors.onSurface,
+                                color: context.themeOnSurface,
                               ),
                             ),
                           ),
@@ -508,7 +510,7 @@ class _CommentTile extends StatelessWidget {
                             comment.createdAt,
                             style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.grey600,
+                              color: context.themeGrey600,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -549,7 +551,7 @@ class _CommentTile extends StatelessWidget {
                           comment.text ?? '',
                           style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.onSurface,
+                            color: context.themeOnSurface,
                             height: 1.4,
                           ),
                         ),

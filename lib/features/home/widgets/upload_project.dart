@@ -160,9 +160,9 @@ class UploadProjectPage extends StatelessWidget {
             top: 16,
             bottom: MediaQuery.of(context).padding.bottom + 16,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          decoration: BoxDecoration(
+            color: context.themeSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -171,9 +171,10 @@ class UploadProjectPage extends StatelessWidget {
               children: [
                 Text(
                   'upload_project'.tr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: context.themeOnSurface,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -275,9 +276,9 @@ class UploadProjectPage extends StatelessWidget {
                               width: double.infinity,
                               height: 180,
                               decoration: BoxDecoration(
-                                border: Border.all(color: AppColors.border),
+                                border: Border.all(color: context.themeBorder),
                                 borderRadius: BorderRadius.circular(12),
-                                color: AppColors.cardBackground,
+                                color: context.themeCardBackground,
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -285,14 +286,14 @@ class UploadProjectPage extends StatelessWidget {
                                   Icon(
                                     Icons.add_photo_alternate_outlined,
                                     size: 48,
-                                    color: AppColors.grey500,
+                                    color: context.themeGrey600,
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     'choose_main_image'.tr,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: AppColors.grey600,
+                                      color: context.themeGrey600,
                                     ),
                                   ),
                                 ],
@@ -427,9 +428,9 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
           top: 16,
           bottom: MediaQuery.of(context).padding.bottom + 16,
         ),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: context.themeSurface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -438,9 +439,10 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
             children: [
               Text(
                 '${'submit_proposal'.tr} — ${post.title}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: context.themeOnSurface,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -452,8 +454,9 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.themeCardBackground,
                     borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: context.themeBorder),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(.05),
@@ -465,24 +468,28 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'الشروط:',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: context.themeOnSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       if (conditions.isEmpty)
                         Text(
                           '• احصل على تقييم كامل بعلامة ناجح',
-                          style: TextStyle(color: AppColors.grey700),
+                          style: TextStyle(color: context.themeGrey700),
                         )
                       else
                         ...conditions.map(
                           (c) => Padding(
                             padding: const EdgeInsets.only(bottom: 4),
-                            child: Text('• $c'),
+                            child: Text(
+                              '• $c',
+                              style: TextStyle(color: context.themeGrey700),
+                            ),
                           ),
                         ),
                     ],
@@ -555,9 +562,9 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                             width: double.infinity,
                             height: 180,
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(color: context.themeBorder),
                               borderRadius: BorderRadius.circular(12),
-                              color: AppColors.cardBackground,
+                              color: context.themeCardBackground,
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -565,14 +572,14 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                                 Icon(
                                   Icons.add_photo_alternate_outlined,
                                   size: 48,
-                                  color: AppColors.grey500,
+                                  color: context.themeGrey600,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   'choose_proposal_image'.tr,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: AppColors.grey600,
+                                    color: context.themeGrey600,
                                   ),
                                 ),
                               ],

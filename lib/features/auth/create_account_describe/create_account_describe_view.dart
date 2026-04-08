@@ -15,7 +15,7 @@ class CreateAccountDescribeView
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(
@@ -78,7 +78,7 @@ class CreateAccountDescribeView
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
-                _uploadArea(),
+                _uploadArea(context),
                 const SizedBox(height: 16),
                 ArchiButton(
                   label: 'upload'.tr,
@@ -102,7 +102,7 @@ class CreateAccountDescribeView
     );
   }
 
-  Widget _uploadArea() {
+  Widget _uploadArea(BuildContext context) {
     return Obx(() {
       final file = controller.certificateFile.value;
       return InkWell(
@@ -112,7 +112,7 @@ class CreateAccountDescribeView
           height: 180,
           decoration: BoxDecoration(
             border: Border.all(
-              color: AppColors.border,
+              color: context.themeBorder,
               style: BorderStyle.solid,
             ),
             borderRadius: BorderRadius.circular(12),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -9,7 +10,7 @@ class HelpSupportView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MenuPageScaffold(
-      title: 'المساعدة والدعم',
+      title: 'help_support'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
@@ -40,7 +41,7 @@ class HelpSupportView extends StatelessWidget {
                           color: AppColors.primary, size: 28),
                       const SizedBox(width: 12),
                       Text(
-                        'كيف نساعدك؟',
+                        'help_support_how_help'.tr,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -51,7 +52,7 @@ class HelpSupportView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'تصفح الأسئلة الشائعة أو تواصل مع فريق الدعم للحصول على مساعدة سريعة.',
+                    'help_support_desc'.tr,
                     style: TextStyle(
                       fontSize: 14,
                       color: context.themeGrey700,
@@ -67,7 +68,7 @@ class HelpSupportView extends StatelessWidget {
             _buildLink(
               context: context,
               icon: Icons.help_outline_rounded,
-              title: 'الأسئلة الشائعة',
+              title: 'faq'.tr,
               onTap: () {},
             ),
 
@@ -76,7 +77,7 @@ class HelpSupportView extends StatelessWidget {
             _buildLink(
               context: context,
               icon: Icons.mail_outline_rounded,
-              title: 'تواصل معنا',
+              title: 'contact_us'.tr,
               subtitle: 'support@archiarena.com',
               onTap: () {},
             ),
@@ -86,8 +87,8 @@ class HelpSupportView extends StatelessWidget {
             _buildLink(
               context: context,
               icon: Icons.chat_bubble_outline_rounded,
-              title: 'الدردشة المباشرة',
-              subtitle: 'متاحة من 9 صباحاً - 6 مساءً',
+              title: 'live_chat'.tr,
+              subtitle: 'live_chat_hours'.tr,
               onTap: () {},
             ),
 
@@ -96,7 +97,7 @@ class HelpSupportView extends StatelessWidget {
             _buildLink(
               context: context,
               icon: Icons.description_outlined,
-              title: 'مركز المساعدة',
+              title: 'help_center'.tr,
               onTap: () {},
             ),
 

@@ -575,7 +575,7 @@ class HomeController extends GetxController {
     loadFriendRequests();
     loadMyFriends();
     loadNotifications();
-    if (!isCompany.value) {
+    if (isCompany.value) {
       loadOrders();
     }
     _registerFcmTokenIfAvailable();
@@ -926,6 +926,8 @@ class HomeController extends GetxController {
       if (profileIsCompany) {
         isCompany.value = true;
         MyServices.saveStringValue(ConstData.keyIsCompany, '1');
+        // بعد تحديد أن الحساب شركة، حمّل الطلبات مباشرة
+        loadOrders();
       } else if (profileIsPersonal) {
         isCompany.value = false;
         MyServices.saveStringValue(ConstData.keyIsCompany, '0');
@@ -1098,6 +1100,8 @@ class HomeController extends GetxController {
   Future<void> loadOrders() async {
     isOrdersLoading.value = true;
     try {
+      // ملاحظة: في بيئة السيرفر الحالية، /dashboard/posts يرجّع 401 "توكن غير صالح (لوحة التحكم)"
+      // بينما نفس التوكن يعمل مع باقي الـ endpoints. لذلك نعتمد على /home/orders.
       final res = await HomeApiService.getHomeOrders();
       if (res.status == 403) {
         orders.value = [];
@@ -1119,9 +1123,8 @@ class HomeController extends GetxController {
             // حساب نهاية المؤقت (إن وُجدت)
             DateTime? endAt;
             final createdAtStr = m['created_at']?.toString();
-            final createdAt = createdAtStr != null
-                ? DateTime.tryParse(createdAtStr)
-                : null;
+            final createdAt =
+                createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
             final deadlineStr = m['deadline']?.toString() ??
                 m['end_at']?.toString() ??
                 m['ends_at']?.toString();
@@ -1133,10 +1136,9 @@ class HomeController extends GetxController {
                     m['timer_minutes'] != null)) {
               final days = int.tryParse('${m['timer_days'] ?? 0}') ?? 0;
               final hours = int.tryParse('${m['timer_hours'] ?? 0}') ?? 0;
-              final minutes =
-                  int.tryParse('${m['timer_minutes'] ?? 0}') ?? 0;
-              endAt = createdAt
-                  .add(Duration(days: days, hours: hours, minutes: minutes));
+              final minutes = int.tryParse('${m['timer_minutes'] ?? 0}') ?? 0;
+              endAt =
+                  createdAt.add(Duration(days: days, hours: hours, minutes: minutes));
             }
             // إخفاء الطلبات المنتهية
             if (endAt != null && endAt.isBefore(now)) continue;
@@ -1157,12 +1159,30 @@ class HomeController extends GetxController {
             );
           }
           orders.value = list;
-        } else {
-          orders.value = [];
+          return;
         }
-      } else {
-        orders.value = [];
       }
+
+      // fallback: السيرفر يعيد قائمة فارغة من /home/orders لكن منشورات الشركة موجودة في /profile/me/posts وبداخلها order_id
+      if (profilePosts.isEmpty) {
+        await loadMyProfilePosts();
+      }
+      final fallback = <OrderModel>[];
+      for (final p in profilePosts) {
+        final oid = p.orderId;
+        if (oid == null) continue;
+        final createdAt = p.createdAt;
+        final img = fullImageUrl(p.imageUrl) ?? p.imageUrl;
+        fallback.add(
+          OrderModel(
+            id: oid.toString(),
+            title: p.title,
+            timeAgo: _formatTimeAgo(createdAt),
+            imageUrl: img,
+          ),
+        );
+      }
+      orders.value = fallback;
     } finally {
       isOrdersLoading.value = false;
     }

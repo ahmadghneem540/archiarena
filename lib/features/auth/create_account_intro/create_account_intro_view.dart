@@ -16,7 +16,7 @@ class CreateAccountIntroView extends GetView<CreateAccountIntroController> {
           ? TextDirection.rtl
           : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: Icon(

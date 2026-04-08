@@ -210,7 +210,7 @@ class ProfileTabView extends StatelessWidget {
       icon: Icon(icon, size: 20),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.grey700,
+        foregroundColor: Get.isDarkMode ? Colors.white : AppColors.onSurface,
         side: BorderSide(color: AppColors.grey400),
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
@@ -349,10 +349,10 @@ class ProfileTabView extends StatelessWidget {
                       children: [
                         Text(
                           'my_friends'.tr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.onSurface,
+                            color: Get.isDarkMode ? Colors.white : AppColors.onSurface,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -362,7 +362,7 @@ class ProfileTabView extends StatelessWidget {
                               : count == 1
                                   ? 'friend_count_one'.tr
                                   : '$count ${'friend_count_many'.tr}',
-                          style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                          style: TextStyle(fontSize: 13,  color: Get.isDarkMode ? Colors.white : AppColors.onSurface,),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),

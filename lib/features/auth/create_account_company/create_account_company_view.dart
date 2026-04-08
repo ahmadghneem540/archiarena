@@ -46,7 +46,7 @@ class CreateAccountCompanyView extends GetView<CreateAccountCompanyController> {
           ? TextDirection.rtl
           : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -180,8 +180,8 @@ class CreateAccountCompanyView extends GetView<CreateAccountCompanyController> {
                 fontSize: 18,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );
@@ -212,8 +212,8 @@ class CreateAccountCompanyView extends GetView<CreateAccountCompanyController> {
                 fontSize: 16,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );
@@ -247,8 +247,8 @@ class CreateAccountCompanyView extends GetView<CreateAccountCompanyController> {
                 fontSize: 18,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
                 color: selected
-                    ? AppColors.onSurface
-                    : AppColors.onSurfaceVariant,
+                    ? context.themeOnSurface
+                    : context.themeOnSurfaceVariant,
               ),
             ),
           );

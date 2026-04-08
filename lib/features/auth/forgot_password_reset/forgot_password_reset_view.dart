@@ -15,9 +15,9 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.themeSurface,
           elevation: 0,
           leading: IconButton(
             icon: Icon(
@@ -28,8 +28,8 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
           ),
           title: Text(
             'reset_password'.tr,
-            style: const TextStyle(
-              color: AppColors.onSurface,
+            style: TextStyle(
+              color: context.themeOnSurface,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
@@ -84,14 +84,14 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
           'reset_password_title'.tr,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
               ),
         ),
         const SizedBox(height: 8),
         Text(
           'reset_password_desc'.tr,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.grey600,
+                color: context.themeGrey600,
                 height: 1.5,
               ),
         ),
@@ -155,16 +155,16 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
           'verify_code_label'.tr,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
               ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.inputBackground,
+            color: AppColors.inputBackgroundBy(context),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -182,11 +182,11 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
             ],
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
               letterSpacing: 8,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
             decoration: const InputDecoration(
               hintText: '••••••',
@@ -213,7 +213,7 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
           'new_password'.tr,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
               ),
         ),
         const SizedBox(height: 8),
@@ -224,12 +224,12 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
             decoration: InputDecoration(
               hintText: 'new_password_hint'.tr,
-              hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
+              hintStyle: TextStyle(color: context.themeGrey600, fontSize: 16),
               border: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.themeBorder),
               ),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.themeBorder),
               ),
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primary, width: 1.5),
@@ -239,13 +239,13 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
                   controller.obscureNewPassword.value
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: AppColors.grey500,
+                  color: context.themeGrey600,
                 ),
                 onPressed: controller.toggleNewPasswordVisibility,
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+            style: TextStyle(fontSize: 16, color: context.themeOnSurface),
           ),
         ),
       ],
@@ -261,7 +261,7 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
           'confirm_new_password'.tr,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
               ),
         ),
         const SizedBox(height: 8),
@@ -272,12 +272,12 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
             decoration: InputDecoration(
               hintText: 'confirm_new_password_hint'.tr,
-              hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
+              hintStyle: TextStyle(color: context.themeGrey600, fontSize: 16),
               border: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.themeBorder),
               ),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide: BorderSide(color: context.themeBorder),
               ),
               focusedBorder: UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.primary, width: 1.5),
@@ -287,13 +287,13 @@ class ForgotPasswordResetView extends GetView<ForgotPasswordResetController> {
                   controller.obscureConfirmPassword.value
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: AppColors.grey500,
+                  color: context.themeGrey600,
                 ),
                 onPressed: controller.toggleConfirmPasswordVisibility,
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+            style: TextStyle(fontSize: 16, color: context.themeOnSurface),
           ),
         ),
       ],

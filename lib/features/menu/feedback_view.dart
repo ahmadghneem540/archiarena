@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -9,14 +10,14 @@ class FeedbackView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MenuPageScaffold(
-      title: 'إرسال ملاحظات',
+      title: 'send_feedback'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'نود سماع رأيك لتحسين archiarena. اكتب ملاحظاتك أو اقتراحاتك أدناه.',
+              'feedback_desc'.tr,
               style: TextStyle(
                 fontSize: 14,
                 color: context.themeGrey700,
@@ -27,7 +28,7 @@ class FeedbackView extends StatelessWidget {
             const SizedBox(height: 20),
 
             Text(
-              'نوع الملاحظة',
+              'feedback_type'.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -48,7 +49,7 @@ class FeedbackView extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'اقتراح أو فكرة',
+                    'feedback_placeholder'.tr,
                     style: TextStyle(
                       fontSize: 15,
                       color: context.themeGrey700,
@@ -65,7 +66,7 @@ class FeedbackView extends StatelessWidget {
             const SizedBox(height: 20),
 
             Text(
-              'الملاحظات',
+              'feedback_notes'.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -86,7 +87,7 @@ class FeedbackView extends StatelessWidget {
               child: TextField(
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'اكتب ملاحظاتك هنا...',
+                  hintText: 'feedback_hint'.tr,
                   hintStyle: TextStyle(
                     color: context.themeGrey600,
                     fontSize: 15,
@@ -116,7 +117,7 @@ class FeedbackView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('إرسال الملاحظات'),
+                child: Text('send_feedback_btn'.tr),
               ),
             ),
 
