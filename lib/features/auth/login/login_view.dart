@@ -62,23 +62,25 @@ class LoginView extends GetView<LoginController> {
 
   /// اللوغو (ارتفع للأعلى)
   Widget _buildLogo() {
+    final isDark = Get.isDarkMode;
     return Transform.translate(
       offset: const Offset(0, -70),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? const Color(0xFF1E1E1E) : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
+          border: isDark ? Border.all(color: Colors.white.withValues(alpha: 0.06)) : null,
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowLight,
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: isDark ? Colors.black.withValues(alpha: 0.55) : AppColors.shadowLight,
+              blurRadius: isDark ? 18 : 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         padding: const EdgeInsets.all(12),
         child: Image.asset(
-          'assets/app_logo.png',
+          isDark ? 'assets/app_logo_removebg.png' : 'assets/app_logo.png',
           height: 140,
           width: 190,
           fit: BoxFit.contain,

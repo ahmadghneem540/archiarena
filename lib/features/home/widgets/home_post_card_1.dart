@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
@@ -34,7 +36,10 @@ class HomePostCard1 extends StatelessWidget {
         ? post.authorName!.substring(0, 1).toUpperCase()
         : 'A';
     final imageUrl = _fullImageUrl(post.imageUrl);
-    print("ORDER ID = ${post.orderId}");
+    // لا تطبع في الإنتاج لتجنب بطء الـ UI thread
+    if (kDebugMode) {
+      debugPrint("ORDER ID = ${post.orderId}");
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -121,29 +126,23 @@ class HomePostCard1 extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: imageUrl.isNotEmpty
-                    ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildPlaceholder();
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: AppColors.placeholder1,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                              : null,
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholder: (_, __) => Container(
+                          color: AppColors.placeholder1,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                )
+                        errorWidget: (_, __, ___) => _buildPlaceholder(),
+                      )
                     : _buildPlaceholder(),
               ),
             ),

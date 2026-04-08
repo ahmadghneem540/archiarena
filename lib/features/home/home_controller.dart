@@ -126,6 +126,23 @@ class HomeController extends GetxController {
   final isDownloadingOrders = false.obs;
   final isDownloadingOrderImages = false.obs;
 
+  // ====== خفّة الأداء: منع إعادة التحميل المتكرر ======
+  DateTime? _postsFetchedAt;
+  DateTime? _worksFetchedAt;
+  DateTime? _ordersFetchedAt;
+  DateTime? _friendsFetchedAt;
+  DateTime? _friendRequestsFetchedAt;
+  DateTime? _notificationsFetchedAt;
+  DateTime? _profilePostsFetchedAt;
+  DateTime? _profileFetchedAt;
+
+  static const Duration _defaultCacheTtl = Duration(seconds: 45);
+
+  bool _isFresh(DateTime? t, [Duration ttl = _defaultCacheTtl]) {
+    if (t == null) return false;
+    return DateTime.now().difference(t) < ttl;
+  }
+
   bool hasSentFriendRequest(String userId) =>
       sentFriendRequestIds.contains(userId);
   bool isFriend(String userId) => myFriends.any((f) => f.id == userId);
@@ -571,7 +588,7 @@ class HomeController extends GetxController {
     _addSampleComments();
     loadPosts();
     // باقي البيانات (الأعمال/الطلبات/الأصدقاء/الإشعارات/منشورات البروفايل) تُحمّل عند فتح تبويبها فقط عبر selectTab()
-    _registerFcmTokenIfAvailable();
+    _registerFcmTokenLater();
   }
 
   /// تحديث توكن FCM على السيرفر عند فتح التطبيق (مستخدمون وشركات) لاستقبال إشعار قبول العرض أو العرض الجديد
@@ -582,6 +599,15 @@ class HomeController extends GetxController {
         await NotificationsApiService.registerFcmToken(token);
       }
     } catch (_) {}
+  }
+
+  void _registerFcmTokenLater() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (isClosed) return;
+        _registerFcmTokenIfAvailable();
+      });
+    });
   }
 
   Future<void> _loadIsCompanyFromStorage() async {
@@ -602,7 +628,8 @@ class HomeController extends GetxController {
   }
 
   /// جلب المنشورات من الـ API
-  Future<void> loadPosts() async {
+  Future<void> loadPosts({bool force = false}) async {
+    if (!force && posts.isNotEmpty && _isFresh(_postsFetchedAt)) return;
     isPostsLoading.value = true;
     try {
       final res = await HomeApiService.getPosts();
@@ -619,13 +646,15 @@ class HomeController extends GetxController {
     } else {
       posts.value = [];
     }
+    _postsFetchedAt = DateTime.now();
     } finally {
       isPostsLoading.value = false;
     }
   }
 
   /// جلب أعمال المستخدم من GET /home/works
-  Future<void> loadWorks() async {
+  Future<void> loadWorks({bool force = false}) async {
+    if (!force && worksPosts.isNotEmpty && _isFresh(_worksFetchedAt)) return;
     isWorksLoading.value = true;
     try {
       final res = await HomeApiService.getWorks(page: 1, limit: 20);
@@ -645,6 +674,7 @@ class HomeController extends GetxController {
     } finally {
       isWorksLoading.value = false;
     }
+    _worksFetchedAt = DateTime.now();
   }
 
   /// إضافة منشور إلى الأعمال — POST /home/works ثم تحديث القائمة
@@ -671,7 +701,8 @@ class HomeController extends GetxController {
   int _lastFriendRequestCount = -1;
 
   /// جلب طلبات الصداقة — الطلب يظهر عند المستخدم المستقبل، ويمكنه فتح بروفايل المرسل والموافقة أو الرفض.
-  Future<void> loadFriendRequests() async {
+  Future<void> loadFriendRequests({bool force = false}) async {
+    if (!force && friendRequests.isNotEmpty && _isFresh(_friendRequestsFetchedAt)) return;
     isFriendRequestsLoading.value = true;
     try {
       final res = await FriendsApiService.getRequests();
@@ -715,6 +746,7 @@ class HomeController extends GetxController {
     } finally {
       isFriendRequestsLoading.value = false;
     }
+    _friendRequestsFetchedAt = DateTime.now();
   }
 
   void _onNewFriendRequestReceived() {
@@ -740,7 +772,8 @@ class HomeController extends GetxController {
   final isMyFriendsLoading = false.obs;
 
   /// جلب قائمة الأصدقاء
-  Future<void> loadMyFriends() async {
+  Future<void> loadMyFriends({bool force = false}) async {
+    if (!force && myFriends.isNotEmpty && _isFresh(_friendsFetchedAt)) return;
     isMyFriendsLoading.value = true;
     try {
       final res = await FriendsApiService.getFriends();
@@ -778,6 +811,7 @@ class HomeController extends GetxController {
     } finally {
       isMyFriendsLoading.value = false;
     }
+    _friendsFetchedAt = DateTime.now();
   }
 
   /// جلب اقتراحات الأصدقاء
@@ -814,7 +848,8 @@ class HomeController extends GetxController {
   }
 
   /// جلب الإشعارات
-  Future<void> loadNotifications() async {
+  Future<void> loadNotifications({bool force = false}) async {
+    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt)) return;
     isNotificationsLoading.value = true;
     try {
       final res = await NotificationsApiService.getNotifications();
@@ -842,6 +877,7 @@ class HomeController extends GetxController {
     } finally {
       isNotificationsLoading.value = false;
     }
+    _notificationsFetchedAt = DateTime.now();
   }
 
   NotificationType _parseNotificationType(dynamic t) {
@@ -881,7 +917,8 @@ class HomeController extends GetxController {
   }
 
   /// جلب الملف الشخصي من الـ API
-  Future<void> loadMyProfile() async {
+  Future<void> loadMyProfile({bool force = false}) async {
+    if (!force && _isFresh(_profileFetchedAt, const Duration(seconds: 60))) return;
     isProfileLoading.value = true;
     try {
       final res = await ProfileApiService.getMyProfile();
@@ -928,10 +965,12 @@ class HomeController extends GetxController {
     } finally {
       isProfileLoading.value = false;
     }
+    _profileFetchedAt = DateTime.now();
   }
 
   /// جلب منشورات الملف الشخصي من الـ API
-  Future<void> loadMyProfilePosts() async {
+  Future<void> loadMyProfilePosts({bool force = false}) async {
+    if (!force && profilePosts.isNotEmpty && _isFresh(_profilePostsFetchedAt)) return;
     isProfilePostsLoading.value = true;
     try {
       final res = await ProfileApiService.getMyPosts();
@@ -951,6 +990,7 @@ class HomeController extends GetxController {
     } finally {
       isProfilePostsLoading.value = false;
     }
+    _profilePostsFetchedAt = DateTime.now();
   }
 
   /// جلب ملف مستخدم آخر من الـ API
@@ -1089,6 +1129,7 @@ class HomeController extends GetxController {
   /// جلب الطلبات/المشاريع المرفوعة من الـ API (لوحة التحكم)
   /// الباكند يُرجع 403 إذا المستخدم ليس شركة
   Future<void> loadOrders() async {
+    if (orders.isNotEmpty && _isFresh(_ordersFetchedAt)) return;
     isOrdersLoading.value = true;
     try {
       // ملاحظة: في بيئة السيرفر الحالية، /dashboard/posts يرجّع 401 "توكن غير صالح (لوحة التحكم)"
@@ -1177,6 +1218,7 @@ class HomeController extends GetxController {
     } finally {
       isOrdersLoading.value = false;
     }
+    _ordersFetchedAt = DateTime.now();
   }
 
   void _addSampleComments() {
