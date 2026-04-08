@@ -9,6 +9,7 @@ class CreateAccountNameController extends GetxController {
   final lastNameController = TextEditingController();
   final mobileController = TextEditingController();
   final passwordController = TextEditingController();
+  final emailController = TextEditingController();
 
   final birthDate = DateTime(1996, 11, 19).obs;
   late final FixedExtentScrollController dayController;
@@ -61,7 +62,67 @@ class CreateAccountNameController extends GetxController {
     selectedGender.value = g;
   }
 
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
   void next() {
-    Get.toNamed(AppRoutes.createAccountDescribe);
+    final firstName = firstNameController.text.trim();
+    final lastName = lastNameController.text.trim();
+    final phone = mobileController.text.trim();
+    final password = passwordController.text;
+    final email = emailController.text.trim();
+
+    if (firstName.isEmpty || lastName.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (phone.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (password.isEmpty || password.length < 6) {
+      Get.snackbar(
+        'alert'.tr,
+        'password_min_length'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (email.isEmpty) {
+      Get.snackbar(
+        'alert'.tr,
+        'please_fill_all_fields'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      Get.snackbar(
+        'alert'.tr,
+        'invalid_email'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    Get.toNamed(AppRoutes.createAccountDescribe, arguments: {
+      'isCompany': false,
+      'firstName': firstName,
+      'lastName': lastName,
+      'email': email,
+      'phone': phone,
+      'password': password,
+      'birthDate': '${birthDate.value.year}-${birthDate.value.month.toString().padLeft(2, '0')}-${birthDate.value.day.toString().padLeft(2, '0')}',
+      'gender': selectedGender.value == Gender.male ? 'male' : 'female',
+    });
   }
 }

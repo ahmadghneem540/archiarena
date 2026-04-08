@@ -1,49 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/gradient_button.dart';
+import '../home_controller.dart';
+import 'search_users_page.dart';
+import 'what_do__think.dart';
 
 class HomeSearchBar extends StatelessWidget {
-  const HomeSearchBar({super.key});
+  final HomeController controller;
+
+  const HomeSearchBar({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
           CircleAvatar(
             radius: 22,
             backgroundColor: AppColors.grey300,
-            child: Icon(Icons.person, color: AppColors.grey600, size: 28),
+            child: Icon(Icons.person, color: AppColors.grey600, size: 26),
           ),
-          const SizedBox(width: 12),
+
+          const SizedBox(width: 10),
+
           Expanded(
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.inputBackground,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: TextField(
-                textDirection: TextDirection.rtl,
-                decoration: InputDecoration(
-                  hintText: 'قم بالبحث عن التصميم ؟',
-                  hintStyle: TextStyle(color: AppColors.grey600, fontSize: 15),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+            child: Obx(() {
+              final isCompany = controller.isCompany.value;
+              return Row(
+                children: [
+                  Flexible(
+                    flex: isCompany ? 5 : 1,
+                    child: Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.inputBackground,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: InkWell(
+                        onTap: () {
+                          Get.to(() => SearchUsersPage(controller: controller));
+                        },
+                        borderRadius: BorderRadius.circular(22),
+                        child: IgnorePointer(
+                          child: TextField(
+                            textDirection: TextDirection.rtl,
+                            style: const TextStyle(fontSize: 15, color: Colors.black),
+                            decoration: InputDecoration(
+                              hintText: 'search_users_hint'.tr,
+                              hintStyle: TextStyle(
+                                color: AppColors.grey600,
+                                fontSize: 15,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                                vertical: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  suffixIcon: Icon(
-                    Icons.calendar_today_outlined,
-                    size: 20,
-                    color: AppColors.grey600,
-                  ),
-                ),
-              ),
-            ),
+                  if (isCompany) ...[
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 2,
+                      child: SizedBox(
+                        height: 44,
+                        child: ArchiButton(
+                          label: 'what_do_you_think'.tr,
+                          fontSize: 5,
+                          height: 34,
+                          icon: Icons.auto_awesome,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    WhatDoThink(controller: controller),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            }),
           ),
-          const SizedBox(width: 12),
-          Icon(Icons.search, color: AppColors.primary, size: 26),
+
+          const SizedBox(width: 10),
         ],
       ),
     );

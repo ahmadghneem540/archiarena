@@ -1,20 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/constant/const_data.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
+import '../models/post_model.dart';
+import 'countdown_timer.dart';
 import 'home_interaction_row.dart';
 
 class HomePostCard1 extends StatelessWidget {
-  const HomePostCard1({super.key, required this.controller});
+  const HomePostCard1({
+    super.key,
+    required this.controller,
+    required this.post,
+    this.isInWorks = false,
+  });
 
   final HomeController controller;
+  final PostModel post;
+  final bool isInWorks;
+
+  String _fullImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+    if (url.startsWith('http')) return url;
+    final base = ConstData.API_BASE;
+    final path = url.startsWith('/') ? url : '/$url';
+    return base.endsWith('/') ? '$base${path.substring(1)}' : '$base$path';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final authorInitial = (post.authorName?.isNotEmpty == true)
+        ? post.authorName!.substring(0, 1).toUpperCase()
+        : 'A';
+    final imageUrl = _fullImageUrl(post.imageUrl);
+    // لا تطبع في الإنتاج لتجنب بطء الـ UI thread
+    if (kDebugMode) {
+      debugPrint("ORDER ID = ${post.orderId}");
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground, // ⭐ أصبح رمادي في الداكن
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -42,7 +72,7 @@ class HomePostCard1 extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        'A',
+                        authorInitial,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -52,33 +82,37 @@ class HomePostCard1 extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'شركة زيرو للتصميم',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                          color: AppColors.onSurface,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post.authorName ?? post.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                            color: context.themeOnSurface,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        'منذ ساعتين',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.grey600,
+                        Text(
+                          post.createdAt ?? '',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: context.themeGrey600,
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                  if (post.category != null && post.category!.isNotEmpty)
+                    Text(
+                      post.category!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: context.themeGrey700,
                       ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    'تصميم داخلي',
-                    style: TextStyle(fontSize: 13, color: AppColors.grey700),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(Icons.more_vert, size: 22, color: AppColors.grey600),
+                    ),
                 ],
               ),
             ),
@@ -89,12 +123,27 @@ class HomePostCard1 extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 color: AppColors.placeholder1,
               ),
-              child: Center(
-                child: Icon(
-                  Icons.image_outlined,
-                  size: 48,
-                  color: AppColors.grey500,
-                ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholder: (_, __) => Container(
+                          color: AppColors.placeholder1,
+                          child: const Center(
+                            child: SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        ),
+                        errorWidget: (_, __, ___) => _buildPlaceholder(),
+                      )
+                    : _buildPlaceholder(),
               ),
             ),
             Padding(
@@ -104,46 +153,205 @@ class HomePostCard1 extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'شركة زيرو للتصميم',
-                    style: const TextStyle(
+                    post.authorName ?? post.title,
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: AppColors.onSurface,
+                      color: context.themeOnSurface,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'مكتب هندسي مساحة تقريبية 80-120 م، تقسم إلى منطقة استقبال وعرض بمساحة 15 م لعرض المشاريع واستقبال العملاء، منطقة عمل مفتوحة للفريق بمساحة 35-45 م',
+                    post.description ?? post.title,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.grey700,
+                      color: context.themeGrey700,
                       height: 1.4,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if ((post.budget != null && post.budget!.isNotEmpty) ||
+                      (post.deadline != null && post.deadline!.isNotEmpty) ||
+                      (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (post.budget != null && post.budget!.isNotEmpty)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'project_cost'.tr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.themeGrey600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.account_balance_wallet_outlined,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        post.budget!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: context.themeOnSurface,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (post.deadline != null && post.deadline!.isNotEmpty)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'project_deadline_remaining'.tr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.themeGrey600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                CountdownTimer(
+                                  deadline: post.deadline,
+                                  iconSize: 18,
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'deal_timer'.tr,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.themeGrey600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.schedule_outlined,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        post.projectTimer!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: context.themeOnSurface,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: HomeInteractionRow(
-                          likes: controller.post1Likes,
-                          comments: controller.post1Comments,
-                          isLiked: controller.post1IsLiked,
-                          onLike: controller.togglePost1Like,
-                          onComment: controller.addPost1Comment,
+                          likesCount: post.likesCount,
+                          commentsCount: post.commentsCount,
+                          isLikedValue: post.isLiked,
+                          onLike: () => controller.togglePostLike(post.id),
+                          onComment: () =>
+                              controller.openCommentsSheet(post.id),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: ArchiButton(
-                          label: 'التفاصيل والمخططات',
+                          label: isInWorks ? 'upload_project'.tr : 'details_and_plans'.tr,
                           height: 44,
                           fontSize: 14,
-                          onPressed: controller.openPost1DetailsSheet,
+                          onPressed: isInWorks
+                              ? () => controller.openUploadPage(post: post)
+                              : () => controller.openPostDetailsSheet(post),
                         ),
                       ),
+                      if (isInWorks) ...[
+                        const SizedBox(width: 8),
+                        Material(
+                          color: AppColors.transparent,
+                          child: InkWell(
+                            onTap: () async {
+                              final confirm = await Get.dialog<bool>(
+                                AlertDialog(
+                                  title: Text('remove_from_works'.tr),
+                                  content: Text('remove_from_works_confirm'.tr),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(result: false),
+                                      child: Text('cancel'.tr),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Get.back(result: true),
+                                      child: Text('remove_from_works'.tr),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              if (confirm == true) {
+                                final removed = await controller.removePostFromWorks(post.id);
+                                if (removed) {
+                                  Get.snackbar(
+                                    'success'.tr,
+                                    'removed_from_works'.tr,
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: context.themeCardBackground,
+                                    margin: const EdgeInsets.all(12),
+                                  );
+                                }
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.delete_outline,
+                                size: 24,
+                                color: AppColors.error,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -151,6 +359,17 @@ class HomePostCard1 extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: AppColors.placeholder1,
+      child: Icon(
+        Icons.image_not_supported,
+        color: AppColors.grey400,
+        size: 48,
       ),
     );
   }

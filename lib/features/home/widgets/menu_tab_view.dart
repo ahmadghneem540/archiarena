@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../home_controller.dart';
 
 /// شاشة التاب السادس — القائمة (الإعدادات والخيارات).
@@ -18,88 +19,78 @@ class MenuTabView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 16),
-          _buildHeader(),
+          _buildHeader(context),
           const SizedBox(height: 28),
-          _buildSectionTitle('الحساب'),
+          _buildSectionTitle(context, 'account'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
             children: [
               _MenuItem(
                 icon: Icons.person_outline_rounded,
-                title: 'تعديل الملف الشخصي',
+                title: 'edit_profile_title'.tr,
                 onTap: () => controller.selectTab(HomeTab.profile),
               ),
               _MenuItem(
                 icon: Icons.lock_outline_rounded,
-                title: 'الخصوصية والأمان',
+                title: 'privacy_security'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuPrivacySecurity),
-              ),
-              _MenuItem(
-                icon: Icons.badge_outlined,
-                title: 'الحساب المهني',
-                onTap: () => Get.toNamed(AppRoutes.menuProfessionalAccount),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('التفضيلات'),
+          _buildSectionTitle(context, 'preferences'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
             children: [
               _MenuItem(
-                icon: Icons.notifications_outlined,
-                title: 'إعدادات الإشعارات',
-                onTap: () => Get.toNamed(AppRoutes.menuNotificationSettings),
-              ),
-              _MenuItem(
                 icon: Icons.language_rounded,
-                title: 'اللغة',
-                subtitle: 'العربية',
+                title: 'language'.tr,
+                subtitle: _currentLanguageSubtitle(),
                 onTap: () => Get.toNamed(AppRoutes.menuLanguage),
               ),
-              _MenuItem(
+              Obx(() => _MenuItem(
                 icon: Icons.dark_mode_outlined,
-                title: 'المظهر',
-                subtitle: 'فاتح',
+                title: 'appearance'.tr,
+                subtitle: Get.find<ThemeController>().currentThemeLabel,
                 onTap: () => Get.toNamed(AppRoutes.menuAppearance),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('الدعم'),
+          _buildSectionTitle(context, 'support'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
             children: [
               _MenuItem(
                 icon: Icons.help_outline_rounded,
-                title: 'المساعدة والدعم',
+                title: 'support'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuHelpSupport),
               ),
               _MenuItem(
                 icon: Icons.feedback_outlined,
-                title: 'إرسال ملاحظات',
+                title: 'send_feedback'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuFeedback),
               ),
               _MenuItem(
                 icon: Icons.description_outlined,
-                title: 'الشروط وسياسة الخصوصية',
+                title: 'terms_and_privacy_policy'.tr,
                 onTap: () => Get.toNamed(AppRoutes.termsAndPrivacy),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('حول التطبيق'),
+          _buildSectionTitle(context, 'about_app'.tr),
           const SizedBox(height: 8),
           _buildMenuCard(
             context,
             children: [
               _MenuItem(
                 icon: Icons.info_outline_rounded,
-                title: 'حول archiarena',
-                subtitle: 'الإصدار 1.0.0',
+                title: 'about_app'.tr,
+                subtitle: 'الإصدار 1.0.0'.tr,
                 onTap: () => Get.toNamed(AppRoutes.menuAbout),
               ),
             ],
@@ -112,31 +103,38 @@ class MenuTabView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  String _currentLanguageSubtitle() {
+    final code = Get.locale?.languageCode ?? 'ar';
+    if (code == 'ar') return 'lang_arabic'.tr;
+    if (code == 'de') return 'lang_german'.tr;
+    return 'lang_english'.tr;
+  }
+
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'القائمة',
+        Text(
+          'menu'.tr,
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.onSurface,
+            color: context.themeOnSurface,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(right: 4),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: AppColors.grey600,
+          color: context.themeGrey600,
         ),
       ),
     );
@@ -148,12 +146,12 @@ class MenuTabView extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: context.themeBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: context.themeShadowLight,
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -172,7 +170,7 @@ class MenuTabView extends StatelessWidget {
                 Divider(
                   height: 1,
                   thickness: 1,
-                  color: AppColors.border,
+                  color: context.themeBorder,
                   indent: 56,
                   endIndent: 12,
                 ),
@@ -204,8 +202,8 @@ class MenuTabView extends StatelessWidget {
             children: [
               Icon(Icons.logout_rounded, color: AppColors.error, size: 22),
               const SizedBox(width: 8),
-              const Text(
-                'تسجيل الخروج',
+               Text(
+                'logout'.tr,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -235,6 +233,8 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final grey500 = isDark ? AppColors.darkGrey500 : AppColors.grey500;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -260,10 +260,10 @@ class _MenuItem extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: context.themeOnSurface,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -272,7 +272,7 @@ class _MenuItem extends StatelessWidget {
                         subtitle!,
                         style: TextStyle(
                           fontSize: 13,
-                          color: AppColors.grey600,
+                          color: context.themeGrey600,
                         ),
                       ),
                     ],
@@ -281,7 +281,7 @@ class _MenuItem extends StatelessWidget {
               ),
               Icon(
                 Icons.chevron_left_rounded,
-                color: AppColors.grey500,
+                color: grey500,
                 size: 24,
               ),
             ],

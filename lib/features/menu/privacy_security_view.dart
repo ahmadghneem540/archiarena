@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../../data/services/profile_api_service.dart';
+import '../../features/home/home_controller.dart';
 import 'widgets/menu_page_scaffold.dart';
 
 /// صفحة الخصوصية والأمان.
@@ -8,72 +12,74 @@ class PrivacySecurityView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomeController>();
+
     return MenuPageScaffold(
-      title: 'الخصوصية والأمان',
+      title: 'privacy_security'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _SectionCard(
-              title: 'الحساب',
+              title: 'account'.tr,
               items: [
-                _SwitchItem(
+                Obx(() => _SwitchItem(
                   icon: Icons.lock_outline_rounded,
-                  title: 'حساب خاص',
-                  subtitle: 'يظهر منشوراتك للمتابعين الموافق عليهم فقط',
-                  value: false,
-                  onChanged: (_) {},
-                ),
-                _SwitchItem(
-                  icon: Icons.visibility_outlined,
-                  title: 'من يمكنه رؤية المنشورات',
-                  subtitle: 'الجميع',
-                  value: true,
-                  onChanged: (_) {},
-                ),
+                  title: 'private_account'.tr,
+                  subtitle: 'private_account_desc'.tr,
+                  value: controller.isProfileLocked.value,
+                  onChanged: (v) => _onVisibilityChanged(controller, v),
+                )),
               ],
             ),
+
             const SizedBox(height: 20),
+
             _SectionCard(
-              title: 'التفاعل',
-              items: [
-                _TapItem(
-                  icon: Icons.people_outline_rounded,
-                  title: 'قائمة الحظر',
-                  subtitle: 'إدارة الحسابات المحظورة',
-                  onTap: () {},
-                ),
-                _TapItem(
-                  icon: Icons.block_outlined,
-                  title: 'طلبات المتابعة',
-                  subtitle: 'مراجعة الطلبات المعلقة',
-                  onTap: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _SectionCard(
-              title: 'الأمان',
+              title: 'security'.tr,
               items: [
                 _TapItem(
                   icon: Icons.key_rounded,
-                  title: 'تغيير كلمة المرور',
-                  onTap: () {},
-                ),
-                _TapItem(
-                  icon: Icons.phone_android_outlined,
-                  title: 'التحقق بخطوتين',
-                  subtitle: 'غير مفعّل',
-                  onTap: () {},
+                  title: 'change_password'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.changePassword),
                 ),
               ],
             ),
+
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _onVisibilityChanged(
+      HomeController controller, bool isLocked) async {
+    final res =
+    await ProfileApiService.updateVisibility(isProfileLocked: isLocked);
+
+    if (res.isSuccess) {
+      controller.isProfileLocked.value = isLocked;
+      controller.myProfile =
+          controller.myProfile.copyWith(isProfileLocked: isLocked);
+
+      Get.snackbar(
+        'success'.tr,
+        isLocked
+            ? 'private_account_enabled'.tr
+            : 'private_account_disabled'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.primary,
+        colorText: Get.theme.colorScheme.onPrimary,
+      );
+    } else {
+      Get.snackbar(
+        'error'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }
 
@@ -92,36 +98,53 @@ class _SectionCard extends StatelessWidget {
           padding: const EdgeInsets.only(right: 4, bottom: 8),
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.grey600,
+              color: context.themeGrey600,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
-            boxShadow: [BoxShadow(color: AppColors.shadowLight, blurRadius: 8, offset: const Offset(0, 2))],
+            border: Border.all(color: context.themeBorder),
+            boxShadow: [
+              BoxShadow(
+                color: context.themeShadowLight,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              )
+            ],
           ),
           child: Column(
-            children: _separated(items),
+            children: _separated(context, items),
           ),
         ),
       ],
     );
   }
 
-  List<Widget> _separated(List<Widget> list) {
+  List<Widget> _separated(BuildContext context, List<Widget> list) {
     final out = <Widget>[];
+
     for (var i = 0; i < list.length; i++) {
       out.add(list[i]);
+
       if (i < list.length - 1) {
-        out.add(Divider(height: 1, thickness: 1, color: AppColors.border, indent: 56, endIndent: 12));
+        out.add(
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: context.themeBorder,
+            indent: 56,
+            endIndent: 12,
+          ),
+        );
       }
     }
+
     return out;
   }
 }
@@ -149,19 +172,39 @@ class _SwitchItem extends StatelessWidget {
         children: [
           _iconBox(icon),
           const SizedBox(width: 14),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: context.themeOnSurface,
+                  ),
+                ),
+
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
-                  Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.grey600)),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.themeGrey600,
+                    ),
+                  ),
                 ],
               ],
             ),
           ),
-          Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.primary),
+
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.primary,
+          ),
         ],
       ),
     );
@@ -172,13 +215,11 @@ class _TapItem extends StatelessWidget {
   const _TapItem({
     required this.icon,
     required this.title,
-    this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
-  final String? subtitle;
   final VoidCallback onTap;
 
   @override
@@ -192,19 +233,23 @@ class _TapItem extends StatelessWidget {
           children: [
             _iconBox(icon),
             const SizedBox(width: 14),
+
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.onSurface)),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.grey600)),
-                  ],
-                ],
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: context.themeOnSurface,
+                ),
               ),
             ),
-            Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+
+            Icon(
+              Icons.chevron_left_rounded,
+              color: context.themeGrey600,
+              size: 24,
+            ),
           ],
         ),
       ),

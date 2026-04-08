@@ -22,7 +22,17 @@ class CreateAccountDescribeController extends GetxController {
   }
 
   void next() {
-    Get.toNamed(AppRoutes.termsAndPrivacy);
+    final args = Get.arguments as Map<String, dynamic>? ?? {};
+    final type = selectedType.value;
+    final descriptionType = type == UserType.hobbyist
+        ? 'hobbyist'
+        : type == UserType.engineer
+            ? 'engineer'
+            : 'advancedStudies';
+    final data = Map<String, dynamic>.from(args)
+      ..['descriptionType'] = descriptionType
+      ..['certificateFile'] = certificateFile.value;
+    Get.toNamed(AppRoutes.termsAndPrivacy, arguments: data);
   }
 
   void alreadyHaveAccount() {

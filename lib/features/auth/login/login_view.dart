@@ -4,16 +4,16 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import 'login_controller.dart';
 
-/// شاشة تسجيل الدخول — تصميم مطابق للمرفق (خلفية، لوجو، حقول، أزرار).
 class LoginView extends GetView<LoginController> {
   const LoginView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         body: SafeArea(
           child: CustomScrollView(
             slivers: [
@@ -22,26 +22,21 @@ class LoginView extends GetView<LoginController> {
                 child: Column(
                   children: [
                     _buildHeader(context),
+
+                    /// الجزء السفلي
                     Expanded(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Column(
                           children: [
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 0),
                             _buildLogo(),
-                            const SizedBox(height: 32),
-                            _buildPhoneOrEmailField(context),
+                            const SizedBox(height: 12),
+
+                            /// كارد الحقول
+                            _buildFormCard(context),
+
                             const SizedBox(height: 20),
-                            _buildPasswordField(context),
-                            const SizedBox(height: 28),
-                            _buildLoginButton(context),
-                            const SizedBox(height: 16),
-                            _buildForgotPassword(context),
-                            const SizedBox(height: 24),
-                            _buildOrDivider(),
-                            const SizedBox(height: 24),
-                            _buildCreateAccountButton(context),
-                            const SizedBox(height: 32),
                           ],
                         ),
                       ),
@@ -56,79 +51,138 @@ class LoginView extends GetView<LoginController> {
     );
   }
 
+  /// الصورة العلوية (صغرناها لرفع المحتوى)
   Widget _buildHeader(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.45,
-      // width: double.infinity,
-      child: SafeArea(child: Image.asset('assets/bg_login.png', fit: BoxFit.cover)),
+      height: MediaQuery.of(context).size.height * 0.36,
+      width: double.infinity,
+      child: Image.asset('assets/bg_login.png', fit: BoxFit.cover),
     );
   }
 
+  /// اللوغو (ارتفع للأعلى)
   Widget _buildLogo() {
+    final isDark = Get.isDarkMode;
     return Transform.translate(
-      offset: const Offset(0, -36),
+      offset: const Offset(0, -70),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isDark ? const Color(0xFF1E1E1E) : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
+          border: isDark ? Border.all(color: Colors.white.withValues(alpha: 0.06)) : null,
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowLight,
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: isDark ? Colors.black.withValues(alpha: 0.55) : AppColors.shadowLight,
+              blurRadius: isDark ? 18 : 12,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         padding: const EdgeInsets.all(12),
         child: Image.asset(
-          'assets/app_logo.png',
-          height: 72,
-          width: 72,
+          isDark ? 'assets/app_logo_removebg.png' : 'assets/app_logo.png',
+          height: 140,
+          width: 190,
           fit: BoxFit.contain,
         ),
       ),
     );
   }
 
+  /// كارد يحتوي الحقول والأزرار
+  Widget _buildFormCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF3A3A3A) : AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildPhoneOrEmailField(context),
+          const SizedBox(height: 16),
+          _buildPasswordField(context),
+          const SizedBox(height: 22),
+          _buildLoginButton(context),
+          const SizedBox(height: 16),
+          _buildForgotPassword(context),
+          const SizedBox(height: 8),
+          _buildCreateAccountLink(context),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhoneOrEmailField(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextField(
       controller: controller.phoneOrEmailController,
       keyboardType: TextInputType.emailAddress,
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       decoration: InputDecoration(
-        hintText: 'الهاتف أو البريد الإلكتروني',
-        hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.border),
+        hintText: 'login_or_email'.tr,
+        hintStyle: TextStyle(
+          color: isDark ? Colors.white70 : AppColors.grey500,
+          fontSize: 16,
         ),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.border),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF555555) : Colors.transparent,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
         ),
-        focusedBorder: UnderlineInputBorder(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
-      style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+      style: TextStyle(
+        fontSize: 16,
+        color: isDark ? Colors.white : AppColors.onSurface,
+      ),
     );
   }
 
   Widget _buildPasswordField(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Obx(
       () => TextField(
         controller: controller.passwordController,
         obscureText: controller.obscurePassword.value,
-        textDirection: TextDirection.rtl,
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
         decoration: InputDecoration(
-          hintText: 'كلمة المرور',
-          hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
-          border: UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          hintText: 'password'.tr,
+          hintStyle: TextStyle(
+            color: isDark ? Colors.white70 : AppColors.grey500,
+            fontSize: 16,
           ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.border),
+          filled: true,
+          fillColor: isDark ? const Color(0xFF555555) : Colors.transparent,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
           ),
-          focusedBorder: UnderlineInputBorder(
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: isDark ? Colors.white24 : AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: AppColors.primary, width: 1.5),
           ),
           suffixIcon: IconButton(
@@ -136,14 +190,16 @@ class LoginView extends GetView<LoginController> {
               controller.obscurePassword.value
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: AppColors.grey500,
-              size: 22,
+              color: isDark ? Colors.white70 : AppColors.grey500,
             ),
             onPressed: controller.togglePasswordVisibility,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         ),
-        style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+        style: TextStyle(
+          fontSize: 16,
+          color: isDark ? Colors.white : AppColors.onSurface,
+        ),
       ),
     );
   }
@@ -160,10 +216,14 @@ class LoginView extends GetView<LoginController> {
           ),
         ],
       ),
-      child: ArchiButton(
-        label: 'تسجيل الدخول',
-        onPressed: controller.login,
-        height: 52,
+      child: Obx(
+        () => ArchiButton(
+          label: controller.isLoading.value ? 'loading_login'.tr : 'login'.tr,
+          onPressed: () {
+            if (!controller.isLoading.value) controller.login();
+          },
+          height: 52,
+        ),
       ),
     );
   }
@@ -171,53 +231,39 @@ class LoginView extends GetView<LoginController> {
   Widget _buildForgotPassword(BuildContext context) {
     return TextButton(
       onPressed: controller.forgotPassword,
-      style: TextButton.styleFrom(
-        foregroundColor: AppColors.primaryDark,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-      ),
-      child: const Text(
-        'نسيت كلمة المرور؟',
+      style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark),
+      child: Text(
+        'forgot_password'.tr,
         style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
       ),
     );
   }
 
-  Widget _buildOrDivider() {
-    return Row(
-      children: [
-        Expanded(child: Divider(color: AppColors.border, thickness: 1)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'أو',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.grey500,
-              fontWeight: FontWeight.w500,
+  Widget _buildCreateAccountLink(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return TextButton(
+      onPressed: controller.createNewAccount,
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            fontSize: 14,
+            color: isDark ? Colors.white70 : AppColors.grey700,
+          ),
+          children: [
+            TextSpan(text: 'no_account_question'.tr),
+            const TextSpan(text: ' '),
+            TextSpan(
+              text: 'create_account'.tr,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primaryDark,
+              ),
             ),
-          ),
-        ),
-        Expanded(child: Divider(color: AppColors.border, thickness: 1)),
-      ],
-    );
-  }
-
-  Widget _buildCreateAccountButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton(
-        onPressed: controller.createNewAccount,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: const Text(
-          'إنشاء حساب جديد',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ],
         ),
       ),
     );

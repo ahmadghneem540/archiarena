@@ -8,15 +8,17 @@ class SplashView extends GetView<SplashController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Get.isDarkMode;
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.themeSurface,
       body: SafeArea(
         child: Center(
           child: Image.asset(
-            'assets/app_logo.png',
-            width: 120,
-            height: 132,
+            isDark ? 'assets/app_logo_removebg.png' : 'assets/app_logo.png',
+            width: 240, // تكبير الشعار
+            height: 280,
             fit: BoxFit.contain,
+            colorBlendMode: BlendMode.difference, // لمسة جمالية بسيطة
           ),
         ),
       ),

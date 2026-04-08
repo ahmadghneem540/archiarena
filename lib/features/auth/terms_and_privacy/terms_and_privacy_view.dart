@@ -9,44 +9,61 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
+
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.themeSurface,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+            icon: Icon(
+              isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
+              size: 20,
+              color: context.themeOnSurface,
+            ),
             onPressed: () => Get.back(),
           ),
-          title: const Text('الشروط والخصوصية'),
+          title: Text(
+            'terms_and_privacy'.tr,
+            style: TextStyle(color: context.themeOnSurface),
+          ),
+          backgroundColor: context.themeSurface,
+          elevation: 0,
         ),
+
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 const SizedBox(height: 32),
+
                 Text(
-                  'إنهاء التسجيل',
-                  style: Theme.of(context).textTheme.headlineLarge,
+                  'finish_registration'.tr,
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: context.themeOnSurface,
+                  ),
                 ),
+
                 const SizedBox(height: 20),
+
                 RichText(
-                  textDirection: TextDirection.rtl,
+                  textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
                   text: TextSpan(
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(color: AppColors.onSurface),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: context.themeOnSurface,
+                    ),
                     children: [
-                      const TextSpan(text: 'بالضغط على '),
-                      const TextSpan(text: 'تسجيل'),
-                      const TextSpan(text: ' أنت توافق على '),
+                      TextSpan(text: '${'by_clicking_register'.tr} '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'الشروط',
+                            'terms'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -56,12 +73,14 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
-                      const TextSpan(text: ' و'),
+
+                      const TextSpan(text: ' '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'سياسة البيانات',
+                            'privacy_policy'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -71,12 +90,14 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
-                      const TextSpan(text: ' و'),
+
+                      const TextSpan(text: ' '),
+
                       WidgetSpan(
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'سياسة ملفات تعريف الارتباط',
+                            'cookie_policy'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,
@@ -86,33 +107,58 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                           ),
                         ),
                       ),
+
                       const TextSpan(text: '.'),
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 32),
-                ArchiButton(label: 'تسجيل', onPressed: controller.signUp),
+
+                Obx(
+                      () => ArchiButton(
+                    label: controller.isLoading.value
+                        ? 'loading_register'.tr
+                        : 'register'.tr,
+                    onPressed: () {
+                      if (!controller.isLoading.value) {
+                        controller.signUp();
+                      }
+                    },
+                  ),
+                ),
+
                 const SizedBox(height: 16),
+
                 Center(
-                  child: TextButton(
-                    onPressed: controller.signUpWithoutUpdatingContact,
-                    child: const Text(
-                      'تسجيل دون تحديث جهات اتصالي',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: AppColors.onSurfaceVariant,
+                  child: Obx(
+                        () => TextButton(
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.signUpWithoutUpdatingContact,
+                      child: Text(
+                        'register_without_contacts'.tr,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: context.themeGrey600,
+                        ),
                       ),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 40),
+
                 Text(
-                  'أركي أرينا منصة للتصميم المعماري. سياسة البيانات وشروط الخدمة لدينا سارية. تعرّف على المزيد حول رؤيتنا.',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.5),
+                  'archiarena_vision'.tr,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: context.themeGrey700,
+                  ),
                   textAlign: TextAlign.center,
                 ),
+
                 const SizedBox(height: 32),
               ],
             ),

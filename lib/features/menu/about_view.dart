@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -9,7 +10,7 @@ class AboutView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MenuPageScaffold(
-      title: 'حول archiarena',
+      title: 'about_app'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         child: Column(
@@ -50,30 +51,30 @@ class AboutView extends StatelessWidget {
             const SizedBox(height: 4),
             Center(
               child: Text(
-                'الإصدار 1.0.0',
-                style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                'app_version'.trParams({'version': '1.0.0'}),
+                style: TextStyle(fontSize: 14, color: context.themeGrey600),
               ),
             ),
             const SizedBox(height: 28),
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: context.themeCardBackground,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: context.themeBorder),
               ),
               child: Text(
-                'منصة archiarena تجمع المهندسين المعماريين والمصممين لعرض المشاريع، مشاركة الأفكار، والتواصل مع العملاء والزملاء في مجال العمارة والتصميم.',
+                'about_app_desc'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15, color: AppColors.grey700, height: 1.5),
+                style: TextStyle(fontSize: 15, color: context.themeGrey700, height: 1.5),
               ),
             ),
             const SizedBox(height: 24),
-            _buildRow('الشروط والأحكام', () {}),
+            _buildRow(context, 'terms_and_conditions'.tr, () {}),
             const SizedBox(height: 10),
-            _buildRow('سياسة الخصوصية', () {}),
+            _buildRow(context, 'privacy_policy'.tr, () {}),
             const SizedBox(height: 10),
-            _buildRow('ترخيص التطبيق', () {}),
+            _buildRow(context, 'app_license'.tr, () {}),
             const SizedBox(height: 32),
           ],
         ),
@@ -81,7 +82,7 @@ class AboutView extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String title, VoidCallback onTap) {
+  Widget _buildRow(BuildContext context, String title, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -90,19 +91,23 @@ class AboutView extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.onSurface),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: context.themeOnSurface,
+                  ),
                 ),
               ),
-              Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+              Icon(Icons.chevron_left_rounded, color: context.themeGrey600, size: 24),
             ],
           ),
         ),

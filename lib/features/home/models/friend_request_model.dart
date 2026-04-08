@@ -6,9 +6,15 @@ class FriendRequestModel {
     required this.mutualCount,
     required this.timeAgo,
     this.avatarPath,
+    this.senderUserId,
   });
 
+  /// معرف الطلب (request_id) — يُستخدم في قبول/رفض الطلب عبر الـ API.
   final String id;
+
+  /// معرف المستخدم المرسل — يُستخدم للدخول إلى بروفايله.
+  final String? senderUserId;
+
   final String name;
 
   /// عدد الأصدقاء المشتركين معي.
