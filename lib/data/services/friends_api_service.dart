@@ -191,10 +191,15 @@ class FriendsApiService {
       } else if (raw is Map<String, dynamic>) {
         final data = raw['data'];
         final friends = raw['friends'];
-        if (data is List) list = data;
-        else if (friends is List) list = friends;
-        else if (data is Map && data['friends'] is List) list = data['friends'] as List;
-        else if (data is Map && data['data'] is List) list = data['data'] as List;
+        if (data is List) {
+          list = data;
+        } else if (friends is List) {
+          list = friends;
+        } else if (data is Map && data['friends'] is List) {
+          list = data['friends'] as List;
+        } else if (data is Map && data['data'] is List) {
+          list = data['data'] as List;
+        }
       }
 
       return ApiResponse(

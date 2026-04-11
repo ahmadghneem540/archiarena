@@ -157,9 +157,10 @@ class ShimmerListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final card = context.themeCardBackground;
     return Shimmer.fromColors(
-      baseColor: AppColors.grey300,
-      highlightColor: AppColors.grey400.withValues(alpha: 0.5),
+      baseColor: context.themeGrey300,
+      highlightColor: context.themeGrey400.withValues(alpha: 0.5),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
@@ -168,7 +169,7 @@ class ShimmerListTile extends StatelessWidget {
               width: leadingSize,
               height: leadingSize,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: card,
                 borderRadius: BorderRadius.circular(leadingSize / 2),
               ),
             ),
@@ -181,7 +182,7 @@ class ShimmerListTile extends StatelessWidget {
                     height: 14,
                     width: titleWidth,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: card,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -190,7 +191,7 @@ class ShimmerListTile extends StatelessWidget {
                     height: 12,
                     width: subtitleWidth,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: card,
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
@@ -210,14 +211,20 @@ class ShimmerProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.themeSurface;
+    final card = context.themeCardBackground;
     return Shimmer.fromColors(
-      baseColor: AppColors.grey300,
-      highlightColor: AppColors.grey400.withValues(alpha: 0.5),
+      baseColor: context.themeGrey300,
+      highlightColor: context.themeGrey400.withValues(alpha: 0.5),
       child: Column(
         children: [
-          Container(height: 200, width: double.infinity, color: Colors.white),
+          Container(height: 200, width: double.infinity, color: surface),
           const SizedBox(height: 60),
-          Container(height: 20, width: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+          Container(
+            height: 20,
+            width: 140,
+            decoration: BoxDecoration(color: card, borderRadius: BorderRadius.circular(4)),
+          ),
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

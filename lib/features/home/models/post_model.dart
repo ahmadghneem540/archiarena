@@ -126,6 +126,13 @@ class PostModel {
       timerEndsAt != null ||
       (projectTimer != null && projectTimer!.isNotEmpty);
 
+  /// انتهى مؤقت الصفقة — يعتمد على [timerEndsAt] فقط (من الـ API أو المحسوب).
+  bool get isDealExpired {
+    final end = timerEndsAt;
+    if (end == null) return false;
+    return DateTime.now().toUtc().isAfter(end.toUtc());
+  }
+
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final author = json['author'] ?? json['user'];
     final id = json['post_id'] ?? json['id'];
@@ -178,6 +185,10 @@ class PostModel {
       'plan_pdf_url',
       'planFileUrl',
       'plan_file_path',
+      'document_url',
+      'plan_document_url',
+      'pdf_url',
+      'file_url',
     ];
     for (final k in keys) {
       final v = json[k];
@@ -187,15 +198,97 @@ class PostModel {
         if (u != null && '$u'.trim().isNotEmpty) return '$u'.trim();
       }
     }
+    for (final nestedKey in ['plan', 'document', 'plan_document']) {
+      final nested = json[nestedKey];
+      if (nested is Map) {
+        final u = nested['url'] ?? nested['file_url'] ?? nested['pdf_url'] ?? nested['path'];
+        if (u != null && '$u'.trim().isNotEmpty) return '$u'.trim();
+      }
+    }
     return null;
   }
 
-  /// هل يوجد ملف PDF يمكن تنزيله (وليس صور معاينة فقط).
+  /// دمج استجابة تفاصيل المنشور مع نسخة الخلاصة حتى لا تُفقد روابط PDF إن لم يعِد الـ API نفس الحقول في GET /posts/:id.
+  factory PostModel.mergeDetailWithFeed(PostModel detail, PostModel feed) {
+    String? coalesce(String? a, String? b) {
+      final x = a?.trim();
+      if (x != null && x.isNotEmpty) return x;
+      final y = b?.trim();
+      if (y != null && y.isNotEmpty) return y;
+      return null;
+    }
+
+    return PostModel(
+      id: detail.id,
+      orderId: detail.orderId ?? feed.orderId,
+      title: detail.title.isNotEmpty ? detail.title : feed.title,
+      description: coalesce(detail.description, feed.description),
+      category: coalesce(detail.category, feed.category),
+      authorName: coalesce(detail.authorName, feed.authorName),
+      authorAvatar: coalesce(detail.authorAvatar, feed.authorAvatar),
+      imageUrl: coalesce(detail.imageUrl, feed.imageUrl),
+      likesCount: detail.likesCount,
+      commentsCount: detail.commentsCount,
+      isLiked: detail.isLiked,
+      createdAt: coalesce(detail.createdAt, feed.createdAt),
+      budget: coalesce(detail.budget, feed.budget),
+      deadline: coalesce(detail.deadline, feed.deadline),
+      projectTimer: coalesce(detail.projectTimer, feed.projectTimer),
+      timerEndsAt: detail.timerEndsAt ?? feed.timerEndsAt,
+      designDetails: coalesce(detail.designDetails, feed.designDetails),
+      projectTypes: coalesce(detail.projectTypes, feed.projectTypes),
+      area: coalesce(detail.area, feed.area),
+      planStatus: coalesce(detail.planStatus, feed.planStatus),
+      suitableFor: coalesce(detail.suitableFor, feed.suitableFor),
+      style: coalesce(detail.style, feed.style),
+      images: detail.images.isNotEmpty ? detail.images : feed.images,
+      plans: _mergePlanListsByUrl(detail.plans, feed.plans),
+      blueprints: _mergePlanListsByUrl(detail.blueprints, feed.blueprints),
+      attachments: _mergeImageListsByUrl(detail.attachments, feed.attachments),
+      planFileUrl: coalesce(detail.planFileUrl, feed.planFileUrl),
+    );
+  }
+
+  static List<PostImageItem> _mergeImageListsByUrl(
+    List<PostImageItem> a,
+    List<PostImageItem> b,
+  ) {
+    final seen = <String>{};
+    final out = <PostImageItem>[];
+    for (final x in [...a, ...b]) {
+      final u = x.url.trim();
+      if (u.isEmpty) continue;
+      if (seen.add(u)) out.add(x);
+    }
+    return out;
+  }
+
+  static List<PostPlanItem> _mergePlanListsByUrl(
+    List<PostPlanItem> a,
+    List<PostPlanItem> b,
+  ) {
+    final seen = <String>{};
+    final out = <PostPlanItem>[];
+    for (final x in [...a, ...b]) {
+      final u = x.url.trim();
+      if (u.isEmpty) continue;
+      if (seen.add(u)) out.add(x);
+    }
+    return out;
+  }
+
+  /// هل يوجد ملف PDF يمكن تنزيله.
   bool get hasDownloadablePlanPdf =>
       (planFileUrl != null && planFileUrl!.isNotEmpty) ||
       attachments.any((e) => e.isPdfAttachment) ||
       plans.any((e) => e.looksLikePdf) ||
       blueprints.any((e) => e.looksLikePdf);
+
+  /// إظهار زر «تحميل المخطط…»: PDF أو أي عنصر في plans/blueprints له رابط (مثل صورة JPG للمعاينة).
+  bool get shouldShowDownloadPlanButton =>
+      hasDownloadablePlanPdf ||
+      plans.any((e) => e.url.trim().isNotEmpty) ||
+      blueprints.any((e) => e.url.trim().isNotEmpty);
 
   static List<PostImageItem> _parseImageList(dynamic list) {
     if (list is! List) return [];

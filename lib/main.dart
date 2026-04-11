@@ -29,7 +29,9 @@ void main() async {
   ThemeMode initialThemeMode = ThemeMode.system;
   if (savedTheme == 'light') {
     initialThemeMode = ThemeMode.light;
-  } else if (savedTheme == 'dark') initialThemeMode = ThemeMode.dark;
+  } else if (savedTheme == 'dark') {
+    initialThemeMode = ThemeMode.dark;
+  }
 
   Get.put(ThemeController(initialMode: initialThemeMode));
 

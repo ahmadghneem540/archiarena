@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/post_published_at_format.dart';
 import '../../chat/chat_inbox_view.dart';
 import '../home_controller.dart';
 import '../models/friend_request_model.dart';
@@ -26,13 +27,17 @@ class OtherUserProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.themeSurface;
+    final onSurface = context.themeOnSurface;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: surface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: surface,
           elevation: 0,
+          foregroundColor: onSurface,
+          iconTheme: IconThemeData(color: onSurface),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () {
@@ -43,10 +48,10 @@ class OtherUserProfilePage extends StatelessWidget {
           title: Obx(
             () => Text(
               controller.otherUserProfile.value?.name ?? user.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                color: onSurface,
               ),
             ),
           ),
@@ -62,23 +67,23 @@ class OtherUserProfilePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildCoverWithProfile(p),
+                _buildCoverWithProfile(context, p),
                 const SizedBox(height: 60),
-                _buildProfileHeader(p),
+                _buildProfileHeader(context, p),
                 const SizedBox(height: 16),
                 _buildActionButtons(context),
                 const SizedBox(height: 12),
-                _buildChatEntryButton(p),
+                _buildChatEntryButton(context, p),
                 if (p.isProfileLocked) ...[
                   const SizedBox(height: 16),
-                  _buildPrivacyBanner(),
+                  _buildPrivacyBanner(context),
                 ],
                 const SizedBox(height: 16),
-                _buildAboutSection(p),
+                _buildAboutSection(context, p),
                 const SizedBox(height: 20),
-                _buildTimelineHeader(),
+                _buildTimelineHeader(context),
                 const SizedBox(height: 12),
-                _buildPostsList(),
+                _buildPostsList(context),
                 const SizedBox(height: 32),
               ],
             ),
@@ -88,7 +93,7 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildCoverWithProfile(UserProfileModel p) {
+  Widget _buildCoverWithProfile(BuildContext context, UserProfileModel p) {
     final initial = p.name.isNotEmpty ? p.name[0] : '؟';
     return Stack(
       clipBehavior: Clip.none,
@@ -113,11 +118,11 @@ class OtherUserProfilePage extends StatelessWidget {
             width: 96,
             height: 96,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.themeSurface,
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15),
+                  color: context.themeShadowLight,
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -180,26 +185,26 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(UserProfileModel p) {
+  Widget _buildProfileHeader(BuildContext context, UserProfileModel p) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           Text(
             p.username ?? p.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
           ),
           if (p.mutualCount > 0) ...[
             const SizedBox(height: 4),
             Text(
               p.mutualCount == 1
-                  ? 'صديق واحد مشترك'
-                  : '${p.mutualCount} أصدقاء مشتركين',
-              style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                  ? 'mutual_friend'.tr
+                  : '${p.mutualCount} ${'mutual_friends'.tr}',
+              style: TextStyle(fontSize: 14, color: context.themeGrey600),
             ),
           ],
         ],
@@ -207,26 +212,26 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPrivacyBanner() {
+  Widget _buildPrivacyBanner(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: context.themeCardBackground,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.themeBorder),
         ),
         child: Row(
           children: [
-            Icon(Icons.lock_outline, color: AppColors.grey600, size: 22),
+            Icon(Icons.lock_outline, color: context.themeGrey600, size: 22),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 'الملف الشخصي مقفل',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.onSurface,
+                  color: context.themeOnSurface,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -237,7 +242,8 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildChatEntryButton(UserProfileModel p) {
+  Widget _buildChatEntryButton(BuildContext context, UserProfileModel p) {
+    final primary = context.themePrimary;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: OutlinedButton.icon(
@@ -246,19 +252,18 @@ class OtherUserProfilePage extends StatelessWidget {
           peerName: p.name,
           peerAvatar: p.profilePicture,
         ),
-        icon: const Icon(Icons.chat_bubble_outline_rounded,
-            color: AppColors.primary),
+        icon: Icon(Icons.chat_bubble_outline_rounded, color: primary),
         label: Text(
           'chat_start_with_user'.tr,
-          style: const TextStyle(
-            color: AppColors.primary,
+          style: TextStyle(
+            color: primary,
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(44),
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: BorderSide(color: primary, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -303,7 +308,7 @@ class OtherUserProfilePage extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _outlinedButton('reject'.tr, Icons.close, () {
+                child: _outlinedButton(context, 'reject'.tr, Icons.close, () {
                   controller.rejectFriendRequest(requestId);
                   Get.back();
                 }),
@@ -316,20 +321,21 @@ class OtherUserProfilePage extends StatelessWidget {
           return Container(
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.grey300,
+              color: context.themeCardBackground,
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: context.themeBorder),
             ),
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle, color: AppColors.grey600, size: 20),
+                  Icon(Icons.check_circle, color: context.themeGrey600, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'already_friends'.tr,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: AppColors.onSurface,
+                      color: context.themeOnSurface,
                       fontSize: 14,
                     ),
                   ),
@@ -343,20 +349,21 @@ class OtherUserProfilePage extends StatelessWidget {
           return Container(
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.grey300,
+              color: context.themeCardBackground,
               borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: context.themeBorder),
             ),
             child: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.schedule, color: AppColors.grey600, size: 20),
+                  Icon(Icons.schedule, color: context.themeGrey600, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'friend_request_sent_pending'.tr,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: AppColors.grey700,
+                      color: context.themeGrey700,
                       fontSize: 14,
                     ),
                   ),
@@ -419,45 +426,50 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _outlinedButton(String label, IconData icon, VoidCallback onPressed) {
+  Widget _outlinedButton(
+    BuildContext context,
+    String label,
+    IconData icon,
+    VoidCallback onPressed,
+  ) {
     return OutlinedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon, size: 20),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.grey700,
-        side: BorderSide(color: AppColors.grey400),
+        foregroundColor: context.themeGrey700,
+        side: BorderSide(color: context.themeBorder),
         padding: const EdgeInsets.symmetric(vertical: 12),
         minimumSize: const Size(0, 44),
       ),
     );
   }
 
-  Widget _buildAboutSection(UserProfileModel p) {
+  Widget _buildAboutSection(BuildContext context, UserProfileModel p) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.cardBackground,
+          color: context.themeCardBackground,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: context.themeBorder),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (p.job != null) _aboutRow(Icons.work_outline, p.job!),
+            if (p.job != null) _aboutRow(context, Icons.work_outline, p.job!),
             if (p.education != null)
-              _aboutRow(Icons.school_outlined, p.education!),
-            if (p.livesIn != null) _aboutRow(Icons.home_outlined, p.livesIn!),
-            if (p.from != null) _aboutRow(Icons.location_on_outlined, p.from!),
+              _aboutRow(context, Icons.school_outlined, p.education!),
+            if (p.livesIn != null) _aboutRow(context, Icons.home_outlined, p.livesIn!),
+            if (p.from != null) _aboutRow(context, Icons.location_on_outlined, p.from!),
             if (p.job == null &&
                 p.education == null &&
                 p.livesIn == null &&
                 p.from == null) ...[
               Text(
                 'لا توجد معلومات عامة',
-                style: TextStyle(fontSize: 14, color: AppColors.grey600),
+                style: TextStyle(fontSize: 14, color: context.themeGrey600),
               ),
             ],
           ],
@@ -466,20 +478,20 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _aboutRow(IconData icon, String text) {
+  Widget _aboutRow(BuildContext context, IconData icon, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: AppColors.grey600),
+          Icon(icon, size: 20, color: context.themeGrey600),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.onSurface,
+                color: context.themeOnSurface,
                 height: 1.3,
               ),
             ),
@@ -489,17 +501,17 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimelineHeader() {
+  Widget _buildTimelineHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           Text(
-            'المنشورات',
+            'posts'.tr,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.onSurface,
+              color: context.themeOnSurface,
             ),
           ),
         ],
@@ -507,7 +519,7 @@ class OtherUserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPostsList() {
+  Widget _buildPostsList(BuildContext context) {
     final list = controller.otherUserPosts;
     if (list.isEmpty) {
       return Padding(
@@ -515,14 +527,14 @@ class OtherUserProfilePage extends StatelessWidget {
         child: Container(
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: context.themeCardBackground,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: context.themeBorder),
           ),
           child: Center(
             child: Text(
-              'لا توجد منشورات',
-              style: TextStyle(fontSize: 14, color: AppColors.grey600),
+              'no_posts'.tr,
+              style: TextStyle(fontSize: 14, color: context.themeGrey600),
             ),
           ),
         ),
@@ -532,24 +544,27 @@ class OtherUserProfilePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children: list.map((post) => _postCard(post, p)).toList(),
+        children: list.map((post) => _postCard(context, post, p)).toList(),
       ),
     );
   }
 
-  Widget _postCard(PostModel post, UserProfileModel profile) {
+  Widget _postCard(BuildContext context, PostModel post, UserProfileModel profile) {
     final authorName = profile.name;
     final imageUrl = post.imageUrl != null && post.imageUrl!.isNotEmpty
         ? HomeController.fullImageUrl(post.imageUrl)
         : null;
+    final primary = context.themePrimary;
+    final onSurface = context.themeOnSurface;
+    final ph = context.themePlaceholder1;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadowLight,
+            color: context.themeShadowLight,
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -566,7 +581,7 @@ class OtherUserProfilePage extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Center(
@@ -575,7 +590,7 @@ class OtherUserProfilePage extends StatelessWidget {
                           .toUpperCase(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: primary,
                         fontSize: 18,
                       ),
                     ),
@@ -588,18 +603,19 @@ class OtherUserProfilePage extends StatelessWidget {
                     children: [
                       Text(
                         authorName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
-                          color: AppColors.onSurface,
+                          color: onSurface,
                         ),
                       ),
-                      if (post.createdAt != null)
+                      if (post.createdAt != null &&
+                          formatPostPublishedAt(post.createdAt).isNotEmpty)
                         Text(
-                          post.createdAt!,
+                          formatPostPublishedAt(post.createdAt),
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.grey600,
+                            color: context.themeGrey600,
                           ),
                         ),
                     ],
@@ -608,7 +624,7 @@ class OtherUserProfilePage extends StatelessWidget {
                 if (post.category != null)
                   Text(
                     post.category!,
-                    style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                    style: TextStyle(fontSize: 13, color: context.themeGrey700),
                   ),
               ],
             ),
@@ -619,7 +635,7 @@ class OtherUserProfilePage extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: AppColors.placeholder1,
+                color: ph,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
@@ -629,10 +645,10 @@ class OtherUserProfilePage extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                   errorBuilder: (_, __, ___) => Container(
-                    color: AppColors.placeholder1,
+                    color: ph,
                     child: Icon(
                       Icons.image_not_supported,
-                      color: AppColors.grey400,
+                      color: context.themeGrey400,
                       size: 48,
                     ),
                   ),
@@ -646,10 +662,10 @@ class OtherUserProfilePage extends StatelessWidget {
               children: [
                 Text(
                   post.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
-                    color: AppColors.onSurface,
+                    color: onSurface,
                   ),
                 ),
                 if (post.description != null &&
@@ -659,7 +675,7 @@ class OtherUserProfilePage extends StatelessWidget {
                     post.description!,
                     style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.grey700,
+                      color: context.themeGrey700,
                       height: 1.4,
                     ),
                     maxLines: 3,
@@ -679,15 +695,15 @@ class OtherUserProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('project_cost'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text('project_cost'.tr, style: TextStyle(fontSize: 11, color: context.themeGrey600)),
                               const SizedBox(height: 2),
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.account_balance_wallet_outlined, size: 18, color: AppColors.primary),
+                                  Icon(Icons.account_balance_wallet_outlined, size: 18, color: primary),
                                   const SizedBox(width: 6),
                                   Flexible(
-                                    child: Text(post.budget!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
+                                    child: Text(post.budget!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: onSurface), overflow: TextOverflow.ellipsis),
                                   ),
                                 ],
                               ),
@@ -700,7 +716,7 @@ class OtherUserProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('project_deadline_remaining'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text('project_deadline_remaining'.tr, style: TextStyle(fontSize: 11, color: context.themeGrey600)),
                               const SizedBox(height: 2),
                               CountdownTimer(deadline: post.deadline, iconSize: 18),
                             ],
@@ -712,7 +728,7 @@ class OtherUserProfilePage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('deal_timer'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
+                              Text('deal_timer'.tr, style: TextStyle(fontSize: 11, color: context.themeGrey600)),
                               const SizedBox(height: 2),
                               post.timerEndsAt != null
                                   ? CountdownTimer(
@@ -722,12 +738,12 @@ class OtherUserProfilePage extends StatelessWidget {
                                   : Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                        Icon(Icons.schedule_outlined, size: 18, color: primary),
                                         const SizedBox(width: 6),
                                         Flexible(
                                           child: Text(
                                             post.projectTimer!,
-                                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface),
+                                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: onSurface),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),

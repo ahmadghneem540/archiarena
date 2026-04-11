@@ -44,10 +44,13 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   void initState() {
     super.initState();
     _post = widget.post;
+    widget.controller.loadWorks();
     widget.controller.loadPostDetails(widget.post.id).then((full) {
       if (!mounted) return;
       setState(() {
-        if (full != null) _post = full;
+        if (full != null) {
+          _post = PostModel.mergeDetailWithFeed(full, widget.post);
+        }
         _loading = false;
       });
     });
@@ -102,7 +105,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                             ],
                             const SizedBox(height: 16),
                             _buildCategorizedInfo(),
-                            if (_post.hasDownloadablePlanPdf) ...[
+                            if (_post.shouldShowDownloadPlanButton) ...[
                               const SizedBox(height: 24),
                               _buildActionButton(context),
                             ],
@@ -585,59 +588,93 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
         ),
       );
     }
-    return ArchiButton(
-      label: 'download_plan_and_move'.tr,
-      height: 52,
-      fontSize: 16,
-      icon: Icons.description_outlined,
-      iconSize: 22,
-      onPressed: () async {
-        setState(() => _isDownloadingAndAdding = true);
-        final snackBg = context.themeCardBackground;
-        try {
-          final paths = await widget.controller.downloadPostPlans(_post);
-          if (!mounted) return;
-          if (paths.isEmpty) {
-            Get.snackbar(
-              'alert'.tr,
-              'plan_download_failed'.tr,
-              duration: const Duration(seconds: 4),
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: snackBg,
-              margin: const EdgeInsets.all(12),
-            );
-          } else {
-            await OpenFile.open(paths.first);
+    return Obx(() {
+      if (widget.controller.isPostInWorks(_post.id)) {
+        return _buildAlreadyInWorksPlaceholder(context);
+      }
+      return ArchiButton(
+        label: 'download_plan_and_move'.tr,
+        height: 52,
+        fontSize: 16,
+        icon: Icons.description_outlined,
+        iconSize: 22,
+        onPressed: () async {
+          setState(() => _isDownloadingAndAdding = true);
+          final snackBg = context.themeCardBackground;
+          try {
+            final paths = await widget.controller.downloadPostPlans(_post);
             if (!mounted) return;
-            Get.snackbar(
-              'plans_downloaded'.tr,
-              'plans_downloaded_hint'.tr,
-              duration: const Duration(seconds: 3),
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: snackBg,
-              margin: const EdgeInsets.all(12),
-              mainButton: TextButton(
-                onPressed: () => OpenFile.open(paths.first),
-                child: Text('open_file'.tr, style: TextStyle(color: AppColors.primary)),
+            if (paths.isEmpty) {
+              Get.snackbar(
+                'alert'.tr,
+                'plan_download_failed'.tr,
+                duration: const Duration(seconds: 4),
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: snackBg,
+                margin: const EdgeInsets.all(12),
+              );
+            } else {
+              await OpenFile.open(paths.first);
+              if (!mounted) return;
+              Get.snackbar(
+                'plans_downloaded'.tr,
+                'plans_downloaded_hint'.tr,
+                duration: const Duration(seconds: 3),
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: snackBg,
+                margin: const EdgeInsets.all(12),
+                mainButton: TextButton(
+                  onPressed: () => OpenFile.open(paths.first),
+                  child: Text('open_file'.tr, style: TextStyle(color: AppColors.primary)),
+                ),
+              );
+            }
+            final added = await widget.controller.addPostToWorks(_post.id);
+            if (!mounted) return;
+            if (added) {
+              Get.snackbar(
+                'plans_downloaded'.tr,
+                'post_added_to_works'.tr,
+                duration: const Duration(seconds: 2),
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: snackBg,
+                margin: const EdgeInsets.all(12),
+              );
+            }
+          } finally {
+            if (mounted) setState(() => _isDownloadingAndAdding = false);
+          }
+        },
+      );
+    });
+  }
+
+  Widget _buildAlreadyInWorksPlaceholder(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 52,
+      decoration: BoxDecoration(
+        color: context.themeCardBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.themeBorder),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle_outline, size: 22, color: context.themeGrey600),
+            const SizedBox(width: 10),
+            Text(
+              'already_in_works'.tr,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: context.themeGrey600,
               ),
-            );
-          }
-          final added = await widget.controller.addPostToWorks(_post.id);
-          if (!mounted) return;
-          if (added) {
-            Get.snackbar(
-              'plans_downloaded'.tr,
-              'post_added_to_works'.tr,
-              duration: const Duration(seconds: 2),
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: snackBg,
-              margin: const EdgeInsets.all(12),
-            );
-          }
-        } finally {
-          if (mounted) setState(() => _isDownloadingAndAdding = false);
-        }
-      },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

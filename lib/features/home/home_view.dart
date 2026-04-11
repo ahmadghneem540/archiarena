@@ -62,10 +62,12 @@ class HomeView extends GetView<HomeController> {
                           return ListView.builder(
                             itemCount: posts.length,
                             itemBuilder: (context, index) {
-                              return HomePostCard1(
-                                controller: controller,
-                                post: posts[index],
-                                isInWorks: true,
+                              return RepaintBoundary(
+                                child: HomePostCard1(
+                                  controller: controller,
+                                  post: posts[index],
+                                  isInWorks: true,
+                                ),
                               );
                             },
                           );
@@ -178,9 +180,11 @@ class HomeView extends GetView<HomeController> {
                                   padding: const EdgeInsets.only(bottom: 24),
                                   itemCount: posts.length,
                                   itemBuilder: (context, index) {
-                                    return HomePostCard1(
-                                      controller: controller,
-                                      post: posts[index],
+                                    return RepaintBoundary(
+                                      child: HomePostCard1(
+                                        controller: controller,
+                                        post: posts[index],
+                                      ),
                                     );
                                   },
                                 );

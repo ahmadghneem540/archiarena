@@ -209,9 +209,11 @@ class ChatRoomView extends GetView<ChatRoomController> {
                       itemCount: controller.messages.length,
                       itemBuilder: (context, index) {
                         final m = controller.messages[index];
-                        return _MessageBubble(
-                          message: m,
-                          controller: controller,
+                        return RepaintBoundary(
+                          child: _MessageBubble(
+                            message: m,
+                            controller: controller,
+                          ),
                         );
                       },
                     ),

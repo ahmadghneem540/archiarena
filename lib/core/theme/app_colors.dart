@@ -74,6 +74,14 @@ class AppColors {
       Theme.of(context).brightness == Brightness.dark ? darkGrey600 : grey600;
   static Color grey700By(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkGrey700 : grey700;
+  static Color grey300By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkGrey300 : grey300;
+  static Color grey400By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkGrey400 : grey400;
+  static Color grey500By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkGrey500 : grey500;
+  static Color placeholder1By(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkPlaceholder1 : placeholder1;
   static Color shadowLightBy(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkShadowLight : shadowLight;
   static Color inputBackgroundBy(BuildContext context) =>
@@ -87,8 +95,12 @@ extension ThemeColorsExtension on BuildContext {
   Color get themeOnSurface => AppColors.onSurfaceBy(this);
   Color get themeOnSurfaceVariant => AppColors.onSurfaceVariantBy(this);
   Color get themeBorder => AppColors.borderBy(this);
+  Color get themeGrey300 => AppColors.grey300By(this);
+  Color get themeGrey400 => AppColors.grey400By(this);
+  Color get themeGrey500 => AppColors.grey500By(this);
   Color get themeGrey600 => AppColors.grey600By(this);
   Color get themeGrey700 => AppColors.grey700By(this);
+  Color get themePlaceholder1 => AppColors.placeholder1By(this);
   Color get themeShadowLight => AppColors.shadowLightBy(this);
   Color get themeInputBackground => AppColors.inputBackgroundBy(this);
 
@@ -97,7 +109,11 @@ extension ThemeColorsExtension on BuildContext {
   Color get themeError => Theme.of(this).colorScheme.error;
   Color get themeOnError => Theme.of(this).colorScheme.onError;
 
-  /// خلفية فقاعة رسالة واردة (Material 3).
-  Color get themeChatBubbleReceived =>
-      Theme.of(this).colorScheme.surfaceContainerHighest;
+  /// خلفية فقاعة رسالة واردة — في الوضع الليلي رمادي واضح وليس أسود الخلفية.
+  Color get themeChatBubbleReceived {
+    if (Theme.of(this).brightness == Brightness.dark) {
+      return AppColors.darkCardBackground;
+    }
+    return Theme.of(this).colorScheme.surfaceContainerHighest;
+  }
 }

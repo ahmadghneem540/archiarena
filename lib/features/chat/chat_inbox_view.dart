@@ -245,11 +245,12 @@ class _ConversationsList extends StatelessWidget {
             final name =
                 t.peerName.isEmpty ? 'user_default'.tr : t.peerName;
             // بدون ListTile — يتجنب InkWell داخل قيود غير مكتملة مع Scaffold/ListView
-            return Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _openThread(t),
-                child: ConstrainedBox(
+            return RepaintBoundary(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _openThread(t),
+                  child: ConstrainedBox(
                   constraints: const BoxConstraints(minHeight: 72),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -333,6 +334,7 @@ class _ConversationsList extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
             );
           },
         ),
@@ -423,22 +425,23 @@ class _RequestCard extends StatelessWidget {
         ? 'user_default'.tr
         : request.senderName;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.themeCardBackground,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.themeBorder),
-        boxShadow: [
-          BoxShadow(
-            color: context.themeShadowLight,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
+    return RepaintBoundary(
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.themeCardBackground,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.themeBorder),
+          boxShadow: [
+            BoxShadow(
+              color: context.themeShadowLight,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -518,6 +521,7 @@ class _RequestCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

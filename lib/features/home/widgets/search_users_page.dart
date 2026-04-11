@@ -47,13 +47,17 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.themeSurface;
+    final onSurface = context.themeOnSurface;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: surface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: surface,
           elevation: 0,
+          foregroundColor: onSurface,
+          iconTheme: IconThemeData(color: onSurface),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Get.back(),
@@ -62,13 +66,14 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
             controller: _queryController,
             autofocus: true,
             textDirection: TextDirection.rtl,
+            cursorColor: context.themePrimary,
+            style: TextStyle(fontSize: 16, color: onSurface),
             decoration: InputDecoration(
               hintText: 'search_users_hint'.tr,
-              hintStyle: TextStyle(color: AppColors.grey600, fontSize: 16),
+              hintStyle: TextStyle(color: context.themeGrey600, fontSize: 16),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
           ),
         ),
         body: Obx(() {
@@ -90,11 +95,12 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.search, size: 64, color: AppColors.grey400),
+                  Icon(Icons.search, size: 64, color: context.themeGrey400),
                   const SizedBox(height: 16),
                   Text(
-                    'اكتب اسم المستخدم أو اسمه للبحث',
-                    style: TextStyle(fontSize: 15, color: AppColors.grey600),
+                    'search_users_type_hint'.tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, color: context.themeGrey600),
                   ),
                 ],
               ),
@@ -105,11 +111,11 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.person_off_outlined, size: 64, color: AppColors.grey400),
+                  Icon(Icons.person_off_outlined, size: 64, color: context.themeGrey400),
                   const SizedBox(height: 16),
                   Text(
                     'no_results'.tr,
-                    style: TextStyle(fontSize: 15, color: AppColors.grey600),
+                    style: TextStyle(fontSize: 15, color: context.themeGrey600),
                   ),
                 ],
               ),
@@ -153,8 +159,9 @@ class _UserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initial = user.name.isNotEmpty ? user.name[0] : '؟';
+    final onSurface = context.themeOnSurface;
     return Material(
-      color: AppColors.cardBackground,
+      color: context.themeCardBackground,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -187,26 +194,26 @@ class _UserTile extends StatelessWidget {
                   children: [
                     Text(
                       user.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.onSurface,
+                        color: onSurface,
                       ),
                     ),
                     if (user.username != null && user.username!.isNotEmpty)
                       Text(
                         '@${user.username}',
-                        style: TextStyle(fontSize: 13, color: AppColors.grey600),
+                        style: TextStyle(fontSize: 13, color: context.themeGrey600),
                       ),
                     if (user.job != null && user.job!.isNotEmpty)
                       Text(
                         user.job!,
-                        style: TextStyle(fontSize: 12, color: AppColors.grey500),
+                        style: TextStyle(fontSize: 12, color: context.themeGrey500),
                       ),
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left, color: AppColors.grey500),
+              Icon(Icons.chevron_left, color: context.themeGrey500),
             ],
           ),
         ),

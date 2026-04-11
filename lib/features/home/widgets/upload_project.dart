@@ -134,6 +134,14 @@ class UploadProjectPage extends StatelessWidget {
 
   /// نموذج تقديم عرض على مشروع (من صفحة الأعمال) — رسالة + صورة
   static void showProposalSheet(PostModel post, HomeController controller) {
+    if (post.isDealExpired) {
+      Get.snackbar(
+        'alert'.tr,
+        'project_time_ended'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
     Get.bottomSheet(
       _ProposalOfferSheet(post: post, controller: controller),
       isScrollControlled: true,

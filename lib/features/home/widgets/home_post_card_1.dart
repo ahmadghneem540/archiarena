@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/const_data.dart';
@@ -37,10 +36,6 @@ class HomePostCard1 extends StatelessWidget {
         ? post.authorName!.substring(0, 1).toUpperCase()
         : 'A';
     final imageUrl = _fullImageUrl(post.imageUrl);
-    // لا تطبع في الإنتاج لتجنب بطء الـ UI thread
-    if (kDebugMode) {
-      debugPrint("ORDER ID = ${post.orderId}");
-    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -255,33 +250,57 @@ class HomePostCard1 extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                post.timerEndsAt != null
-                                    ? CountdownTimer(
-                                        deadlineAt: post.timerEndsAt,
-                                        iconSize: 18,
-                                      )
-                                    : Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.schedule_outlined,
-                                            size: 18,
-                                            color: AppColors.primary,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Flexible(
-                                            child: Text(
-                                              post.projectTimer!,
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                                color: context.themeOnSurface,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
+                                if (post.isDealExpired)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.event_busy_outlined,
+                                        size: 18,
+                                        color: context.themeGrey600,
                                       ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          'project_time_ended'.tr,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: context.themeGrey600,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                else if (post.timerEndsAt != null)
+                                  CountdownTimer(
+                                    deadlineAt: post.timerEndsAt,
+                                    iconSize: 18,
+                                  )
+                                else
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.schedule_outlined,
+                                        size: 18,
+                                        color: AppColors.primary,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          post.projectTimer!,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: context.themeOnSurface,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                           ),
@@ -304,14 +323,18 @@ class HomePostCard1 extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: ArchiButton(
-                          label: isInWorks ? 'upload_project'.tr : 'details_and_plans'.tr,
-                          height: 44,
-                          fontSize: 14,
-                          onPressed: isInWorks
-                              ? () => controller.openUploadPage(post: post)
-                              : () => controller.openPostDetailsSheet(post),
-                        ),
+                        child: isInWorks && post.isDealExpired
+                            ? const SizedBox(height: 44)
+                            : ArchiButton(
+                                label: isInWorks
+                                    ? 'upload_project'.tr
+                                    : 'details_and_plans'.tr,
+                                height: 44,
+                                fontSize: 14,
+                                onPressed: isInWorks
+                                    ? () => controller.openUploadPage(post: post)
+                                    : () => controller.openPostDetailsSheet(post),
+                              ),
                       ),
                       if (isInWorks) ...[
                         const SizedBox(width: 8),
@@ -319,6 +342,7 @@ class HomePostCard1 extends StatelessWidget {
                           color: AppColors.transparent,
                           child: InkWell(
                             onTap: () async {
+                              final snackBg = context.themeCardBackground;
                               final confirm = await Get.dialog<bool>(
                                 AlertDialog(
                                   title: Text('remove_from_works'.tr),
@@ -342,7 +366,7 @@ class HomePostCard1 extends StatelessWidget {
                                     'success'.tr,
                                     'removed_from_works'.tr,
                                     snackPosition: SnackPosition.BOTTOM,
-                                    backgroundColor: context.themeCardBackground,
+                                    backgroundColor: snackBg,
                                     margin: const EdgeInsets.all(12),
                                   );
                                 }

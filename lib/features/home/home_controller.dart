@@ -411,8 +411,8 @@ class HomeController extends GetxController {
     return PostModel.fromJson(res.data!);
   }
 
-  /// تحميل ملفات PDF للمخطط فقط (وليس صور المعاينة في `plans`/`blueprints`).
-  /// يُفضَّل `plan_file` من الـ API ثم المرفقات/العناصر التي تبدو PDF.
+  /// تحميل ملفات المخطط: PDF أو صور (JPG/…) حسب امتداد الرابط؛ ثم فتح أول ملف.
+  /// يُفضَّل `plan_file` من الـ API ثم المرفقات PDF ثم عناصر `plans`/`blueprints`.
   Future<List<String>> downloadPostPlans(PostModel post) async {
     final paths = <String>[];
     Future<void> addPdf(String? rawUrl, String basePathNoExt) async {
@@ -422,8 +422,24 @@ class HomeController extends GetxController {
       if (path != null) paths.add(path);
     }
 
+    Future<void> addPlanByUrl(String? rawUrl, String basePathNoExt) async {
+      final resolved = fullImageUrl(rawUrl) ?? rawUrl;
+      if (resolved == null || resolved.isEmpty) return;
+      final String path;
+      if (isLikelyPdfUrl(resolved)) {
+        final p = await DownloadHelper.downloadPdfFile(resolved, basePathNoExt);
+        if (p == null) return;
+        path = p;
+      } else {
+        final p = await DownloadHelper.downloadImage(resolved, basePathNoExt);
+        if (p == null) return;
+        path = p;
+      }
+      paths.add(path);
+    }
+
     if (post.planFileUrl != null && post.planFileUrl!.trim().isNotEmpty) {
-      await addPdf(post.planFileUrl, 'plans/${post.id}/plan_file');
+      await addPlanByUrl(post.planFileUrl, 'plans/${post.id}/plan_file');
     }
     for (var i = 0; i < post.attachments.length; i++) {
       final a = post.attachments[i];
@@ -433,11 +449,11 @@ class HomeController extends GetxController {
     }
     for (var i = 0; i < post.plans.length; i++) {
       final p = post.plans[i];
-      if (p.looksLikePdf) await addPdf(p.url, 'plans/${post.id}/plan_$i');
+      await addPlanByUrl(p.url, 'plans/${post.id}/plan_$i');
     }
     for (var i = 0; i < post.blueprints.length; i++) {
       final p = post.blueprints[i];
-      if (p.looksLikePdf) await addPdf(p.url, 'plans/${post.id}/blueprint_$i');
+      await addPlanByUrl(p.url, 'plans/${post.id}/blueprint_$i');
     }
     return paths;
   }
@@ -913,6 +929,10 @@ class HomeController extends GetxController {
     return false;
   }
 
+  /// هل المنشور موجود في قائمة الأعمال المحمّلة (GET /home/works).
+  bool isPostInWorks(int postId) =>
+      worksPosts.any((p) => p.id == postId);
+
   /// حذف منشور من الأعمال — DELETE /home/works/:postId
   Future<bool> removePostFromWorks(int postId) async {
     final res = await HomeApiService.deletePostFromWorks(postId);
@@ -930,8 +950,9 @@ class HomeController extends GetxController {
   Future<void> loadFriendRequests({bool force = false}) async {
     if (!force &&
         friendRequests.isNotEmpty &&
-        _isFresh(_friendRequestsFetchedAt))
+        _isFresh(_friendRequestsFetchedAt)) {
       return;
+    }
     isFriendRequestsLoading.value = true;
     try {
       final res = await FriendsApiService.getRequests();
@@ -1090,8 +1111,9 @@ class HomeController extends GetxController {
 
   /// جلب الإشعارات
   Future<void> loadNotifications({bool force = false}) async {
-    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt))
+    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt)) {
       return;
+    }
     isNotificationsLoading.value = true;
     try {
       final res = await NotificationsApiService.getNotifications();
@@ -1162,8 +1184,9 @@ class HomeController extends GetxController {
 
   /// جلب الملف الشخصي من الـ API
   Future<void> loadMyProfile({bool force = false}) async {
-    if (!force && _isFresh(_profileFetchedAt, const Duration(seconds: 60)))
+    if (!force && _isFresh(_profileFetchedAt, const Duration(seconds: 60))) {
       return;
+    }
     isProfileLoading.value = true;
     try {
       final res = await ProfileApiService.getMyProfile();
@@ -1217,8 +1240,9 @@ class HomeController extends GetxController {
 
   /// جلب منشورات الملف الشخصي من الـ API
   Future<void> loadMyProfilePosts({bool force = false}) async {
-    if (!force && profilePosts.isNotEmpty && _isFresh(_profilePostsFetchedAt))
+    if (!force && profilePosts.isNotEmpty && _isFresh(_profilePostsFetchedAt)) {
       return;
+    }
     isProfilePostsLoading.value = true;
     try {
       final res = await ProfileApiService.getMyPosts();
