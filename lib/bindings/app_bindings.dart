@@ -1,3 +1,4 @@
+// تعريف مسارات التطبيق لـ GetX — تجميع منطقي حسب المجال لتسهيل الصيانة.
 import 'package:get/get.dart';
 import '../features/language_select/language_select_view.dart';
 import '../features/language_select/language_select_binding.dart';
@@ -36,9 +37,14 @@ import '../features/menu/help_support_view.dart';
 import '../features/menu/feedback_view.dart';
 import '../features/menu/about_view.dart';
 import '../core/routes/app_routes.dart';
+import '../features/chat/chat_inbox_view.dart';
+import '../features/chat/chat_inbox_binding.dart';
 
 class AppBindings {
+  AppBindings._();
+
   static List<GetPage> get pages => [
+    // --- بدء التشغيل ولغة الواجهة ---
     GetPage(
       name: AppRoutes.languageSelect,
       page: () => const LanguageSelectView(),
@@ -54,6 +60,7 @@ class AppBindings {
       page: () => const HomeView(),
       binding: HomeBinding(),
     ),
+    // --- المصادقة ---
     GetPage(
       name: AppRoutes.authLogin,
       page: () => const LoginView(),
@@ -130,5 +137,10 @@ class AppBindings {
     ),
     GetPage(name: AppRoutes.menuFeedback, page: () => const FeedbackView()),
     GetPage(name: AppRoutes.menuAbout, page: () => const AboutView()),
+    GetPage(
+      name: AppRoutes.chatInbox,
+      page: () => const ChatInboxView(),
+      binding: ChatInboxBinding(),
+    ),
   ];
 }

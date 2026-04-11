@@ -5,6 +5,7 @@ import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
 import 'home_interaction_row.dart';
+import 'countdown_timer.dart';
 
 class HomePostCard extends StatelessWidget {
   const HomePostCard({super.key, required this.controller, this.post});
@@ -155,20 +156,25 @@ class HomePostCard extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                post?.projectTimer ?? post?.deadline ?? 'project_deadline'.tr,
-                                style: TextStyle(fontSize: 13, color: AppColors.grey700),
-                                overflow: TextOverflow.ellipsis,
+                        child: post?.timerEndsAt != null
+                            ? CountdownTimer(
+                                deadlineAt: post!.timerEndsAt,
+                                iconSize: 18,
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      post?.projectTimer ?? post?.deadline ?? 'project_deadline'.tr,
+                                      style: TextStyle(fontSize: 13, color: AppColors.grey700),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                     ],
                   ),

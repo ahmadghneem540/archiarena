@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../chat/chat_inbox_view.dart';
 import '../home_controller.dart';
 import '../models/friend_request_model.dart';
 import '../models/post_model.dart';
 import '../models/user_profile_model.dart';
 import 'countdown_timer.dart';
+import 'home_interaction_row.dart';
 import 'shimmer_loading.dart';
 
 class OtherUserProfilePage extends StatelessWidget {
@@ -65,6 +67,8 @@ class OtherUserProfilePage extends StatelessWidget {
                 _buildProfileHeader(p),
                 const SizedBox(height: 16),
                 _buildActionButtons(context),
+                const SizedBox(height: 12),
+                _buildChatEntryButton(p),
                 if (p.isProfileLocked) ...[
                   const SizedBox(height: 16),
                   _buildPrivacyBanner(),
@@ -228,6 +232,36 @@ class OtherUserProfilePage extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatEntryButton(UserProfileModel p) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: OutlinedButton.icon(
+        onPressed: () => openChatWithUser(
+          peerId: user.id,
+          peerName: p.name,
+          peerAvatar: p.profilePicture,
+        ),
+        icon: const Icon(Icons.chat_bubble_outline_rounded,
+            color: AppColors.primary),
+        label: Text(
+          'chat_start_with_user'.tr,
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(44),
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       ),
     );
@@ -498,12 +532,13 @@ class OtherUserProfilePage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
-        children: list.map((post) => _postCard(post, p.name)).toList(),
+        children: list.map((post) => _postCard(post, p)).toList(),
       ),
     );
   }
 
-  Widget _postCard(PostModel post, String authorName) {
+  Widget _postCard(PostModel post, UserProfileModel profile) {
+    final authorName = profile.name;
     final imageUrl = post.imageUrl != null && post.imageUrl!.isNotEmpty
         ? HomeController.fullImageUrl(post.imageUrl)
         : null;
@@ -633,7 +668,7 @@ class OtherUserProfilePage extends StatelessWidget {
                 ],
                 if ((post.budget != null && post.budget!.isNotEmpty) ||
                     (post.deadline != null && post.deadline!.isNotEmpty) ||
-                    (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
+                    post.hasDealTimer) ...[
                   const SizedBox(height: 10),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -671,7 +706,7 @@ class OtherUserProfilePage extends StatelessWidget {
                             ],
                           ),
                         ),
-                      if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                      if (post.hasDealTimer)
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,49 +714,43 @@ class OtherUserProfilePage extends StatelessWidget {
                             children: [
                               Text('deal_timer'.tr, style: TextStyle(fontSize: 11, color: AppColors.grey600)),
                               const SizedBox(height: 2),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(post.projectTimer!, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface), overflow: TextOverflow.ellipsis),
-                                  ),
-                                ],
-                              ),
+                              post.timerEndsAt != null
+                                  ? CountdownTimer(
+                                      deadlineAt: post.timerEndsAt,
+                                      iconSize: 18,
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.schedule_outlined, size: 18, color: AppColors.primary),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            post.projectTimer!,
+                                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.onSurface),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                             ],
                           ),
                         ),
                     ],
                   ),
                 ],
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      post.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                      size: 22,
-                      color: post.isLiked
-                          ? AppColors.primary
-                          : AppColors.grey600,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${post.likesCount}',
-                      style: TextStyle(fontSize: 15, color: AppColors.grey700),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      Icons.comment_outlined,
-                      size: 22,
-                      color: AppColors.grey600,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${post.commentsCount}',
-                      style: TextStyle(fontSize: 15, color: AppColors.grey700),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                HomeInteractionRow(
+                  likesCount: post.likesCount,
+                  commentsCount: post.commentsCount,
+                  isLikedValue: post.isLiked,
+                  onLike: () async {
+                    await controller.togglePostLike(
+                      post.id,
+                      refreshPostsForUserId: profile.id,
+                    );
+                  },
+                  onComment: () => controller.openCommentsSheet(post.id),
                 ),
               ],
             ),

@@ -108,45 +108,84 @@ class HomeView extends GetView<HomeController> {
                           HomeSearchBar(controller: controller),
                           const SizedBox(height: 20),
                           Expanded(
-                            child: Obx(() {
-                              if (controller.isPostsLoading.value) {
-                                return buildShimmerPostList(4);
-                              }
-
-                              final posts = controller.mainFeedPosts;
-
-                              if (posts.isEmpty) {
-                                return Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                            child: RefreshIndicator(
+                              color: AppColors.primary,
+                              onRefresh: () async {
+                                await controller.loadPosts(force: true);
+                                await controller.loadChatUnreadMessageCount();
+                              },
+                              child: Obx(() {
+                                if (controller.isPostsLoading.value) {
+                                  return ListView(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.only(
+                                        top: 8, bottom: 24),
                                     children: [
-                                      Icon(Icons.feed_outlined,
-                                          size: 64,
-                                          color: context.themeGrey600),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        'no_posts'.tr,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: context.themeGrey600,
+                                      for (var i = 0; i < 4; i++)
+                                        const Padding(
+                                          padding: EdgeInsets.only(bottom: 16),
+                                          child: ShimmerPostCard(),
                                         ),
-                                      ),
                                     ],
-                                  ),
-                                );
-                              }
-
-                              return ListView.builder(
-                                padding: const EdgeInsets.only(bottom: 24),
-                                itemCount: posts.length,
-                                itemBuilder: (context, index) {
-                                  return HomePostCard1(
-                                    controller: controller,
-                                    post: posts[index],
                                   );
-                                },
-                              );
-                            }),
+                                }
+
+                                final posts = controller.mainFeedPosts;
+
+                                if (posts.isEmpty) {
+                                  return LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return ListView(
+                                        physics:
+                                            const AlwaysScrollableScrollPhysics(),
+                                        children: [
+                                          SizedBox(
+                                            height: constraints.maxHeight > 200
+                                                ? constraints.maxHeight * 0.25
+                                                : 80,
+                                          ),
+                                          Center(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  Icons.feed_outlined,
+                                                  size: 64,
+                                                  color: context.themeGrey600,
+                                                ),
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  'no_posts'.tr,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color:
+                                                        context.themeGrey600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                }
+
+                                return ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  itemCount: posts.length,
+                                  itemBuilder: (context, index) {
+                                    return HomePostCard1(
+                                      controller: controller,
+                                      post: posts[index],
+                                    );
+                                  },
+                                );
+                              }),
+                            ),
                           ),
                         ],
                       );

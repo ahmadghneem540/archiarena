@@ -15,17 +15,60 @@ const String _kNotificationSoundName = 'notification_sound';
 class FcmService {
   FcmService._();
 
+  /// مستمعون لبيانات الدردشة الواردة مع الإشعار (وضع التطبيق مفتوحاً) — لتحديث الواجهة فوراً
+  /// دون الاعتماد على Socket.IO على الاستضافة المشتركة.
+  static final List<void Function(Map<String, dynamic>)> _chatDataListeners = [];
+
+  static void addChatDataListener(
+    void Function(Map<String, dynamic>) listener,
+  ) {
+    if (!_chatDataListeners.contains(listener)) {
+      _chatDataListeners.add(listener);
+    }
+  }
+
+  static void removeChatDataListener(
+    void Function(Map<String, dynamic>) listener,
+  ) {
+    _chatDataListeners.remove(listener);
+  }
+
+  static void _notifyChatDataListeners(Map<String, dynamic> data) {
+    final copy = List<void Function(Map<String, dynamic>)>.from(
+      _chatDataListeners,
+    );
+    for (final fn in copy) {
+      try {
+        fn(data);
+      } catch (e, st) {
+        debugPrint('[FCM] chat data listener error: $e\n$st');
+      }
+    }
+  }
+
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  /// Channel is created at init (before runApp), so use fixed name; per-notification strings use .tr in _showLocalNotification.
+  /// قناة الطلبات والعروض
   static AndroidNotificationChannel get _channel => const AndroidNotificationChannel(
         'archiarena_orders',
         'Orders & proposals',
         description: 'Order and proposal notifications',
         importance: Importance.high,
         playSound: true,
+        sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
+      );
+
+  /// قناة مخصّصة للدردشة — نفس النغمة مع اهتزاز ووضوح عالٍ عند وصول رسالة.
+  static AndroidNotificationChannel get _channelChat =>
+      const AndroidNotificationChannel(
+        'archiarena_chat',
+        'Messages',
+        description: 'Chat message alerts',
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
         sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
       );
 
@@ -83,10 +126,11 @@ class FcmService {
 
   static Future<void> _createNotificationChannel() async {
     if (Platform.isAndroid) {
-      await _localNotifications
+      final android = _localNotifications
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(_channel);
+              AndroidFlutterLocalNotificationsPlugin>();
+      await android?.createNotificationChannel(_channel);
+      await android?.createNotificationChannel(_channelChat);
     }
   }
 
@@ -102,6 +146,21 @@ class FcmService {
     } else if (type == 'new_proposal') {
       data['title'] ??= 'new_proposal_title'.tr;
       data['body'] ??= 'new_proposal_body'.tr;
+    } else if (type == 'chat_message' || type == 'new_chat_message') {
+      data['title'] ??=
+          data['sender_name']?.toString().trim().isNotEmpty == true
+              ? data['sender_name'].toString()
+              : data['title']?.toString() ?? 'chat_push_title'.tr;
+      data['body'] ??= data['message']?.toString() ??
+          data['body_text']?.toString() ??
+          data['preview']?.toString() ??
+          data['snippet']?.toString() ??
+          'chat_push_body'.tr;
+    } else if (type == 'chat_request' ||
+        type == 'new_chat_request' ||
+        type == 'chat_message_request') {
+      data['title'] ??= 'chat_request_push_title'.tr;
+      data['body'] ??= 'chat_request_push_body'.tr;
     }
   }
 
@@ -113,11 +172,20 @@ class FcmService {
       _applyNotificationContent(data, type);
       final title = notification?.title ?? data['title'] ?? 'notification_default'.tr;
       final body = notification?.body ?? data['body'] ?? '';
+      final isChat = type == 'chat_message' ||
+          type == 'new_chat_message' ||
+          type == 'chat_request' ||
+          type == 'new_chat_request' ||
+          type == 'chat_message_request';
       _showLocalNotification(
         title: title,
-        body: body,
+        body: body.isNotEmpty ? body : 'notification_default'.tr,
         payload: data.isNotEmpty ? jsonEncode(data) : null,
+        chatStyle: isChat,
       );
+      if (isChat) {
+        _notifyChatDataListeners(data);
+      }
     });
   }
 
@@ -136,6 +204,32 @@ class FcmService {
 
   /// الانتقال لصفحة الطلبات (أو تفاصيل طلب إن وُجد order_id)
   static void _navigateFromNotification(Map<String, dynamic> data) {
+    final type = data['type']?.toString() ?? '';
+    if (type == 'chat_message' || type == 'new_chat_message') {
+      final peerId = data['peer_id']?.toString();
+      Get.offAllNamed(
+        AppRoutes.home,
+        arguments: {
+          'openChatAfterLoad': true,
+          if (peerId != null && peerId.isNotEmpty) 'openChatPeerId': peerId,
+          'openChatPeerName': data['peer_name']?.toString() ?? '',
+          'openChatPeerAvatar': data['peer_avatar']?.toString(),
+        },
+      );
+      return;
+    }
+    if (type == 'chat_request' ||
+        type == 'new_chat_request' ||
+        type == 'chat_message_request') {
+      Get.offAllNamed(
+        AppRoutes.home,
+        arguments: {
+          'openChatRequestsAfterLoad': true,
+        },
+      );
+      return;
+    }
+
     final orderId = data['order_id']?.toString();
     final orderTitle = data['order_title']?.toString() ?? 'order'.tr;
     Get.offAllNamed(
@@ -152,21 +246,28 @@ class FcmService {
     required String title,
     required String body,
     String? payload,
+    bool chatStyle = false,
   }) async {
     final android = AndroidNotificationDetails(
-      'archiarena_orders',
-      'fcm_channel_name'.tr,
-      channelDescription: 'fcm_channel_description'.tr,
+      chatStyle ? 'archiarena_chat' : 'archiarena_orders',
+      chatStyle ? 'Messages' : 'fcm_channel_name'.tr,
+      channelDescription:
+          chatStyle ? 'Chat alerts' : 'fcm_channel_description'.tr,
       importance: Importance.high,
       priority: Priority.high,
       playSound: true,
+      enableVibration: true,
+      category: AndroidNotificationCategory.message,
+      styleInformation: chatStyle && body.length > 60
+          ? BigTextStyleInformation(body)
+          : null,
       sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
     );
-    const ios = DarwinNotificationDetails(
+    final ios = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
-      // نغمة مميزة iOS: بعد إضافة notification_sound.aiff في Xcode أزل التعليق: sound: 'notification_sound.aiff',
+      interruptionLevel: InterruptionLevel.active,
     );
     final details = NotificationDetails(android: android, iOS: ios);
     await _localNotifications.show(

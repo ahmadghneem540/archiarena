@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/const_data.dart';
+import '../../../core/utils/post_published_at_format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
@@ -95,13 +96,15 @@ class HomePostCard1 extends StatelessWidget {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          post.createdAt ?? '',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: context.themeGrey600,
+                        if (post.createdAt != null &&
+                            post.createdAt!.trim().isNotEmpty)
+                          Text(
+                            formatPostPublishedAt(post.createdAt),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.themeGrey600,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -173,7 +176,7 @@ class HomePostCard1 extends StatelessWidget {
                   ),
                   if ((post.budget != null && post.budget!.isNotEmpty) ||
                       (post.deadline != null && post.deadline!.isNotEmpty) ||
-                      (post.projectTimer != null && post.projectTimer!.isNotEmpty)) ...[
+                      post.hasDealTimer) ...[
                     const SizedBox(height: 10),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +241,7 @@ class HomePostCard1 extends StatelessWidget {
                               ],
                             ),
                           ),
-                        if (post.projectTimer != null && post.projectTimer!.isNotEmpty)
+                        if (post.hasDealTimer)
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,28 +255,33 @@ class HomePostCard1 extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.schedule_outlined,
-                                      size: 18,
-                                      color: AppColors.primary,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        post.projectTimer!,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: context.themeOnSurface,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
+                                post.timerEndsAt != null
+                                    ? CountdownTimer(
+                                        deadlineAt: post.timerEndsAt,
+                                        iconSize: 18,
+                                      )
+                                    : Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.schedule_outlined,
+                                            size: 18,
+                                            color: AppColors.primary,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Flexible(
+                                            child: Text(
+                                              post.projectTimer!,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: context.themeOnSurface,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
-                                ),
                               ],
                             ),
                           ),

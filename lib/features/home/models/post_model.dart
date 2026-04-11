@@ -1,9 +1,16 @@
 /// عنصر صورة أو مخطط من الـ API
 class PostImageItem {
-  PostImageItem({this.id, required this.url, this.order});
+  PostImageItem({
+    this.id,
+    required this.url,
+    this.order,
+    this.mimeType,
+  });
   final int? id;
   final String url;
   final int? order;
+  /// إن وُجد (مثل application/pdf) يُستخدم لتمييز المرفقات عن الصور.
+  final String? mimeType;
   static PostImageItem? fromJson(dynamic json) {
     if (json is Map) {
       final m = Map<String, dynamic>.from(json);
@@ -13,10 +20,18 @@ class PostImageItem {
         id: m['id'] is int ? m['id'] as int : int.tryParse('${m['id']}'),
         url: url,
         order: m['order'] is int ? m['order'] as int : int.tryParse('${m['order']}'),
+        mimeType: m['mime_type']?.toString() ??
+            m['mimeType']?.toString() ??
+            m['content_type']?.toString() ??
+            m['type']?.toString(),
       );
     }
     return null;
   }
+
+  bool get isPdfAttachment =>
+      (mimeType != null && mimeType!.toLowerCase().contains('pdf')) ||
+      isLikelyPdfUrl(url);
 }
 
 /// عنصر مخطط (خطة)
@@ -25,6 +40,9 @@ class PostPlanItem {
   final int? id;
   final String url;
   final String? title;
+
+  bool get looksLikePdf => isLikelyPdfUrl(url);
+
   static PostPlanItem? fromJson(dynamic json) {
     if (json is Map) {
       final m = Map<String, dynamic>.from(json);
@@ -58,6 +76,7 @@ class PostModel {
     this.budget,
     this.deadline,
     this.projectTimer,
+    this.timerEndsAt,
     this.designDetails,
     this.projectTypes,
     this.area,
@@ -68,6 +87,7 @@ class PostModel {
     this.plans = const [],
     this.blueprints = const [],
     this.attachments = const [],
+    this.planFileUrl,
   });
 
   final int id;
@@ -86,6 +106,8 @@ class PostModel {
   final String? budget;
   final String? deadline;
   final String? projectTimer;
+  /// نهاية مؤقت الصفقة — من الـ API (`timer_ends_at`) أو محسوبة من `created_at` + `timer_days`/`timer_hours`.
+  final DateTime? timerEndsAt;
   final String? designDetails;
   final String? projectTypes;
   final String? area;
@@ -96,6 +118,13 @@ class PostModel {
   final List<PostPlanItem> plans;
   final List<PostPlanItem> blueprints;
   final List<PostImageItem> attachments;
+  /// رابط ملف المخطط PDF المرفوع مع المنشور (إن رجعه الـ API).
+  final String? planFileUrl;
+
+  /// هل يُعرض صف مؤقت الصفقة (تاريخ انتهاء أو نص من السيرفر).
+  bool get hasDealTimer =>
+      timerEndsAt != null ||
+      (projectTimer != null && projectTimer!.isNotEmpty);
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final author = json['author'] ?? json['user'];
@@ -105,8 +134,9 @@ class PostModel {
     final blueprintsRaw = json['blueprints'];
     final attachmentsRaw = json['attachments'];
     final orderIdRaw = json['order_id'] ?? json['orderId'];
+    final timerEndsAt = _parseTimerEndsAt(json);
     return PostModel(
-      id: id is int ? id : int.tryParse('${id}') ?? 0,
+      id: id is int ? id : int.tryParse('$id') ?? 0,
       orderId: orderIdRaw != null ? int.tryParse('$orderIdRaw') : null,
       title: json['title']?.toString() ?? '',
       description: json['description']?.toString(),
@@ -125,6 +155,7 @@ class PostModel {
       budget: json['budget']?.toString() ?? json['cost']?.toString(),
       deadline: json['deadline']?.toString() ?? json['deadline_at']?.toString() ?? json['ends_at']?.toString(),
       projectTimer: json['project_timer']?.toString(),
+      timerEndsAt: timerEndsAt,
       designDetails: json['design_details']?.toString(),
       projectTypes: json['project_types']?.toString(),
       area: json['area']?.toString(),
@@ -135,8 +166,36 @@ class PostModel {
       plans: _parsePlanList(plansRaw),
       blueprints: _parsePlanList(blueprintsRaw),
       attachments: _parseImageList(attachmentsRaw is List ? attachmentsRaw : null),
+      planFileUrl: _parsePlanFileUrl(json),
     );
   }
+
+  static String? _parsePlanFileUrl(Map<String, dynamic> json) {
+    const keys = [
+      'plan_file_url',
+      'plan_file',
+      'plan_pdf',
+      'plan_pdf_url',
+      'planFileUrl',
+      'plan_file_path',
+    ];
+    for (final k in keys) {
+      final v = json[k];
+      if (v is String && v.trim().isNotEmpty) return v.trim();
+      if (v is Map) {
+        final u = v['url'] ?? v['path'];
+        if (u != null && '$u'.trim().isNotEmpty) return '$u'.trim();
+      }
+    }
+    return null;
+  }
+
+  /// هل يوجد ملف PDF يمكن تنزيله (وليس صور معاينة فقط).
+  bool get hasDownloadablePlanPdf =>
+      (planFileUrl != null && planFileUrl!.isNotEmpty) ||
+      attachments.any((e) => e.isPdfAttachment) ||
+      plans.any((e) => e.looksLikePdf) ||
+      blueprints.any((e) => e.looksLikePdf);
 
   static List<PostImageItem> _parseImageList(dynamic list) {
     if (list is! List) return [];
@@ -154,6 +213,35 @@ class PostModel {
         .toList();
   }
 
+  static DateTime? _parseTimerEndsAt(Map<String, dynamic> json) {
+    final direct = json['timer_ends_at'] ??
+        json['deal_ends_at'] ??
+        json['project_timer_ends_at'] ??
+        json['timer_end_at'] ??
+        json['deal_end_at'];
+    if (direct != null) {
+      final s = direct.toString().trim();
+      if (s.isNotEmpty) {
+        final d = DateTime.tryParse(s);
+        if (d != null) return d;
+      }
+    }
+    final createdAtStr =
+        json['created_at']?.toString() ?? json['createdAt']?.toString();
+    final createdAt =
+        createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
+    if (createdAt == null) return null;
+    final hasTimer = json['timer_days'] != null ||
+        json['timer_hours'] != null ||
+        json['timer_minutes'] != null;
+    if (!hasTimer) return null;
+    final days = int.tryParse('${json['timer_days'] ?? 0}') ?? 0;
+    final hours = int.tryParse('${json['timer_hours'] ?? 0}') ?? 0;
+    final minutes = int.tryParse('${json['timer_minutes'] ?? 0}') ?? 0;
+    if (days == 0 && hours == 0 && minutes == 0) return null;
+    return createdAt.add(Duration(days: days, hours: hours, minutes: minutes));
+  }
+
   static String? _extractImageUrl(Map<String, dynamic> json) {
     final images = json['images'];
     if (images is List && images.isNotEmpty) {
@@ -168,4 +256,49 @@ class PostModel {
         json['image_url']?.toString() ??
         json['imageUrl']?.toString();
   }
+
+  PostModel copyWith({
+    int? likesCount,
+    int? commentsCount,
+    bool? isLiked,
+  }) {
+    return PostModel(
+      id: id,
+      orderId: orderId,
+      title: title,
+      description: description,
+      category: category,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
+      imageUrl: imageUrl,
+      likesCount: likesCount ?? this.likesCount,
+      commentsCount: commentsCount ?? this.commentsCount,
+      isLiked: isLiked ?? this.isLiked,
+      createdAt: createdAt,
+      budget: budget,
+      deadline: deadline,
+      projectTimer: projectTimer,
+      timerEndsAt: timerEndsAt,
+      designDetails: designDetails,
+      projectTypes: projectTypes,
+      area: area,
+      planStatus: planStatus,
+      suitableFor: suitableFor,
+      style: style,
+      images: images,
+      plans: plans,
+      blueprints: blueprints,
+      attachments: attachments,
+      planFileUrl: planFileUrl,
+    );
+  }
+}
+
+/// رابط يُفترض أنه PDF (امتداد .pdf أو استعلام يحتوي pdf).
+bool isLikelyPdfUrl(String? url) {
+  if (url == null || url.isEmpty) return false;
+  final u = url.split('?').first.toLowerCase();
+  if (u.endsWith('.pdf')) return true;
+  final q = url.toLowerCase();
+  return q.contains('.pdf?') || q.contains('format=pdf') || q.contains('type=pdf');
 }

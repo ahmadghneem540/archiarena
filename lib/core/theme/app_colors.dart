@@ -90,4 +90,14 @@ extension ThemeColorsExtension on BuildContext {
   Color get themeGrey600 => AppColors.grey600By(this);
   Color get themeGrey700 => AppColors.grey700By(this);
   Color get themeShadowLight => AppColors.shadowLightBy(this);
+  Color get themeInputBackground => AppColors.inputBackgroundBy(this);
+
+  /// ألوان من [ColorScheme] — تتبع الفاتح/الداكن تلقائياً.
+  Color get themePrimary => Theme.of(this).colorScheme.primary;
+  Color get themeError => Theme.of(this).colorScheme.error;
+  Color get themeOnError => Theme.of(this).colorScheme.onError;
+
+  /// خلفية فقاعة رسالة واردة (Material 3).
+  Color get themeChatBubbleReceived =>
+      Theme.of(this).colorScheme.surfaceContainerHighest;
 }

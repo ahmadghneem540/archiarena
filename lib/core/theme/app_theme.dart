@@ -17,6 +17,8 @@ class AppTheme {
       onSecondary: AppColors.onPrimary,
       onSurface: AppColors.onSurface,
       onSurfaceVariant: AppColors.onSurfaceVariant,
+      error: AppColors.error,
+      onError: AppColors.onPrimary,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.surface,
@@ -88,6 +90,8 @@ class AppTheme {
       onSecondary: AppColors.onPrimary,
       onSurface: AppColors.darkOnSurface,
       onSurfaceVariant: AppColors.darkOnSurfaceVariant,
+      error: AppColors.error,
+      onError: AppColors.onPrimary,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.darkSurface,

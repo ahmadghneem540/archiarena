@@ -33,8 +33,14 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   bool _isUploading = false;
 
   static const List<String> _categoryKeys = [
-    'residential', 'commercial', 'admin', 'education', 'health',
-    'entertainment', 'interior', 'other',
+    'residential',
+    'commercial',
+    'admin',
+    'education',
+    'health',
+    'entertainment',
+    'interior',
+    'other',
   ];
 
   @override
@@ -120,7 +126,10 @@ class _WhatDoThinkState extends State<WhatDoThink> {
           category: _selectedCategory!,
           description: description,
           budget: budgetStr.isEmpty ? null : budgetStr,
+          timerDays: timerDays,
+          timerHours: timerHours,
           images: _images.isNotEmpty ? _images : null,
+          planPdf: _planPdf,
         );
       } else {
         // المستخدمون العاديون: POST /home/posts
@@ -195,7 +204,9 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   Opacity(
                     opacity: _isUploading ? 0.7 : 1,
                     child: ArchiButton(
-                      label: _isUploading ? 'uploading'.tr : 'upload_project'.tr,
+                      label: _isUploading
+                          ? 'uploading'.tr
+                          : 'upload_project'.tr,
                       onPressed: _isUploading ? () {} : _submitProject,
                     ),
                   ),
@@ -252,7 +263,11 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                               color: AppColors.error,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close, size: 16, color: Colors.white),
+                            child: const Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -274,11 +289,18 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_photo_alternate_outlined, size: 36, color: AppColors.grey600),
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 36,
+                          color: AppColors.grey600,
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           'choose_main_image'.tr,
-                          style: TextStyle(fontSize: 12, color: AppColors.grey600),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.grey600,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -395,11 +417,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   onChanged: (_) => setState(() {}),
                 ),
               ),
-              Container(
-                width: 1,
-                height: 40,
-                color: AppColors.border,
-              ),
+              Container(width: 1, height: 40, color: AppColors.border),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
@@ -441,7 +459,9 @@ class _WhatDoThinkState extends State<WhatDoThink> {
         value: _selectedCategory,
         hint: Text('choose_category'.tr),
         items: _categoryKeys
-            .map((k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr)))
+            .map(
+              (k) => DropdownMenuItem(value: k, child: Text('category_$k'.tr)),
+            )
             .toList(),
         onChanged: (v) => setState(() => _selectedCategory = v),
       ),

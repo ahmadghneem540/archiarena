@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
 import '../../../widget/gradient_button.dart';
+import 'countdown_timer.dart';
 
 /// شيت تفاصيل المنشور والمخططات — البيانات من الـ API (المنشور + GET /home/posts/:id).
 class HomePostDetailsSheet extends StatefulWidget {
@@ -101,8 +102,10 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                             ],
                             const SizedBox(height: 16),
                             _buildCategorizedInfo(),
-                            const SizedBox(height: 24),
-                            _buildActionButton(context),
+                            if (_post.hasDownloadablePlanPdf) ...[
+                              const SizedBox(height: 24),
+                              _buildActionButton(context),
+                            ],
                           ],
                         ),
                       ),
@@ -453,52 +456,87 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     if (_post.deadline != null && _post.deadline!.isNotEmpty) {
       rows.add(('${'end_date'.tr}:', _post.deadline!));
     }
-    if (_post.projectTimer != null && _post.projectTimer!.isNotEmpty) {
+    if (_post.projectTimer != null &&
+        _post.projectTimer!.isNotEmpty &&
+        _post.timerEndsAt == null) {
       rows.add(('${'deal_timer'.tr}:', _post.projectTimer!));
     }
-    if (rows.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.themeCardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.themeBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: rows
-            .map(
-              (r) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 110,
-                      child: Text(
-                        r.$1,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: context.themeGrey600,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        r.$2,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: context.themeOnSurface,
-                        ),
-                      ),
-                    ),
-                  ],
+    final showCountdown = _post.timerEndsAt != null;
+    if (rows.isEmpty && !showCountdown) return const SizedBox.shrink();
+
+    Widget rowTile((String, String) r) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 110,
+                child: Text(
+                  r.$1,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.themeGrey600,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            )
-            .toList(),
-      ),
+              Expanded(
+                child: Text(
+                  r.$2,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.themeOnSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (rows.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.themeCardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.themeBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: rows.map(rowTile).toList(),
+            ),
+          ),
+        if (showCountdown) ...[
+          if (rows.isNotEmpty) const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: context.themeCardBackground,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.themeBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'deal_timer'.tr,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: context.themeGrey600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                CountdownTimer(deadlineAt: _post.timerEndsAt),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -555,16 +593,28 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
       iconSize: 22,
       onPressed: () async {
         setState(() => _isDownloadingAndAdding = true);
+        final snackBg = context.themeCardBackground;
         try {
           final paths = await widget.controller.downloadPostPlans(_post);
           if (!mounted) return;
-          if (paths.isNotEmpty) {
+          if (paths.isEmpty) {
+            Get.snackbar(
+              'alert'.tr,
+              'plan_download_failed'.tr,
+              duration: const Duration(seconds: 4),
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: snackBg,
+              margin: const EdgeInsets.all(12),
+            );
+          } else {
+            await OpenFile.open(paths.first);
+            if (!mounted) return;
             Get.snackbar(
               'plans_downloaded'.tr,
               'plans_downloaded_hint'.tr,
               duration: const Duration(seconds: 3),
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: context.themeCardBackground,
+              backgroundColor: snackBg,
               margin: const EdgeInsets.all(12),
               mainButton: TextButton(
                 onPressed: () => OpenFile.open(paths.first),
@@ -580,7 +630,7 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
               'post_added_to_works'.tr,
               duration: const Duration(seconds: 2),
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: context.themeCardBackground,
+              backgroundColor: snackBg,
               margin: const EdgeInsets.all(12),
             );
           }

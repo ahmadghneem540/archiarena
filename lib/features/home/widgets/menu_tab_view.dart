@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../chat/chat_inbox_view.dart';
 import '../home_controller.dart';
 
 /// شاشة التاب السادس — القائمة (الإعدادات والخيارات).
@@ -26,6 +27,15 @@ class MenuTabView extends StatelessWidget {
           _buildMenuCard(
             context,
             children: [
+              Obx(() {
+                final n = controller.chatPendingRequestCount.value;
+                return _MenuItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  title: 'chat_inbox_title'.tr,
+                  badgeCount: n > 0 ? n : null,
+                  onTap: openChatInbox,
+                );
+              }),
               _MenuItem(
                 icon: Icons.person_outline_rounded,
                 title: 'edit_profile_title'.tr,
@@ -223,12 +233,14 @@ class _MenuItem extends StatelessWidget {
     required this.icon,
     required this.title,
     this.subtitle,
+    this.badgeCount,
     required this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
+  final int? badgeCount;
   final VoidCallback onTap;
 
   @override
@@ -279,6 +291,27 @@ class _MenuItem extends StatelessWidget {
                   ],
                 ),
               ),
+              if (badgeCount != null && badgeCount! > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin: const EdgeInsetsDirectional.only(end: 6),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
+                  child: Center(
+                    child: Text(
+                      badgeCount! > 9 ? '9+' : '$badgeCount',
+                      style: const TextStyle(
+                        color: AppColors.onPrimary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
               Icon(
                 Icons.chevron_left_rounded,
                 color: grey500,

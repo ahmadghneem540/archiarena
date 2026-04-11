@@ -71,8 +71,9 @@ class HomeSearchBar extends StatelessWidget {
                       child: SizedBox(
                         height: 44,
                         child: ArchiButton(
+                          iconSize: 13,
                           label: 'what_do_you_think'.tr,
-                          fontSize: 5,
+                          fontSize: 13,
                           height: 34,
                           icon: Icons.auto_awesome,
                           onPressed: () {

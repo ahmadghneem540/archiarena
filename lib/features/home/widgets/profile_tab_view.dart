@@ -597,8 +597,7 @@ class ProfileTabView extends StatelessWidget {
 
                 if ((post.budget != null && post.budget!.isNotEmpty) ||
                     (post.deadline != null && post.deadline!.isNotEmpty) ||
-                    (post.projectTimer != null &&
-                        post.projectTimer!.isNotEmpty)) ...[
+                    post.hasDealTimer) ...[
                   const SizedBox(height: 10),
 
                   Row(
@@ -676,8 +675,7 @@ class ProfileTabView extends StatelessWidget {
                           ),
                         ),
 
-                      if (post.projectTimer != null &&
-                          post.projectTimer!.isNotEmpty)
+                      if (post.hasDealTimer)
                         Expanded(
                           child: Column(
                             crossAxisAlignment:
@@ -685,7 +683,7 @@ class ProfileTabView extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'مؤقت الصفقة',
+                                'deal_timer'.tr,
                                 style: TextStyle(
                                   fontSize: 11,
                                   color: Get.isDarkMode
@@ -694,31 +692,36 @@ class ProfileTabView extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 2),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.schedule_outlined,
-                                    size: 18,
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      post.projectTimer!,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Get.isDarkMode
-                                            ? Colors.white
-                                            : AppColors.onSurface,
-                                      ),
-                                      overflow:
-                                      TextOverflow.ellipsis,
+                              post.timerEndsAt != null
+                                  ? CountdownTimer(
+                                      deadlineAt: post.timerEndsAt,
+                                      iconSize: 18,
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.schedule_outlined,
+                                          size: 18,
+                                          color: AppColors.primary,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Flexible(
+                                          child: Text(
+                                            post.projectTimer!,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: Get.isDarkMode
+                                                  ? Colors.white
+                                                  : AppColors.onSurface,
+                                            ),
+                                            overflow:
+                                                TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
                             ],
                           ),
                         ),

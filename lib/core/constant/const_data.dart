@@ -7,6 +7,13 @@ class ConstData {
   static const String APP_DOMAIN = "https://papayawhip-goldfish-691767.hostingersite.com";
   static const String API_BASE = "$APP_DOMAIN";
 
+  /// إن لم يدعم الاستضافة المشتركة WebSocket دائماً، اعتمد على FCM + استطلاع (انظر ChatRoomController).
+  static const String CHAT_SOCKET_URL = APP_DOMAIN;
+
+  static const String CHAT_SOCKET_IO_PATH = '/socket.io';
+
+  static const String CHAT_SOCKET_NAMESPACE = '/';
+
   /// مفاتيح التخزين المحلي
   static const String keyToken = 'auth_token';
   static const String keyUserId = 'user_id';

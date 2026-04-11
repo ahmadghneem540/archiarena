@@ -85,6 +85,33 @@ class ApiEndpoints {
   static const String notificationsReadAll = '/notifications/read-all';
   static String notificationDelete(int id) => '/notifications/$id';
 
+  // ========== Chat (مراسلة بين المستخدمين) — مسارات السيرفر تحت /api/chat ==========
+  /// بدء أو جلب حالة المحادثة مع مستخدم — POST body: { user_id }
+  static const String chatConversationStart = '/api/chat/conversations/start';
+  /// قائمة المحادثات — GET query: page, limit
+  static const String chatConversations = '/api/chat/conversations';
+  /// رسائل محادثة — GET query: page, limit, before_id (اختياري)
+  static String chatConversationMessages(int conversationId) =>
+      '/api/chat/conversations/$conversationId/messages';
+  /// إرسال رسالة — POST body: { body }
+  static String chatSendMessage(int conversationId) =>
+      '/api/chat/conversations/$conversationId/messages';
+  /// طلبات مراسلة واردة — GET query: page, limit
+  static const String chatRequestsIncoming = '/api/chat/requests/incoming';
+  /// عدد الطلبات الواردة (اختياري على السيرفر) — GET
+  static const String chatRequestsIncomingCount =
+      '/api/chat/requests/incoming/count';
+  /// قبول طلب مراسلة — POST
+  static String chatRequestAccept(int requestId) =>
+      '/api/chat/requests/$requestId/accept';
+  /// رفض طلب مراسلة — POST
+  static String chatRequestReject(int requestId) =>
+      '/api/chat/requests/$requestId/reject';
+  /// حظر مستخدم عن المراسلة — POST
+  static String chatBlockUser(int userId) => '/api/chat/users/$userId/block';
+  /// إلغاء حظر مستخدم — POST
+  static String chatUnblockUser(int userId) => '/api/chat/users/$userId/unblock';
+
   // ========== General ==========
   static const String health = '/health';
 }

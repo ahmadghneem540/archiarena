@@ -7,12 +7,16 @@ import '../../core/routes/app_routes.dart';
 import '../../core/services/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/download_helper.dart';
+import '../../core/services/chat_socket_service.dart';
 import '../../core/services/fcm_service.dart';
 import '../../data/services/auth_api_service.dart';
 import '../../data/services/friends_api_service.dart';
 import '../../data/services/home_api_service.dart';
 import '../../data/services/notifications_api_service.dart';
+import '../../data/services/chat_api_service.dart';
 import '../../data/services/profile_api_service.dart';
+import '../chat/chat_inbox_view.dart';
+import '../chat/models/chat_thread_model.dart';
 import 'models/comment_model.dart';
 import 'models/friend_request_model.dart';
 import 'models/notification_model.dart';
@@ -32,27 +36,6 @@ class HomeController extends GetxController {
   final showUploadPage = false.obs;
   // نوع المستخدم: true للشركات، false للأشخاص
   final RxBool isCompany = false.obs; // يمكن تغييرها حسب نوع المستخدم المسجل
-
-  /// فتح صفحة رفع المشروع. إن وُجد post (من صفحة الأعمال) يُفتح نموذج تقديم عرض على ذلك المشروع.
-  void openUploadPage({PostModel? post}) {
-    if (post != null) {
-      UploadProjectPage.showProposalSheet(post, this);
-      return;
-    }
-    showUploadPage.value = true;
-  }
-
-  void closeUploadPage() {
-    showUploadPage.value = false;
-  }
-
-  final notificationCount = 0.obs;
-  /// عدد طلبات الصداقة المعلقة — للشارة الحمراء على أيقونة الأصدقاء
-  final friendRequestCount = 0.obs;
-
-  // شروط رفع المشروع من الـ API
-  final uploadConditions = <String>[].obs;
-
   // المنشورات من الـ API
   final posts = <PostModel>[].obs;
 
@@ -76,21 +59,30 @@ class HomeController extends GetxController {
   final post1Comments = 0.obs;
   final post1IsLiked = false.obs;
   final post1CommentsList = <CommentModel>[].obs;
-
   // تفاعلات البوست الثاني
   final post2Likes = 0.obs;
   final post2Comments = 0.obs;
   final post2IsLiked = false.obs;
   final post2CommentsList = <CommentModel>[].obs;
+  final notificationCount = 0.obs;
+
+  /// عدد طلبات الصداقة المعلقة — للشارة الحمراء على أيقونة الأصدقاء
+  final friendRequestCount = 0.obs;
+
+  /// عدد طلبات المراسلة المعلقة — للشارة في القائمة (الرسائل)
+  final chatPendingRequestCount = 0.obs;
+
+  /// مجموع الرسائل غير المقروءة عبر المحادثات — للشارة على أيقونة الرسائل في الرأس
+  final chatUnreadMessageCount = 0.obs;
+  // شروط رفع المشروع من الـ API
+  final uploadConditions = <String>[].obs;
 
   /// تعليقات المنشورات من الـ API (مفتاح: postId)
   final Map<int, RxList<CommentModel>> postCommentsMap = {};
-
   // طلبات الصداقة والأصدقاء (التاب الثالث)
   final friendRequests = <FriendRequestModel>[].obs;
   final myFriends = <FriendRequestModel>[].obs;
   final sentFriendRequestIds = <String>[].obs;
-
   // الملف الشخصي والاقتراحات (التاب الرابع) — تُملأ من الـ API فقط
   final isProfileLocked = false.obs;
   UserProfileModel myProfile = UserProfileModel(
@@ -102,10 +94,13 @@ class HomeController extends GetxController {
     livesIn: '',
     from: '',
   );
+
   /// منشورات الملف الشخصي (من /profile/me/posts)
   final profilePosts = <PostModel>[].obs;
+
   /// ملف مستخدم آخر (عند فتح صفحة ملفه)
   final Rxn<UserProfileModel> otherUserProfile = Rxn<UserProfileModel>();
+
   /// منشورات مستخدم آخر
   final otherUserPosts = <PostModel>[].obs;
   final suggestionUsers = <UserProfileModel>[].obs;
@@ -125,7 +120,6 @@ class HomeController extends GetxController {
   final isOrderProposalsLoading = false.obs;
   final isDownloadingOrders = false.obs;
   final isDownloadingOrderImages = false.obs;
-
   // ====== خفّة الأداء: منع إعادة التحميل المتكرر ======
   DateTime? _postsFetchedAt;
   DateTime? _worksFetchedAt;
@@ -137,6 +131,19 @@ class HomeController extends GetxController {
   DateTime? _profileFetchedAt;
 
   static const Duration _defaultCacheTtl = Duration(seconds: 45);
+
+  /// فتح صفحة رفع المشروع. إن وُجد post (من صفحة الأعمال) يُفتح نموذج تقديم عرض على ذلك المشروع.
+  void openUploadPage({PostModel? post}) {
+    if (post != null) {
+      UploadProjectPage.showProposalSheet(post, this);
+      return;
+    }
+    showUploadPage.value = true;
+  }
+
+  void closeUploadPage() {
+    showUploadPage.value = false;
+  }
 
   bool _isFresh(DateTime? t, [Duration ttl = _defaultCacheTtl]) {
     if (t == null) return false;
@@ -155,7 +162,11 @@ class HomeController extends GetxController {
     if (res.isSuccess) {
       sentFriendRequestIds.add(userId);
     } else {
-      Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'failure'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -174,12 +185,14 @@ class HomeController extends GetxController {
       final rawList = res.data!['comments'] ?? res.data!['data'];
       if (rawList is List && rawList.isNotEmpty) {
         final topLevel = rawList
-            .map((e) => e is Map
-                ? CommentModel.fromJson(
-                    Map.from(e),
-                    formatTime: _formatTimeAgo,
-                  )
-                : null)
+            .map(
+              (e) => e is Map
+                  ? CommentModel.fromJson(
+                      Map.from(e),
+                      formatTime: _formatTimeAgo,
+                    )
+                  : null,
+            )
             .whereType<CommentModel>()
             .toList();
         final flat = <CommentModel>[];
@@ -204,13 +217,21 @@ class HomeController extends GetxController {
     } else {
       final commentId = int.tryParse(parentId);
       if (commentId == null) {
-        Get.snackbar('error'.tr, 'invalid_comment_id'.tr, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'error'.tr,
+          'invalid_comment_id'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return false;
       }
       res = await HomeApiService.replyComment(commentId, body: text);
     }
     if (!res.isSuccess) {
-      Get.snackbar('comment_add_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'comment_add_failed'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return false;
     }
     final comment = _parseCommentFromResponse(res.data);
@@ -236,16 +257,27 @@ class HomeController extends GetxController {
     } else {
       final commentId = int.tryParse(parentId);
       if (commentId == null) {
-        Get.snackbar('error'.tr, 'invalid_comment_id'.tr, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'error'.tr,
+          'invalid_comment_id'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return false;
       }
       res = await HomeApiService.replyComment(commentId, audioPath: audioPath);
     }
     if (!res.isSuccess) {
-      Get.snackbar('comment_voice_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'comment_voice_failed'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return false;
     }
-    final comment = _parseCommentFromResponse(res.data, audioDurationSeconds: durationSeconds);
+    final comment = _parseCommentFromResponse(
+      res.data,
+      audioDurationSeconds: durationSeconds,
+    );
     if (comment != null) {
       list.add(comment);
       _updateCommentCount(postId);
@@ -254,7 +286,10 @@ class HomeController extends GetxController {
     return true;
   }
 
-  CommentModel? _parseCommentFromResponse(Map<String, dynamic>? data, {int? audioDurationSeconds}) {
+  CommentModel? _parseCommentFromResponse(
+    Map<String, dynamic>? data, {
+    int? audioDurationSeconds,
+  }) {
     if (data == null) return null;
     final raw = data['comment'] ?? data['data'] ?? data;
     if (raw is! Map) return null;
@@ -269,9 +304,27 @@ class HomeController extends GetxController {
   void _updateCommentCount(int postId) {
     if (postId == 1) {
       post1Comments.value = _totalCount(post1CommentsList);
-    } else {
-      post2Comments.value = _totalCount(post2CommentsList);
+      return;
     }
+    if (postId == 2) {
+      post2Comments.value = _totalCount(post2CommentsList);
+      return;
+    }
+    final count = _totalCount(getCommentsListForPost(postId));
+    _applyCommentCountToPostLists(postId, count);
+  }
+
+  void _applyCommentCountToPostLists(int postId, int commentsCount) {
+    void patch(RxList<PostModel> list) {
+      final i = list.indexWhere((p) => p.id == postId);
+      if (i < 0) return;
+      list[i] = list[i].copyWith(commentsCount: commentsCount);
+    }
+
+    patch(posts);
+    patch(otherUserPosts);
+    patch(profilePosts);
+    patch(worksPosts);
   }
 
   int _totalCount(List<CommentModel> list) {
@@ -296,10 +349,16 @@ class HomeController extends GetxController {
     openCommentsSheet(2);
   }
 
-  Future<void> togglePostLike(int postId) async {
+  Future<void> togglePostLike(
+    int postId, {
+    String? refreshPostsForUserId,
+  }) async {
     final res = await HomeApiService.toggleLike(postId);
     if (res.isSuccess) {
       loadPosts();
+      if (refreshPostsForUserId != null) {
+        await loadOtherUserPosts(refreshPostsForUserId);
+      }
     }
   }
 
@@ -314,7 +373,11 @@ class HomeController extends GetxController {
           myFriends.add(request);
         }
       } else {
-        Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'failure'.tr,
+          res.message ?? 'error_occurred'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     }
   }
@@ -348,19 +411,33 @@ class HomeController extends GetxController {
     return PostModel.fromJson(res.data!);
   }
 
-  /// تحميل مخططات المنشور محلياً — يُرجع قائمة مسارات الملفات المحفوظة
+  /// تحميل ملفات PDF للمخطط فقط (وليس صور المعاينة في `plans`/`blueprints`).
+  /// يُفضَّل `plan_file` من الـ API ثم المرفقات/العناصر التي تبدو PDF.
   Future<List<String>> downloadPostPlans(PostModel post) async {
-    final allPlans = <PostPlanItem>[...post.plans, ...post.blueprints];
     final paths = <String>[];
-    for (var i = 0; i < allPlans.length; i++) {
-      final plan = allPlans[i];
-      final url = fullImageUrl(plan.url) ?? plan.url;
-      if (url.isEmpty) continue;
-      final path = await DownloadHelper.downloadImage(
-        url,
-        'plans/${post.id}/plan_$i',
-      );
+    Future<void> addPdf(String? rawUrl, String basePathNoExt) async {
+      final resolved = fullImageUrl(rawUrl) ?? rawUrl;
+      if (resolved == null || resolved.isEmpty) return;
+      final path = await DownloadHelper.downloadPdfFile(resolved, basePathNoExt);
       if (path != null) paths.add(path);
+    }
+
+    if (post.planFileUrl != null && post.planFileUrl!.trim().isNotEmpty) {
+      await addPdf(post.planFileUrl, 'plans/${post.id}/plan_file');
+    }
+    for (var i = 0; i < post.attachments.length; i++) {
+      final a = post.attachments[i];
+      if (a.isPdfAttachment) {
+        await addPdf(a.url, 'plans/${post.id}/attachment_$i');
+      }
+    }
+    for (var i = 0; i < post.plans.length; i++) {
+      final p = post.plans[i];
+      if (p.looksLikePdf) await addPdf(p.url, 'plans/${post.id}/plan_$i');
+    }
+    for (var i = 0; i < post.blueprints.length; i++) {
+      final p = post.blueprints[i];
+      if (p.looksLikePdf) await addPdf(p.url, 'plans/${post.id}/blueprint_$i');
     }
     return paths;
   }
@@ -375,18 +452,22 @@ class HomeController extends GetxController {
   }
 
   void openPost1DetailsSheet() {
-    openPostDetailsSheet(posts.isNotEmpty ? posts.first : PostModel(id: 0, title: ''));
+    openPostDetailsSheet(
+      posts.isNotEmpty ? posts.first : PostModel(id: 0, title: ''),
+    );
   }
 
   void openOrderDetails(String orderId, String orderTitle) {
     if (!orderImages.containsKey(orderId)) {
       orderImages[orderId] = <ProjectImageModel>[].obs;
     }
-    Get.to(() => OrderDetailsView(
-          controller: this,
-          orderId: orderId,
-          orderTitle: orderTitle,
-        ));
+    Get.to(
+      () => OrderDetailsView(
+        controller: this,
+        orderId: orderId,
+        orderTitle: orderTitle,
+      ),
+    );
     loadOrderProposals(orderId);
   }
 
@@ -422,17 +503,21 @@ class HomeController extends GetxController {
             final m = Map<String, dynamic>.from(e);
             final id = '${m['proposal_id'] ?? m['id']}';
             final status = (m['status']?.toString() ?? '').toLowerCase();
-            final imageUrl = fullImageUrl(
-              m['image_url']?.toString() ?? m['imageUrl']?.toString(),
-            ) ?? '';
-            list.add(ProjectImageModel(
-              id: id,
-              imageUrl: imageUrl,
-              authorName: m['name']?.toString() ?? '—',
-              timeAgo: _formatTimeAgo(m['created_at']),
-              isAccepted: status == 'accepted',
-              isRejected: status == 'rejected',
-            ));
+            final imageUrl =
+                fullImageUrl(
+                  m['image_url']?.toString() ?? m['imageUrl']?.toString(),
+                ) ??
+                '';
+            list.add(
+              ProjectImageModel(
+                id: id,
+                imageUrl: imageUrl,
+                authorName: m['name']?.toString() ?? '—',
+                timeAgo: _formatTimeAgo(m['created_at']),
+                isAccepted: status == 'accepted',
+                isRejected: status == 'rejected',
+              ),
+            );
           }
         }
       }
@@ -452,9 +537,17 @@ class HomeController extends GetxController {
     final res = await HomeApiService.acceptProposal(oid, pid);
     if (res.isSuccess) {
       await loadOrderProposals(orderId);
-      Get.snackbar('success'.tr, res.message ?? 'accept_offer_success'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'success'.tr,
+        res.message ?? 'accept_offer_success'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } else {
-      Get.snackbar('failure'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'failure'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 
@@ -490,7 +583,11 @@ class HomeController extends GetxController {
           colorText: AppColors.onPrimary,
         );
       } else {
-        Get.snackbar('alert'.tr, 'no_images_downloaded'.tr, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'alert'.tr,
+          'no_images_downloaded'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } finally {
       isDownloadingOrderImages.value = false;
@@ -500,7 +597,11 @@ class HomeController extends GetxController {
   /// تحميل كل الطلبات وصورها الرئيسية محلياً
   Future<void> downloadAllOrdersAndImages() async {
     if (orders.isEmpty) {
-      Get.snackbar('alert'.tr, 'no_orders_to_download'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'alert'.tr,
+        'no_orders_to_download'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
     isDownloadingOrders.value = true;
@@ -524,7 +625,11 @@ class HomeController extends GetxController {
           colorText: AppColors.onPrimary,
         );
       } else {
-        Get.snackbar('alert'.tr, 'no_images_downloaded'.tr, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'alert'.tr,
+          'no_images_downloaded'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } finally {
       isDownloadingOrders.value = false;
@@ -536,6 +641,7 @@ class HomeController extends GetxController {
     switch (tab) {
       case HomeTab.home:
         loadPosts();
+        loadChatUnreadMessageCount();
         break;
       case HomeTab.work:
         loadWorks();
@@ -555,6 +661,8 @@ class HomeController extends GetxController {
         loadNotifications();
         break;
       case HomeTab.menu:
+        loadChatPendingRequestCount();
+        loadChatUnreadMessageCount();
         break;
     }
   }
@@ -576,8 +684,28 @@ class HomeController extends GetxController {
           selectTab(HomeTab.orders);
           final oid = arguments['orderId']?.toString();
           if (oid != null && oid.isNotEmpty) {
-            openOrderDetails(oid, arguments['orderTitle']?.toString() ?? 'order'.tr);
+            openOrderDetails(
+              oid,
+              arguments['orderTitle']?.toString() ?? 'order'.tr,
+            );
           }
+        });
+      }
+      if (arguments['openChatAfterLoad'] == true) {
+        final pid = arguments['openChatPeerId']?.toString();
+        if (pid != null && pid.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            openChatWithUser(
+              peerId: pid,
+              peerName: arguments['openChatPeerName']?.toString() ?? '',
+              peerAvatar: arguments['openChatPeerAvatar']?.toString(),
+            );
+          });
+        }
+      }
+      if (arguments['openChatRequestsAfterLoad'] == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          openChatInbox(openRequestsTab: true);
         });
       }
     } else {
@@ -589,6 +717,105 @@ class HomeController extends GetxController {
     loadPosts();
     // باقي البيانات (الأعمال/الطلبات/الأصدقاء/الإشعارات/منشورات البروفايل) تُحمّل عند فتح تبويبها فقط عبر selectTab()
     _registerFcmTokenLater();
+    _loadChatPendingCountLater();
+    FcmService.addChatDataListener(_onFcmChatDataForHome);
+  }
+
+  void _onFcmChatDataForHome(Map<String, dynamic> data) {
+    if (isClosed) return;
+    final type = data['type']?.toString() ?? '';
+    if (type == 'chat_request' ||
+        type == 'new_chat_request' ||
+        type == 'chat_message_request') {
+      loadChatPendingRequestCount();
+    }
+    if (type == 'chat_message' || type == 'new_chat_message') {
+      loadChatUnreadMessageCount();
+    }
+  }
+
+  @override
+  void onClose() {
+    FcmService.removeChatDataListener(_onFcmChatDataForHome);
+    super.onClose();
+  }
+
+  void _loadChatPendingCountLater() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 3), () {
+        if (isClosed) return;
+        loadChatPendingRequestCount();
+        loadChatUnreadMessageCount();
+      });
+    });
+  }
+
+  /// تحديث عدد طلبات المراسلة الواردة (للشارة في القائمة)
+  Future<void> loadChatPendingRequestCount() async {
+    final prev = chatPendingRequestCount.value;
+    try {
+      final countRes = await ChatApiService.getIncomingRequestsCount();
+      if (countRes.isSuccess &&
+          countRes.data != null &&
+          countRes.status != 404) {
+        final raw = countRes.data!['count'] ??
+            countRes.data!['pending_count'] ??
+            countRes.data!['total'];
+        final n = raw is int ? raw : int.tryParse('$raw');
+        if (n != null) {
+          _maybeShowChatRequestSnackbar(prev, n);
+          chatPendingRequestCount.value = n;
+          return;
+        }
+      }
+      final listRes = await ChatApiService.getIncomingRequests(limit: 100);
+      if (listRes.isSuccess && listRes.data != null) {
+        final list = listRes.data!['requests'] ?? listRes.data!['list'];
+        final n = list is List ? list.length : 0;
+        _maybeShowChatRequestSnackbar(prev, n);
+        chatPendingRequestCount.value = n;
+      }
+    } catch (_) {}
+  }
+
+  /// تحديث مجموع الرسائل غير المقروءة (من قائمة المحادثات)
+  Future<void> loadChatUnreadMessageCount() async {
+    try {
+      var total = 0;
+      var page = 1;
+      const limit = 50;
+      while (page <= 40) {
+        final res = await ChatApiService.getConversations(page: page, limit: limit);
+        if (!res.isSuccess || res.data == null) break;
+        final list = res.data!['conversations'] ?? res.data!['list'];
+        if (list is! List || list.isEmpty) break;
+        for (final e in list) {
+          if (e is! Map) continue;
+          final t = ChatThreadModel.fromJson(Map<String, dynamic>.from(e));
+          if (t != null) total += t.unreadCount;
+        }
+        final lastPage = res.data!['last_page'];
+        final current = res.data!['current_page'];
+        if (lastPage is int && current is int && current >= lastPage) break;
+        if (list.length < limit) break;
+        page++;
+      }
+      chatUnreadMessageCount.value = total;
+    } catch (_) {}
+  }
+
+  void _maybeShowChatRequestSnackbar(int prev, int n) {
+    if (isClosed || n <= 0 || n <= prev) return;
+    Get.snackbar(
+      'chat_request_snackbar_title'.tr,
+      'chat_request_snackbar_body'.tr,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 6),
+      mainButton: TextButton(
+        onPressed: () => openChatInbox(openRequestsTab: true),
+        child: Text('chat_open_requests'.tr),
+      ),
+    );
   }
 
   /// تحديث توكن FCM على السيرفر عند فتح التطبيق (مستخدمون وشركات) لاستقبال إشعار قبول العرض أو العرض الجديد
@@ -621,8 +848,7 @@ class HomeController extends GetxController {
     if (res.isSuccess && res.data != null) {
       final conditions = res.data!['conditions'];
       if (conditions is List) {
-        uploadConditions.value =
-            conditions.map((e) => e.toString()).toList();
+        uploadConditions.value = conditions.map((e) => e.toString()).toList();
       }
     }
   }
@@ -634,19 +860,19 @@ class HomeController extends GetxController {
     try {
       final res = await HomeApiService.getPosts();
       if (res.isSuccess && res.data != null) {
-      final list = res.data!['posts'] ?? res.data!['data'];
-      if (list is List && list.isNotEmpty) {
-        posts.value = list
-            .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
-            .whereType<PostModel>()
-            .toList();
+        final list = res.data!['posts'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          posts.value = list
+              .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
+              .whereType<PostModel>()
+              .toList();
+        } else {
+          posts.value = [];
+        }
       } else {
         posts.value = [];
       }
-    } else {
-      posts.value = [];
-    }
-    _postsFetchedAt = DateTime.now();
+      _postsFetchedAt = DateTime.now();
     } finally {
       isPostsLoading.value = false;
     }
@@ -681,7 +907,7 @@ class HomeController extends GetxController {
   Future<bool> addPostToWorks(int postId) async {
     final res = await HomeApiService.addPostToWorks(postId);
     if (res.isSuccess) {
-      await loadWorks();
+      await loadWorks(force: true);
       return true;
     }
     return false;
@@ -691,7 +917,7 @@ class HomeController extends GetxController {
   Future<bool> removePostFromWorks(int postId) async {
     final res = await HomeApiService.deletePostFromWorks(postId);
     if (res.isSuccess) {
-      await loadWorks();
+      await loadWorks(force: true);
       return true;
     }
     return false;
@@ -702,47 +928,50 @@ class HomeController extends GetxController {
 
   /// جلب طلبات الصداقة — الطلب يظهر عند المستخدم المستقبل، ويمكنه فتح بروفايل المرسل والموافقة أو الرفض.
   Future<void> loadFriendRequests({bool force = false}) async {
-    if (!force && friendRequests.isNotEmpty && _isFresh(_friendRequestsFetchedAt)) return;
+    if (!force &&
+        friendRequests.isNotEmpty &&
+        _isFresh(_friendRequestsFetchedAt))
+      return;
     isFriendRequestsLoading.value = true;
     try {
       final res = await FriendsApiService.getRequests();
-    if (res.isSuccess && res.data != null) {
-      final list = res.data!['requests'] ?? res.data!['data'];
-      if (list is List && list.isNotEmpty) {
-        friendRequests.value = list.map((e) {
-          final m = e is Map ? Map.from(e) : {};
-          final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
-          final profilePic = sender['profile_picture']?.toString();
-          final requestId = m['request_id'] ?? m['id'];
-          final senderUserId = sender['user_id'] ?? sender['id'];
-          return FriendRequestModel(
-            id: '${requestId ?? senderUserId}',
-            senderUserId: senderUserId?.toString(),
-            name: sender['name']?.toString() ?? 'user_default'.tr,
-            mutualCount: m['mutual_friends_count'] ?? 0,
-            timeAgo: _formatTimeAgo(m['created_at']),
-            avatarPath: profilePic != null && profilePic.isNotEmpty
-                ? HomeController.fullImageUrl(profilePic)
-                : null,
-          );
-        }).toList();
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['requests'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          friendRequests.value = list.map((e) {
+            final m = e is Map ? Map.from(e) : {};
+            final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
+            final profilePic = sender['profile_picture']?.toString();
+            final requestId = m['request_id'] ?? m['id'];
+            final senderUserId = sender['user_id'] ?? sender['id'];
+            return FriendRequestModel(
+              id: '${requestId ?? senderUserId}',
+              senderUserId: senderUserId?.toString(),
+              name: sender['name']?.toString() ?? 'user_default'.tr,
+              mutualCount: m['mutual_friends_count'] ?? 0,
+              timeAgo: _formatTimeAgo(m['created_at']),
+              avatarPath: profilePic != null && profilePic.isNotEmpty
+                  ? HomeController.fullImageUrl(profilePic)
+                  : null,
+            );
+          }).toList();
+        } else {
+          friendRequests.value = [];
+        }
       } else {
         friendRequests.value = [];
       }
-    } else {
-      friendRequests.value = [];
-    }
-    final countRes = await FriendsApiService.getRequestsCount();
-    if (countRes.isSuccess && countRes.data != null) {
-      friendRequestCount.value =
-          countRes.data!['count'] ?? friendRequests.length;
-    }
-    // إشعار المستخدم عند وصول طلب صداقة جديد (مع صوت/اهتزاز إن أمكن)
-    final newCount = friendRequests.length;
-    if (_lastFriendRequestCount >= 0 && newCount > _lastFriendRequestCount) {
-      _onNewFriendRequestReceived();
-    }
-    _lastFriendRequestCount = newCount;
+      final countRes = await FriendsApiService.getRequestsCount();
+      if (countRes.isSuccess && countRes.data != null) {
+        friendRequestCount.value =
+            countRes.data!['count'] ?? friendRequests.length;
+      }
+      // إشعار المستخدم عند وصول طلب صداقة جديد (مع صوت/اهتزاز إن أمكن)
+      final newCount = friendRequests.length;
+      if (_lastFriendRequestCount >= 0 && newCount > _lastFriendRequestCount) {
+        _onNewFriendRequestReceived();
+      }
+      _lastFriendRequestCount = newCount;
     } finally {
       isFriendRequestsLoading.value = false;
     }
@@ -781,19 +1010,31 @@ class HomeController extends GetxController {
         final list = res.data!['friends'] ?? res.data!['data'];
         if (list is List && list.isNotEmpty) {
           myFriends.value = list.map((e) {
-            final m = e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{};
+            final m = e is Map
+                ? Map<String, dynamic>.from(e)
+                : <String, dynamic>{};
             final user = m['user'] is Map
                 ? Map<String, dynamic>.from(m['user'] as Map)
                 : m['friend'] is Map
-                    ? Map<String, dynamic>.from(m['friend'] as Map)
-                    : m;
-            final friendId = user['user_id'] ?? user['id'] ?? m['friend_id'] ?? m['user_id'];
-            final profilePic = user['profile_picture']?.toString() ?? m['profile_picture']?.toString();
+                ? Map<String, dynamic>.from(m['friend'] as Map)
+                : m;
+            final friendId =
+                user['user_id'] ?? user['id'] ?? m['friend_id'] ?? m['user_id'];
+            final profilePic =
+                user['profile_picture']?.toString() ??
+                m['profile_picture']?.toString();
             return FriendRequestModel(
               id: friendId?.toString() ?? '',
               senderUserId: friendId?.toString(),
-              name: user['name']?.toString() ?? m['name']?.toString() ?? 'user_default'.tr,
-              mutualCount: int.tryParse('${m['mutual_friends_count'] ?? user['mutual_friends_count'] ?? 0}') ?? 0,
+              name:
+                  user['name']?.toString() ??
+                  m['name']?.toString() ??
+                  'user_default'.tr,
+              mutualCount:
+                  int.tryParse(
+                    '${m['mutual_friends_count'] ?? user['mutual_friends_count'] ?? 0}',
+                  ) ??
+                  0,
               timeAgo: _formatTimeAgo(m['created_at']),
               avatarPath: profilePic != null && profilePic.isNotEmpty
                   ? HomeController.fullImageUrl(profilePic)
@@ -819,29 +1060,29 @@ class HomeController extends GetxController {
     isSuggestionsLoading.value = true;
     try {
       final res = await FriendsApiService.getSuggestions();
-    if (res.isSuccess && res.data != null) {
-      final list = res.data!['suggestions'] ?? res.data!['data'];
-      if (list is List && list.isNotEmpty) {
-        suggestionUsers.value = list.map((e) {
-          final m = e is Map ? Map.from(e) : {};
-          final profilePic = m['profile_picture']?.toString();
-          return UserProfileModel(
-            id: '${m['user_id'] ?? m['id']}',
-            name: m['name']?.toString() ?? 'user_default'.tr,
-            username: m['username']?.toString(),
-            job: m['professional_title']?.toString() ?? m['job']?.toString(),
-            mutualCount: m['mutual_friends_count'] ?? 0,
-            profilePicture: profilePic != null && profilePic.isNotEmpty
-                ? fullImageUrl(profilePic)
-                : null,
-          );
-        }).toList();
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['suggestions'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          suggestionUsers.value = list.map((e) {
+            final m = e is Map ? Map.from(e) : {};
+            final profilePic = m['profile_picture']?.toString();
+            return UserProfileModel(
+              id: '${m['user_id'] ?? m['id']}',
+              name: m['name']?.toString() ?? 'user_default'.tr,
+              username: m['username']?.toString(),
+              job: m['professional_title']?.toString() ?? m['job']?.toString(),
+              mutualCount: m['mutual_friends_count'] ?? 0,
+              profilePicture: profilePic != null && profilePic.isNotEmpty
+                  ? fullImageUrl(profilePic)
+                  : null,
+            );
+          }).toList();
+        } else {
+          suggestionUsers.value = [];
+        }
       } else {
         suggestionUsers.value = [];
       }
-    } else {
-      suggestionUsers.value = [];
-    }
     } finally {
       isSuggestionsLoading.value = false;
     }
@@ -849,31 +1090,32 @@ class HomeController extends GetxController {
 
   /// جلب الإشعارات
   Future<void> loadNotifications({bool force = false}) async {
-    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt)) return;
+    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt))
+      return;
     isNotificationsLoading.value = true;
     try {
       final res = await NotificationsApiService.getNotifications();
-    if (res.isSuccess && res.data != null) {
-      final list = res.data!['notifications'] ?? res.data!['data'];
-      if (list is List && list.isNotEmpty) {
-        notifications.value = list.map((e) {
-          final m = e is Map ? Map.from(e) : {};
-          final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
-          return NotificationModel(
-            id: '${m['notification_id'] ?? m['id']}',
-            type: _parseNotificationType(m['type']),
-            senderName: sender['name']?.toString() ?? 'user_default'.tr,
-            message: m['message']?.toString() ?? '',
-            timeAgo: _formatTimeAgo(m['created_at']),
-          );
-        }).toList();
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['notifications'] ?? res.data!['data'];
+        if (list is List && list.isNotEmpty) {
+          notifications.value = list.map((e) {
+            final m = e is Map ? Map.from(e) : {};
+            final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
+            return NotificationModel(
+              id: '${m['notification_id'] ?? m['id']}',
+              type: _parseNotificationType(m['type']),
+              senderName: sender['name']?.toString() ?? 'user_default'.tr,
+              message: m['message']?.toString() ?? '',
+              timeAgo: _formatTimeAgo(m['created_at']),
+            );
+          }).toList();
+        }
       }
-    }
-    final countRes = await NotificationsApiService.getUnreadCount();
-    if (countRes.isSuccess && countRes.data != null) {
-      notificationCount.value =
-          countRes.data!['count'] ?? notifications.length;
-    }
+      final countRes = await NotificationsApiService.getUnreadCount();
+      if (countRes.isSuccess && countRes.data != null) {
+        notificationCount.value =
+            countRes.data!['count'] ?? notifications.length;
+      }
     } finally {
       isNotificationsLoading.value = false;
     }
@@ -913,55 +1155,60 @@ class HomeController extends GetxController {
     if (path == null || path.isEmpty) return null;
     if (path.startsWith('http')) return path;
     final base = ConstData.API_BASE;
-    return base.endsWith('/') ? '$base${path.startsWith('/') ? path.substring(1) : path}' : '$base${path.startsWith('/') ? path : '/$path'}';
+    return base.endsWith('/')
+        ? '$base${path.startsWith('/') ? path.substring(1) : path}'
+        : '$base${path.startsWith('/') ? path : '/$path'}';
   }
 
   /// جلب الملف الشخصي من الـ API
   Future<void> loadMyProfile({bool force = false}) async {
-    if (!force && _isFresh(_profileFetchedAt, const Duration(seconds: 60))) return;
+    if (!force && _isFresh(_profileFetchedAt, const Duration(seconds: 60)))
+      return;
     isProfileLoading.value = true;
     try {
       final res = await ProfileApiService.getMyProfile();
-    if (res.isSuccess && res.data != null) {
-      final d = res.data!;
-      myProfile = UserProfileModel(
-        id: '${d['user_id'] ?? d['id'] ?? 'me'}',
-        name: d['name']?.toString() ?? myProfile.name,
-        username: d['username']?.toString(),
-        job: d['professional_title'] ?? d['job']?.toString(),
-        education: d['education']?.toString(),
-        livesIn: d['current_location'] ?? d['lives_in']?.toString(),
-        from: d['origin_location'] ?? d['from']?.toString(),
-        profilePicture: fullImageUrl(d['profile_picture']?.toString()),
-        coverImage: fullImageUrl(d['cover_image']?.toString()),
-        bio: d['bio']?.toString(),
-        company: d['company']?.toString(),
-        postsCount: (d['posts_count'] is int)
-            ? d['posts_count'] as int
-            : int.tryParse('${d['posts_count']}') ?? 0,
-        isProfileLocked: d['is_profile_locked'] == true,
-        isOwn: d['is_own'] == true,
-      );
-      isProfileLocked.value = myProfile.isProfileLocked;
-      final profileIsCompany = d['is_company'] == true ||
-          d['role']?.toString().toLowerCase() == 'company' ||
-          d['user_type']?.toString().toLowerCase() == 'company' ||
-          d['type']?.toString().toLowerCase() == 'company';
-      final profileIsPersonal = d['is_company'] == false ||
-          d['role']?.toString().toLowerCase() == 'customer' ||
-          d['user_type']?.toString().toLowerCase() == 'customer' ||
-          d['user_type']?.toString().toLowerCase() == 'personal' ||
-          d['type']?.toString().toLowerCase() == 'customer' ||
-          d['type']?.toString().toLowerCase() == 'personal';
-      if (profileIsCompany) {
-        isCompany.value = true;
-        MyServices.saveStringValue(ConstData.keyIsCompany, '1');
-      } else if (profileIsPersonal) {
-        isCompany.value = false;
-        MyServices.saveStringValue(ConstData.keyIsCompany, '0');
+      if (res.isSuccess && res.data != null) {
+        final d = res.data!;
+        myProfile = UserProfileModel(
+          id: '${d['user_id'] ?? d['id'] ?? 'me'}',
+          name: d['name']?.toString() ?? myProfile.name,
+          username: d['username']?.toString(),
+          job: d['professional_title'] ?? d['job']?.toString(),
+          education: d['education']?.toString(),
+          livesIn: d['current_location'] ?? d['lives_in']?.toString(),
+          from: d['origin_location'] ?? d['from']?.toString(),
+          profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+          coverImage: fullImageUrl(d['cover_image']?.toString()),
+          bio: d['bio']?.toString(),
+          company: d['company']?.toString(),
+          postsCount: (d['posts_count'] is int)
+              ? d['posts_count'] as int
+              : int.tryParse('${d['posts_count']}') ?? 0,
+          isProfileLocked: d['is_profile_locked'] == true,
+          isOwn: d['is_own'] == true,
+        );
+        isProfileLocked.value = myProfile.isProfileLocked;
+        final profileIsCompany =
+            d['is_company'] == true ||
+            d['role']?.toString().toLowerCase() == 'company' ||
+            d['user_type']?.toString().toLowerCase() == 'company' ||
+            d['type']?.toString().toLowerCase() == 'company';
+        final profileIsPersonal =
+            d['is_company'] == false ||
+            d['role']?.toString().toLowerCase() == 'customer' ||
+            d['user_type']?.toString().toLowerCase() == 'customer' ||
+            d['user_type']?.toString().toLowerCase() == 'personal' ||
+            d['type']?.toString().toLowerCase() == 'customer' ||
+            d['type']?.toString().toLowerCase() == 'personal';
+        if (profileIsCompany) {
+          isCompany.value = true;
+          MyServices.saveStringValue(ConstData.keyIsCompany, '1');
+        } else if (profileIsPersonal) {
+          isCompany.value = false;
+          MyServices.saveStringValue(ConstData.keyIsCompany, '0');
+        }
+        update();
       }
-      update();
-    }
     } finally {
       isProfileLoading.value = false;
     }
@@ -970,23 +1217,24 @@ class HomeController extends GetxController {
 
   /// جلب منشورات الملف الشخصي من الـ API
   Future<void> loadMyProfilePosts({bool force = false}) async {
-    if (!force && profilePosts.isNotEmpty && _isFresh(_profilePostsFetchedAt)) return;
+    if (!force && profilePosts.isNotEmpty && _isFresh(_profilePostsFetchedAt))
+      return;
     isProfilePostsLoading.value = true;
     try {
       final res = await ProfileApiService.getMyPosts();
-    if (res.isSuccess && res.data != null) {
-      final list = res.data!['posts'];
-      if (list is List && list.isNotEmpty) {
-        profilePosts.value = list
-            .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
-            .whereType<PostModel>()
-            .toList();
+      if (res.isSuccess && res.data != null) {
+        final list = res.data!['posts'];
+        if (list is List && list.isNotEmpty) {
+          profilePosts.value = list
+              .map((e) => e is Map ? PostModel.fromJson(Map.from(e)) : null)
+              .whereType<PostModel>()
+              .toList();
+        } else {
+          profilePosts.value = [];
+        }
       } else {
         profilePosts.value = [];
       }
-    } else {
-      profilePosts.value = [];
-    }
     } finally {
       isProfilePostsLoading.value = false;
     }
@@ -1000,29 +1248,29 @@ class HomeController extends GetxController {
     isOtherUserLoading.value = true;
     try {
       final res = await ProfileApiService.getUserProfile(id);
-    if (res.isSuccess && res.data != null) {
-      final d = res.data!;
-      otherUserProfile.value = UserProfileModel(
-        id: '${d['user_id'] ?? d['id'] ?? userId}',
-        name: d['name']?.toString() ?? 'user_default'.tr,
-        username: d['username']?.toString(),
-        job: d['professional_title'] ?? d['job']?.toString(),
-        education: d['education']?.toString(),
-        livesIn: d['current_location'] ?? d['lives_in']?.toString(),
-        from: d['origin_location'] ?? d['from']?.toString(),
-        profilePicture: fullImageUrl(d['profile_picture']?.toString()),
-        coverImage: fullImageUrl(d['cover_image']?.toString()),
-        bio: d['bio']?.toString(),
-        company: d['company']?.toString(),
-        postsCount: (d['posts_count'] is int)
-            ? d['posts_count'] as int
-            : int.tryParse('${d['posts_count']}') ?? 0,
-        isProfileLocked: d['is_profile_locked'] == true,
-        isOwn: d['is_own'] == true,
-      );
-    } else {
-      otherUserProfile.value = null;
-    }
+      if (res.isSuccess && res.data != null) {
+        final d = res.data!;
+        otherUserProfile.value = UserProfileModel(
+          id: '${d['user_id'] ?? d['id'] ?? userId}',
+          name: d['name']?.toString() ?? 'user_default'.tr,
+          username: d['username']?.toString(),
+          job: d['professional_title'] ?? d['job']?.toString(),
+          education: d['education']?.toString(),
+          livesIn: d['current_location'] ?? d['lives_in']?.toString(),
+          from: d['origin_location'] ?? d['from']?.toString(),
+          profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+          coverImage: fullImageUrl(d['cover_image']?.toString()),
+          bio: d['bio']?.toString(),
+          company: d['company']?.toString(),
+          postsCount: (d['posts_count'] is int)
+              ? d['posts_count'] as int
+              : int.tryParse('${d['posts_count']}') ?? 0,
+          isProfileLocked: d['is_profile_locked'] == true,
+          isOwn: d['is_own'] == true,
+        );
+      } else {
+        otherUserProfile.value = null;
+      }
     } finally {
       isOtherUserLoading.value = false;
     }
@@ -1078,7 +1326,11 @@ class HomeController extends GetxController {
       isProfileLocked: isProfileLocked,
     );
     if (!res.isSuccess) {
-      Get.snackbar('update_failed'.tr, res.message ?? 'error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'update_failed'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return false;
     }
     await loadMyProfile();
@@ -1155,9 +1407,11 @@ class HomeController extends GetxController {
             // حساب نهاية المؤقت (إن وُجدت)
             DateTime? endAt;
             final createdAtStr = m['created_at']?.toString();
-            final createdAt =
-                createdAtStr != null ? DateTime.tryParse(createdAtStr) : null;
-            final deadlineStr = m['deadline']?.toString() ??
+            final createdAt = createdAtStr != null
+                ? DateTime.tryParse(createdAtStr)
+                : null;
+            final deadlineStr =
+                m['deadline']?.toString() ??
                 m['end_at']?.toString() ??
                 m['ends_at']?.toString();
             if (deadlineStr != null && deadlineStr.isNotEmpty) {
@@ -1169,16 +1423,14 @@ class HomeController extends GetxController {
               final days = int.tryParse('${m['timer_days'] ?? 0}') ?? 0;
               final hours = int.tryParse('${m['timer_hours'] ?? 0}') ?? 0;
               final minutes = int.tryParse('${m['timer_minutes'] ?? 0}') ?? 0;
-              endAt =
-                  createdAt.add(Duration(days: days, hours: hours, minutes: minutes));
+              endAt = createdAt.add(
+                Duration(days: days, hours: hours, minutes: minutes),
+              );
             }
             // إخفاء الطلبات المنتهية
             if (endAt != null && endAt.isBefore(now)) continue;
 
-            final order = OrderModel.fromJson(
-              m,
-              formatTime: _formatTimeAgo,
-            );
+            final order = OrderModel.fromJson(m, formatTime: _formatTimeAgo);
             final img = order.imageUrl;
             final fullImg = fullImageUrl(img);
             list.add(
@@ -1263,6 +1515,7 @@ class HomeController extends GetxController {
             TextButton(
               onPressed: () async {
                 Get.back();
+                ChatSocketService.instance.disconnect();
                 await AuthApiService.logout();
                 Get.offAllNamed(AppRoutes.authLogin);
                 Get.delete<HomeController>(force: true);

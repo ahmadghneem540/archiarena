@@ -27,8 +27,9 @@ void main() async {
   }
   final savedTheme = await MyServices.getStringValue(ConstData.keyThemeMode);
   ThemeMode initialThemeMode = ThemeMode.system;
-  if (savedTheme == 'light') initialThemeMode = ThemeMode.light;
-  else if (savedTheme == 'dark') initialThemeMode = ThemeMode.dark;
+  if (savedTheme == 'light') {
+    initialThemeMode = ThemeMode.light;
+  } else if (savedTheme == 'dark') initialThemeMode = ThemeMode.dark;
 
   Get.put(ThemeController(initialMode: initialThemeMode));
 

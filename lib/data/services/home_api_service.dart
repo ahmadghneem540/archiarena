@@ -112,7 +112,10 @@ class HomeApiService {
     String? style,
     String? budget,
     String? deadline,
+    int? timerDays,
+    int? timerHours,
     List<File>? images,
+    File? planPdf,
   }) async {
     try {
       final map = <String, dynamic>{
@@ -123,6 +126,8 @@ class HomeApiService {
         if (style != null && style.isNotEmpty) 'style': style,
         if (budget != null && budget.isNotEmpty) 'budget': budget,
         if (deadline != null && deadline.isNotEmpty) 'deadline': deadline,
+        if (timerDays != null && timerDays >= 0) 'timer_days': timerDays,
+        if (timerHours != null && timerHours >= 0) 'timer_hours': timerHours,
       };
       final formData = FormData.fromMap(map);
       if (images != null && images.isNotEmpty) {
@@ -136,6 +141,15 @@ class HomeApiService {
             formData.files.add(MapEntry('images[]', multipart));
           }
         }
+      }
+      if (planPdf != null) {
+        final name = planPdf.path.split(RegExp(r'[/\\]')).last;
+        formData.files.add(
+          MapEntry(
+            'plan_file',
+            await MultipartFile.fromFile(planPdf.path, filename: name),
+          ),
+        );
       }
       final res = await _dio.post(
         ApiEndpoints.companyCreatePost,
@@ -333,12 +347,6 @@ class HomeApiService {
     List<File>? images,
     File? planPdf,
   }) async {
-    print("=== createPost called ===");
-    print("title: $title");
-    print("category: $category");
-    print("description: $description");
-    print("timerDays: $timerDays");
-    print("timerHours: $timerHours");
     try {
       final map = <String, dynamic>{
         'title': title,
@@ -357,11 +365,9 @@ class HomeApiService {
         if (budget != null && budget.isNotEmpty) 'budget': budget,
         if (timerDays != null && timerDays >= 0) 'timer_days': timerDays,
         if (timerHours != null && timerHours >= 0) 'timer_hours': timerHours,
-        if (timerDays != null || timerHours != null) 'timer_minutes': 0,
       };
 
       final formData = FormData.fromMap(map);
-      print("map before files: $map");
       if (images != null && images.isNotEmpty) {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];
