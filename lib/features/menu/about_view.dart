@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:get/get.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
@@ -70,9 +71,9 @@ class AboutView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _buildRow(context, 'terms_and_conditions'.tr, () {}),
+            _buildRow(context, 'terms_and_conditions'.tr, () => Get.toNamed(AppRoutes.menuTermsPrivacy)),
             const SizedBox(height: 10),
-            _buildRow(context, 'privacy_policy'.tr, () {}),
+            _buildRow(context, 'privacy_policy'.tr, () => Get.toNamed(AppRoutes.menuTermsPrivacy)),
             const SizedBox(height: 10),
             _buildRow(context, 'app_license'.tr, () {}),
             const SizedBox(height: 32),

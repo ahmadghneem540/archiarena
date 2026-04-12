@@ -513,7 +513,7 @@ class AppTranslations extends Translations {
       'upload_project': 'Upload Project',
       'uploading': 'Uploading...',
       'details_and_plans': 'Details and Plans',
-      'what_do_you_think': "What's on your mind?",
+      'what_do_you_think': "What's Thinking",
       'choose_main_image': 'Choose main image',
       'choose_category': 'Choose category',
       'upload_plan_pdf': 'Upload plan file (PDF)',

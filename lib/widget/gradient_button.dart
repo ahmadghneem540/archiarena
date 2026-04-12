@@ -42,31 +42,41 @@ class ArchiButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: icon != null
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon!, color: AppColors.onPrimary, size: iconSize),
-                        const SizedBox(width: 10),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            color: AppColors.onPrimary,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w600,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: icon != null
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon!, color: AppColors.onPrimary, size: iconSize),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: AppColors.onPrimary,
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
+                        ],
+                      )
+                    : Text(
+                        label,
+                        style: TextStyle(
+                          color: AppColors.onPrimary,
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
-                    )
-                  : Text(
-                      label,
-                      style: TextStyle(
-                        color: AppColors.onPrimary,
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w600,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
                       ),
-                    ),
+              ),
             ),
           ),
         ),

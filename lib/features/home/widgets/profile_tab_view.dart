@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
@@ -30,7 +31,7 @@ class ProfileTabView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildCoverWithProfile(p),
+            _buildCoverWithProfile(context, p),
             const SizedBox(height: 60),
             _buildProfileHeader(p),
             const SizedBox(height: 16),
@@ -48,7 +49,7 @@ class ProfileTabView extends StatelessWidget {
             const SizedBox(height: 20),
             _buildTimelineHeader(context),
             const SizedBox(height: 12),
-            _buildProfilePostsList(),
+            _buildProfilePostsList(context),
             const SizedBox(height: 32),
           ],
         ),
@@ -57,7 +58,7 @@ class ProfileTabView extends StatelessWidget {
   }
 
   /// الجزء العلوي: غلاف + صورة البروفايل العائمة
-  Widget _buildCoverWithProfile(UserProfileModel p) {
+  Widget _buildCoverWithProfile(BuildContext context, UserProfileModel p) {
     return Stack(
       clipBehavior: Clip.none,
       alignment: Alignment.center,
@@ -67,13 +68,17 @@ class ProfileTabView extends StatelessWidget {
           height: 200,
           width: double.infinity,
           child: p.coverImage != null && p.coverImage!.isNotEmpty
-              ? Image.network(
-                  p.coverImage!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildCoverPlaceholder(),
+              ? GestureDetector(
+                  onTap: () =>
+                      FullscreenImageViewer.open(context, p.coverImage!),
+                  child: Image.network(
+                    p.coverImage!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildCoverPlaceholder(),
+                  ),
                 )
               : _buildCoverPlaceholder(),
         ),
@@ -98,13 +103,19 @@ class ProfileTabView extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: p.profilePicture != null && p.profilePicture!.isNotEmpty
-                  ? Image.network(
-                      p.profilePicture!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildAvatarPlaceholder(),
+                  ? GestureDetector(
+                      onTap: () => FullscreenImageViewer.open(
+                        context,
+                        p.profilePicture!,
+                      ),
+                      child: Image.network(
+                        p.profilePicture!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildAvatarPlaceholder(),
+                      ),
                     )
                   : _buildAvatarPlaceholder(),
             ),
@@ -398,7 +409,7 @@ class ProfileTabView extends StatelessWidget {
   }
 
   /// قائمة منشورات الملف الشخصي من الـ API
-  Widget _buildProfilePostsList() {
+  Widget _buildProfilePostsList(BuildContext context) {
     return Obx(() {
       if (controller.isProfilePostsLoading.value) {
         return Padding(
@@ -440,13 +451,14 @@ class ProfileTabView extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
-          children: list.map((post) => _profilePostCard(post)).toList(),
+          children:
+              list.map((post) => _profilePostCard(context, post)).toList(),
         ),
       );
     });
   }
 
-  Widget _profilePostCard(PostModel post) {
+  Widget _profilePostCard(BuildContext context, PostModel post) {
     final imageUrl = post.imageUrl != null && post.imageUrl!.isNotEmpty
         ? HomeController.fullImageUrl(post.imageUrl)
         : null;
@@ -537,26 +549,29 @@ class ProfileTabView extends StatelessWidget {
           ),
 
           if (imageUrl != null && imageUrl.isNotEmpty)
-            Container(
-              height: 220,
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: AppColors.placeholder1,
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: AppColors.placeholder1,
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.grey400,
-                      size: 48,
+            GestureDetector(
+              onTap: () => FullscreenImageViewer.open(context, imageUrl),
+              child: Container(
+                height: 220,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.placeholder1,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: AppColors.placeholder1,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.grey400,
+                        size: 48,
+                      ),
                     ),
                   ),
                 ),

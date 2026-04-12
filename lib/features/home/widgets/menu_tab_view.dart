@@ -87,7 +87,7 @@ class MenuTabView extends StatelessWidget {
               _MenuItem(
                 icon: Icons.description_outlined,
                 title: 'terms_and_privacy_policy'.tr,
-                onTap: () => Get.toNamed(AppRoutes.termsAndPrivacy),
+                onTap: () => Get.toNamed(AppRoutes.menuTermsPrivacy),
               ),
             ],
           ),

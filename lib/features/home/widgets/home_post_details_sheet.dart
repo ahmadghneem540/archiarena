@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:open_file/open_file.dart';
 
 import '../../../core/constant/const_data.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
@@ -140,21 +142,18 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
         : null;
     return Row(
       children: [
-        CircleAvatar(
+        SafeCircleAvatar(
           radius: 20,
           backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-          backgroundImage:
-              avatarUrl != null ? NetworkImage(avatarUrl) : null,
-          child: avatarUrl == null
-              ? Text(
-                  initial,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                    fontSize: 18,
-                  ),
-                )
-              : null,
+          imageUrl: avatarUrl,
+          fallback: Text(
+            initial,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+              fontSize: 18,
+            ),
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -206,22 +205,25 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
   }
 
   Widget _networkImageItem(String url) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Theme.of(context).brightness == Brightness.dark
-            ? AppColors.darkPlaceholder1
-            : AppColors.placeholder1,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          url,
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          errorBuilder: (_, __, ___) => _placeholderItem(),
+    return GestureDetector(
+      onTap: () => FullscreenImageViewer.open(context, url),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.darkPlaceholder1
+              : AppColors.placeholder1,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            url,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
+            errorBuilder: (_, __, ___) => _placeholderItem(),
+          ),
         ),
       ),
     );
@@ -395,15 +397,19 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: url.isNotEmpty
-                              ? Image.network(
-                                  url,
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    Icons.architecture,
-                                    color: AppColors.grey400,
-                                    size: 32,
+                              ? GestureDetector(
+                                  onTap: () =>
+                                      FullscreenImageViewer.open(context, url),
+                                  child: Image.network(
+                                    url,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.architecture,
+                                      color: AppColors.grey400,
+                                      size: 32,
+                                    ),
                                   ),
                                 )
                               : Icon(

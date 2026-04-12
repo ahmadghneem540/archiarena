@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/gradient_button.dart';
@@ -242,22 +243,18 @@ class _FriendCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              CircleAvatar(
+              SafeCircleAvatar(
                 radius: 28,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                backgroundImage: (friend.avatarPath != null && friend.avatarPath!.isNotEmpty)
-                    ? NetworkImage(friend.avatarPath!)
-                    : null,
-                child: (friend.avatarPath == null || friend.avatarPath!.isEmpty)
-                    ? Text(
-                        initial.toUpperCase(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontSize: 20,
-                        ),
-                      )
-                    : null,
+                imageUrl: friend.avatarPath,
+                fallback: Text(
+                  initial.toUpperCase(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                    fontSize: 20,
+                  ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -342,22 +339,18 @@ class _FriendRequestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Row(
           children: [
-            CircleAvatar(
+            SafeCircleAvatar(
               radius: 28,
               backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-              backgroundImage: (request.avatarPath != null && request.avatarPath!.isNotEmpty)
-                  ? NetworkImage(request.avatarPath!)
-                  : null,
-              child: (request.avatarPath == null || request.avatarPath!.isEmpty)
-                  ? Text(
-                      initial.toUpperCase(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        fontSize: 20,
-                      ),
-                    )
-                  : null,
+              imageUrl: request.avatarPath,
+              fallback: Text(
+                initial.toUpperCase(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontSize: 20,
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

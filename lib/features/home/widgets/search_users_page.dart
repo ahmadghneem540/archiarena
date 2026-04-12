@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../home_controller.dart';
 import '../models/user_profile_model.dart';
 import 'other_user_profile_page.dart';
@@ -170,22 +171,18 @@ class _UserTile extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              CircleAvatar(
+              SafeCircleAvatar(
                 radius: 28,
                 backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                backgroundImage: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                    ? NetworkImage(user.profilePicture!)
-                    : null,
-                child: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                    ? null
-                    : Text(
-                        initial.toUpperCase(),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontSize: 20,
-                        ),
-                      ),
+                imageUrl: user.profilePicture,
+                fallback: Text(
+                  initial.toUpperCase(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                    fontSize: 20,
+                  ),
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(

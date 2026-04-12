@@ -23,6 +23,8 @@ abstract class AppRoutes {
   static const String menuHelpSupport = '/menu/help-support';
   static const String menuFeedback = '/menu/feedback';
   static const String menuAbout = '/menu/about';
+  /// سياسة الخصوصية وشروط الاستخدام (النص الكامل للمتاجر)
+  static const String menuTermsPrivacy = '/menu/terms-privacy';
 
   /// صندوق الوارد (محادثات + طلبات مراسلة)
   static const String chatInbox = '/chat/inbox';

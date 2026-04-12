@@ -36,6 +36,7 @@ import '../features/menu/appearance_view.dart';
 import '../features/menu/help_support_view.dart';
 import '../features/menu/feedback_view.dart';
 import '../features/menu/about_view.dart';
+import '../features/menu/terms_privacy_legal_view.dart';
 import '../core/routes/app_routes.dart';
 import '../features/chat/chat_inbox_view.dart';
 import '../features/chat/chat_inbox_binding.dart';
@@ -137,6 +138,10 @@ class AppBindings {
     ),
     GetPage(name: AppRoutes.menuFeedback, page: () => const FeedbackView()),
     GetPage(name: AppRoutes.menuAbout, page: () => const AboutView()),
+    GetPage(
+      name: AppRoutes.menuTermsPrivacy,
+      page: () => const TermsPrivacyLegalView(),
+    ),
     GetPage(
       name: AppRoutes.chatInbox,
       page: () => const ChatInboxView(),

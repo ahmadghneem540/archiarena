@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
 import '../home_controller.dart';
 import '../models/order_model.dart';
 
@@ -129,31 +130,35 @@ class OrdersTabView extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: (imageUrl != null && imageUrl.isNotEmpty)
-                  ? CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
+                  ? GestureDetector(
+                      onTap: () =>
+                          FullscreenImageViewer.open(context, imageUrl),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
                         width: 80,
                         height: 80,
-                        color: AppColors.placeholder1,
-                        child:  Center(
-                          child: SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => Container(
+                          width: 80,
+                          height: 80,
+                          color: AppColors.placeholder1,
+                          child: Center(
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
                           ),
                         ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        width: 80,
-                        height: 80,
-                        color: AppColors.placeholder1,
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: AppColors.grey400,
-                          size: 32,
+                        errorWidget: (_, __, ___) => Container(
+                          width: 80,
+                          height: 80,
+                          color: AppColors.placeholder1,
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.grey400,
+                            size: 32,
+                          ),
                         ),
                       ),
                     )

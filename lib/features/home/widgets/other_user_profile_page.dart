@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../core/utils/post_published_at_format.dart';
 import '../../chat/chat_inbox_view.dart';
 import '../home_controller.dart';
@@ -103,12 +105,17 @@ class OtherUserProfilePage extends StatelessWidget {
           height: 200,
           width: double.infinity,
           child: p.coverImage != null && p.coverImage!.isNotEmpty
-              ? Image.network(
-                  p.coverImage!,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (_, __, ___) => _coverPlaceholder(),
+              ? GestureDetector(
+                  onTap: () =>
+                      FullscreenImageViewer.open(context, p.coverImage!),
+                  child: CachedNetworkImage(
+                    imageUrl: p.coverImage!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fadeInDuration: Duration.zero,
+                    errorWidget: (_, __, ___) => _coverPlaceholder(),
+                  ),
                 )
               : _coverPlaceholder(),
         ),
@@ -132,12 +139,20 @@ class OtherUserProfilePage extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: p.profilePicture != null && p.profilePicture!.isNotEmpty
-                  ? Image.network(
-                      p.profilePicture!,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _avatarPlaceholder(initial),
+                  ? GestureDetector(
+                      onTap: () => FullscreenImageViewer.open(
+                        context,
+                        p.profilePicture!,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: p.profilePicture!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        fadeInDuration: Duration.zero,
+                        errorWidget: (_, __, ___) =>
+                            _avatarPlaceholder(initial),
+                      ),
                     )
                   : _avatarPlaceholder(initial),
             ),
@@ -639,17 +654,21 @@ class OtherUserProfilePage extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: ph,
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: context.themeGrey400,
-                      size: 48,
+                child: GestureDetector(
+                  onTap: () => FullscreenImageViewer.open(context, imageUrl),
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    fadeInDuration: Duration.zero,
+                    errorWidget: (_, __, ___) => Container(
+                      color: ph,
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: context.themeGrey400,
+                        size: 48,
+                      ),
                     ),
                   ),
                 ),

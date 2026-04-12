@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constant/const_data.dart';
 import '../../../core/utils/post_published_at_format.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/gradient_button.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
@@ -124,22 +125,26 @@ class HomePostCard1 extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        placeholder: (_, __) => Container(
-                          color: AppColors.placeholder1,
-                          child: const Center(
-                            child: SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
+                    ? GestureDetector(
+                        onTap: () =>
+                            FullscreenImageViewer.open(context, imageUrl),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          placeholder: (_, __) => Container(
+                            color: AppColors.placeholder1,
+                            child: const Center(
+                              child: SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
                             ),
                           ),
+                          errorWidget: (_, __, ___) => _buildPlaceholder(),
                         ),
-                        errorWidget: (_, __, ___) => _buildPlaceholder(),
                       )
                     : _buildPlaceholder(),
               ),
