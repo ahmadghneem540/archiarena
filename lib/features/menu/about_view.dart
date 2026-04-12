@@ -20,8 +20,8 @@ class AboutView extends StatelessWidget {
             const SizedBox(height: 16),
             Center(
               child: Container(
-                width: 88,
-                height: 88,
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(22),
@@ -39,20 +39,20 @@ class AboutView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Center(
+            Center(
               child: Text(
                 'archiarena',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.onSurface,
+                  color: context.themeOnSurface,
                 ),
               ),
             ),
             const SizedBox(height: 4),
             Center(
               child: Text(
-                'app_version'.trParams({'version': '1.0.0'}),
+                'app_version'.tr.replaceAll('{version}', '1.0.0'),
                 style: TextStyle(fontSize: 14, color: context.themeGrey600),
               ),
             ),
@@ -75,7 +75,7 @@ class AboutView extends StatelessWidget {
             const SizedBox(height: 10),
             _buildRow(context, 'privacy_policy'.tr, () => Get.toNamed(AppRoutes.menuTermsPrivacy)),
             const SizedBox(height: 10),
-            _buildRow(context, 'app_license'.tr, () {}),
+            _buildRow(context, 'app_license'.tr, () =>Get.toNamed(AppRoutes.menuLicense)),
             const SizedBox(height: 32),
           ],
         ),

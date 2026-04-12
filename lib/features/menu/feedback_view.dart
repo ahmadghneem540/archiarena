@@ -1,11 +1,62 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../core/theme/app_colors.dart';
 import 'widgets/menu_page_scaffold.dart';
 
-/// صفحة إرسال ملاحظات.
+
+class FeedbackController extends GetxController {
+  RxString selectedType = ''.obs;
+
+  final List<String> types = [
+    'feedback_type_bug',
+    'feedback_type_suggestion',
+    'feedback_type_complaint',
+    'feedback_type_other',
+  ];
+
+  void setType(String value) {
+    selectedType.value = value;
+  }
+
+  Future<void> openEmail() async {
+    final email = 'info@kakapoagency.com';
+
+    final subject = Uri.encodeComponent(
+      selectedType.value.isEmpty ? 'Feedback' : selectedType.value.tr,
+    );
+
+    final body = Uri.encodeComponent(
+      '---\n${'contact_us_desc'.tr}\n',
+    );
+
+    final gmailUri = Uri.parse(
+      'googlegmail://co?to=$email&subject=$subject&body=$body',
+    );
+
+    final mailUri = Uri.parse(
+      'mailto:$email?subject=$subject&body=$body',
+    );
+
+    try {
+      await launchUrl(
+        gmailUri,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      await launchUrl(
+        mailUri,
+        mode: LaunchMode.externalApplication,
+      );
+    }
+  }
+}
+
 class FeedbackView extends StatelessWidget {
-  const FeedbackView({super.key});
+  FeedbackView({super.key});
+
+  final FeedbackController controller = Get.put(FeedbackController());
 
   @override
   Widget build(BuildContext context) {
@@ -38,35 +89,53 @@ class FeedbackView extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              decoration: BoxDecoration(
-                color: context.themeCardBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.themeBorder),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'feedback_placeholder'.tr,
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: context.themeGrey700,
+            /// Dropdown
+            Obx(() {
+              return Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: context.themeCardBackground,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: context.themeBorder),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: controller.selectedType.value.isEmpty
+                        ? null
+                        : controller.selectedType.value,
+                    hint: Text(
+                      'feedback_placeholder'.tr,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: context.themeGrey700,
+                      ),
                     ),
+                    isExpanded: true,
+                    icon: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: context.themeGrey600,
+                    ),
+                    items: controller.types.map((type) {
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(type.tr),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        controller.setType(value);
+                      }
+                    },
                   ),
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: context.themeGrey600,
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            }),
 
             const SizedBox(height: 20),
 
             Text(
-              'feedback_notes'.tr,
+              'help_support_text'.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -74,42 +143,22 @@ class FeedbackView extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
-            Container(
-              height: 140,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: context.themeCardBackground,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.themeBorder),
-              ),
-              child: TextField(
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: 'feedback_hint'.tr,
-                  hintStyle: TextStyle(
-                    color: context.themeGrey600,
-                    fontSize: 15,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                ),
-                style: TextStyle(
-                  fontSize: 15,
-                  color: context.themeOnSurface,
-                ),
-                textDirection: TextDirection.rtl,
+            Text(
+              'contact_us_desc'.tr,
+              style: TextStyle(
+                fontSize: 14,
+                color: context.themeGrey700,
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             SizedBox(
               height: 50,
               child: FilledButton(
-                onPressed: () {},
+                onPressed: controller.openEmail,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,
@@ -117,7 +166,7 @@ class FeedbackView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('send_feedback_btn'.tr),
+                child: Text('open_gmail'.tr),
               ),
             ),
 

@@ -2,6 +2,7 @@
 import 'package:get/get.dart';
 import '../features/language_select/language_select_view.dart';
 import '../features/language_select/language_select_binding.dart';
+import '../features/menu/app_license_view.dart';
 import '../features/splash/splash_view.dart';
 import '../features/splash/splash_binding.dart';
 import '../features/home/home_view.dart';
@@ -136,11 +137,15 @@ class AppBindings {
       name: AppRoutes.menuHelpSupport,
       page: () => const HelpSupportView(),
     ),
-    GetPage(name: AppRoutes.menuFeedback, page: () => const FeedbackView()),
+    GetPage(name: AppRoutes.menuFeedback, page: () =>  FeedbackView()),
     GetPage(name: AppRoutes.menuAbout, page: () => const AboutView()),
     GetPage(
       name: AppRoutes.menuTermsPrivacy,
       page: () => const TermsPrivacyLegalView(),
+    ),
+    GetPage(
+      name: AppRoutes.menuLicense,
+      page: () => const AppLicenseView(),
     ),
     GetPage(
       name: AppRoutes.chatInbox,

@@ -29,6 +29,7 @@ dependencies:
   socket_io_client: ^3.1.4
   chat_bubbles: ^1.9.0
   intl: ^0.20.2
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:

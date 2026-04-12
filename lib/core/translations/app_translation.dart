@@ -88,7 +88,7 @@ class AppTranslations extends Translations {
       'upload_project': 'رفع المشروع',
       'uploading': 'جاري الرفع...',
       'details_and_plans': 'التفاصيل والمخططات',
-      'what_do_you_think': 'بما تفكر',
+      'what_do_you_think': 'بمَ تفكر',
       'choose_main_image': 'اختر صورة رئيسية',
       'choose_category': 'اختر التصنيف',
       'upload_plan_pdf': 'رفع ملف المخطط (PDF)',
@@ -140,7 +140,7 @@ class AppTranslations extends Translations {
       'chat_send_failed': 'تعذر إرسال الرسالة',
       'chat_block_confirm_title': 'حظر المستخدم؟',
       'chat_block_confirm_body':
-          'لن يتمكن من مراسلتك بعد الآن. يمكنك لاحقاً إلغاء الحظر من إعدادات الحساب إن وُجدت.',
+      'لن يتمكن من مراسلتك بعد الآن. يمكنك لاحقاً إلغاء الحظر من إعدادات الحساب إن وُجدت.',
       'chat_block': 'حظر',
       'chat_blocked_ok': 'تم حظر المستخدم',
       'chat_request_accepted': 'تم قبول طلب المراسلة',
@@ -155,15 +155,15 @@ class AppTranslations extends Translations {
       'chat_unblock': 'رفع الحظر',
       'chat_unblock_confirm_title': 'رفع الحظر عن هذا المستخدم؟',
       'chat_unblock_confirm_body':
-          'ستتمكن أنت وهو من إرسال الرسائل مرة أخرى بعد الموافقة بخصوصية المراسلة.',
+      'ستتمكن أنت وهو من إرسال الرسائل مرة أخرى بعد الموافقة بخصوصية المراسلة.',
       'chat_unblocked_ok': 'تم رفع الحظر',
       'chat_status_pending_incoming':
-          'هذا المستخدم في انتظار موافقتك على طلب المراسلة. افتح «طلبات المراسلة» للقبول.',
+      'هذا المستخدم في انتظار موافقتك على طلب المراسلة. افتح «طلبات المراسلة» للقبول.',
       'preferences': 'التفضيلات',
       'support': 'الدعم',
       'about_app': 'حول التطبيق',
       'about_app_desc': 'منصة archiarena تجمع المهندسين المعماريين والمصممين لعرض المشاريع، مشاركة الأفكار، والتواصل مع العملاء والزملاء في مجال العمارة والتصميم.',
-      'app_version': 'الإصدار :version',
+      'app_version': 'الإصدار {version}',
       'terms_and_conditions': 'الشروط والأحكام',
       'app_license': 'ترخيص التطبيق',
       'help_support': 'المساعدة والدعم',
@@ -428,6 +428,43 @@ class AppTranslations extends Translations {
       'reply_to': 'الرد على :name',
       'notifications': 'الإشعارات',
       'no_notifications': 'لا توجد إشعارات جديدة',
+
+      ///صفحة الدعم
+      'faq_q1': 'كيف أنشئ حساب؟',
+      'faq_a1': 'يمكنك إنشاء حساب بسهولة من صفحة التسجيل.',
+      'faq_q2': 'هل التطبيق مجاني؟',
+      'faq_a2': 'نعم، التطبيق مجاني حالياً.',
+      'message': 'الرسالة',
+      'send': 'إرسال',
+      'message_sent': 'تم إرسال الرسالة',
+      'no_messages': 'لا توجد رسائل',
+      'write_message': 'اكتب رسالة...',
+      'account_help': 'مساعدة الحساب',
+      'privacy_help': 'مساعدة الخصوصية',
+      'contact_developer': 'التواصل مع المطور',
+      'contact_dev_desc': 'يمكنك التواصل مع فريق التطوير مباشرة عبر البريد الإلكتروني.',
+      'send_message': 'إرسال الرسالة',
+      'email_not_supported': 'لا يمكن فتح تطبيق البريد',
+      'contact_us_desc': 'يمكنك التواصل معنا عبر البريد الإلكتروني التالي:',
+      'help_support_text': 'تواصل مع فريق الدعم اذا اردت المساعدة',
+      'open_gmail': 'فتح Gmail وإرسال رسالة',
+      'feedback_type_bug': 'مشكلة تقنية',
+      'feedback_type_suggestion': 'اقتراح',
+      'feedback_type_complaint': 'شكوى',
+      'feedback_type_other': 'أخرى',
+      'app_license_body':
+
+      '''
+هذا التطبيق مرخّص للاستخدام الشخصي فقط.
+
+يُمنع إعادة نشر أو نسخ أو توزيع أي جزء من التطبيق بدون إذن مسبق من المطور.
+
+يتم توفير التطبيق "كما هو" بدون أي ضمانات صريحة أو ضمنية.
+
+لا يتحمل المطور أي مسؤولية عن أي أضرار ناتجة عن استخدام التطبيق.
+
+باستخدامك لهذا التطبيق فأنت توافق على جميع الشروط المذكورة أعلاه.
+''',
     },
     'en': {
       'choose_language': 'Choose Language',
@@ -588,7 +625,7 @@ class AppTranslations extends Translations {
       'support': 'Support',
       'about_app': 'About app',
       'about_app_desc': 'ArchiArena brings architects and designers together to showcase projects, share ideas, and connect with clients and peers in architecture and design.',
-      'app_version': 'Version :version',
+      'app_version': 'Version {version}',
       'terms_and_conditions': 'Terms and Conditions',
       'app_license': 'App license',
       'help_support': 'Help & Support',
@@ -851,6 +888,40 @@ class AppTranslations extends Translations {
       'notifications': 'Notifications',
       'no_notifications': 'No new notifications',
       'terms_and_privacy_policy': 'Terms and Privacy Policy',
+      ///support
+      'faq_q1': 'How do I create an account?',
+      'faq_a1': 'You can easily create an account from the register page.',
+      'faq_q2': 'Is the app free?',
+      'faq_a2': 'Yes, the app is currently free.',
+      'message': 'Message',
+      'send': 'Send',
+      'message_sent': 'Message sent successfully',
+      'no_messages': 'No messages',
+      'write_message': 'Write a message...',
+      'account_help': 'Account help',
+      'privacy_help': 'Privacy help',
+      'contact_developer': 'Contact Developer',
+      'contact_dev_desc': 'You can contact the development team directly via email.',
+      'send_message': 'Send Message',
+      'email_not_supported': 'Email app not supported',
+      'contact_us_desc': 'You can contact us via the following email:',
+      'help_support_text': 'Contact our support team if you need help',
+      'open_gmail': 'Open Gmail and send message',
+      'feedback_type_bug': 'Bug Report',
+      'feedback_type_suggestion': 'Suggestion',
+      'feedback_type_complaint': 'Complaint',
+      'feedback_type_other': 'Other',
+      'app_license_body': '''
+This application is licensed for personal use only.
+
+You are not allowed to copy, redistribute, or republish any part of this application without prior permission from the developer.
+
+The application is provided "as is" without any warranties, express or implied.
+
+The developer is not responsible for any damages resulting from the use of this application.
+
+By using this application, you agree to all the terms stated above.
+''',
     },
     'de': {
       'choose_language': 'Sprache wählen',
@@ -1010,7 +1081,7 @@ class AppTranslations extends Translations {
       'support': 'Support',
       'about_app': 'Über die App',
       'about_app_desc': 'ArchiArena bringt Architekt:innen und Designer:innen zusammen, um Projekte zu präsentieren, Ideen zu teilen und sich mit Kund:innen sowie Kolleg:innen zu vernetzen.',
-      'app_version': 'Version :version',
+      'app_version': 'Version {version}',
       'terms_and_conditions': 'Allgemeine Geschäftsbedingungen',
       'app_license': 'App-Lizenz',
       'help_support': 'Hilfe & Support',
@@ -1273,6 +1344,39 @@ class AppTranslations extends Translations {
       'notifications': 'benachrichtigungen',
       'no_notifications': 'Keine Benachrichtigungen',
       'terms_and_privacy_policy': 'Bedingungen und Datenschutzbestimmungen',
+      'faq_q1': 'Wie erstelle ich ein Konto?',
+      'faq_a1': 'Sie können ein Konto über die Registrierungsseite erstellen.',
+      'faq_q2': 'Ist die App kostenlos?',
+      'faq_a2': 'Ja, die App ist derzeit kostenlos.',
+      'message': 'Nachricht',
+      'send': 'Senden',
+      'message_sent': 'Nachricht gesendet',
+      'no_messages': 'Keine Nachrichten',
+      'write_message': 'Nachricht schreiben...',
+      'account_help': 'Kontohilfe',
+      'privacy_help': 'Datenschutzhilfe',
+      'contact_developer': 'Entwickler kontaktieren',
+      'contact_dev_desc': 'Sie können das Entwicklerteam direkt per E-Mail kontaktieren.',
+      'send_message': 'Nachricht senden',
+      'email_not_supported': 'E-Mail-App wird nicht unterstützt',
+      'contact_us_desc': 'Sie können uns über die folgende E-Mail kontaktieren:',
+      'help_support_text': 'Kontaktieren Sie unser Support-Team, wenn Sie Hilfe benötigen',
+      'open_gmail': 'Gmail öffnen und Nachricht senden',
+      'feedback_type_bug': 'Fehlerbericht',
+      'feedback_type_suggestion': 'Vorschlag',
+      'feedback_type_complaint': 'Beschwerde',
+      'feedback_type_other': 'Andere',
+      'app_license_body': '''
+Diese Anwendung ist nur für den persönlichen Gebrauch lizenziert.
+
+Es ist nicht gestattet, Teile dieser Anwendung ohne vorherige Genehmigung des Entwicklers zu kopieren, weiterzugeben oder zu veröffentlichen.
+
+Die Anwendung wird "wie sie ist" ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt.
+
+Der Entwickler übernimmt keine Haftung für Schäden, die durch die Nutzung dieser Anwendung entstehen.
+
+Durch die Nutzung dieser Anwendung stimmen Sie allen oben genannten Bedingungen zu.
+''',
     },
   };
 }

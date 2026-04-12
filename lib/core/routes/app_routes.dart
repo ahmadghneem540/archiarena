@@ -23,6 +23,8 @@ abstract class AppRoutes {
   static const String menuHelpSupport = '/menu/help-support';
   static const String menuFeedback = '/menu/feedback';
   static const String menuAbout = '/menu/about';
+  /// صفحة الترخيص
+  static const String menuLicense = '/menu/license';
   /// سياسة الخصوصية وشروط الاستخدام (النص الكامل للمتاجر)
   static const String menuTermsPrivacy = '/menu/terms-privacy';
 

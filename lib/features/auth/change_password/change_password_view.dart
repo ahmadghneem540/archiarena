@@ -11,24 +11,26 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
   @override
   Widget build(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
+
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.theme.scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.theme.scaffoldBackgroundColor,
           elevation: 0,
           leading: IconButton(
             icon: Icon(
               isRtl ? Icons.arrow_back_ios_new : Icons.arrow_back_ios,
               size: 20,
+              color: context.theme.colorScheme.onSurface,
             ),
             onPressed: () => Get.back(),
           ),
           title: Text(
             'change_password'.tr,
-            style: const TextStyle(
-              color: AppColors.onSurface,
+            style: TextStyle(
+              color: context.theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
@@ -73,17 +75,17 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
         Text(
           'change_password_title'.tr,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
-              ),
+            fontWeight: FontWeight.bold,
+            color: context.theme.colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           'change_password_desc'.tr,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.grey600,
-                height: 1.5,
-              ),
+            color: context.theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            height: 1.5,
+          ),
         ),
       ],
     );
@@ -91,10 +93,11 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
 
   Widget _buildFormCard(BuildContext context) {
     final isRtl = Get.locale?.languageCode == 'ar';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: context.theme.cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -137,7 +140,7 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
           ),
           const SizedBox(height: 28),
           Obx(
-            () => ArchiButton(
+                () => ArchiButton(
               label: controller.isLoading.value
                   ? 'loading_save'.tr
                   : 'change_password_btn'.tr,
@@ -167,40 +170,50 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
         Text(
           label,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
-              ),
+            fontWeight: FontWeight.w600,
+            color: context.theme.colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 8),
         Obx(
-          () => TextField(
+              () => TextField(
             controller: controller,
             obscureText: obscure.value,
             textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: AppColors.grey500, fontSize: 16),
+              hintStyle: TextStyle(
+                color: context.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                fontSize: 16,
+              ),
               border: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide:
+                BorderSide(color: context.theme.dividerColor),
               ),
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.border),
+                borderSide:
+                BorderSide(color: context.theme.dividerColor),
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide:
+                BorderSide(color: AppColors.primary, width: 1.5),
               ),
               suffixIcon: IconButton(
                 icon: Icon(
                   obscure.value
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: AppColors.grey500,
+                  color: context.theme.colorScheme.onSurface
+                      .withValues(alpha: 0.6),
                 ),
                 onPressed: toggle,
               ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            style: const TextStyle(fontSize: 16, color: AppColors.onSurface),
+            style: TextStyle(
+              fontSize: 16,
+              color: context.theme.colorScheme.onSurface,
+            ),
           ),
         ),
       ],
