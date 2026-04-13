@@ -381,7 +381,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+                //color: AppColors.onSurface,
               ),
             ),
           ],
@@ -390,7 +390,9 @@ class _WhatDoThinkState extends State<WhatDoThink> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.cardBackground,
+            color: Get.isDarkMode
+                ? const Color(0xFF1E1E1E) // 🔥 خلفية داكنة احترافية
+                : AppColors.cardBackground,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.border),
           ),
@@ -417,7 +419,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
                   onChanged: (_) => setState(() {}),
                 ),
               ),
-              Container(width: 1, height: 40, color: AppColors.border),
+            //  Container(width: 1, height: 40, color: AppColors.border),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(

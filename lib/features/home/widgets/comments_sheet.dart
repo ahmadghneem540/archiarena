@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -87,13 +88,18 @@ class _CommentsSheetState extends State<CommentsSheet> {
       imageQuality: 85,
     );
     if (file != null && mounted) {
-      // يمكن لاحقاً إضافة تعليق بصورة عبر نموذج يدعم imagePath
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${'image_from_gallery'.tr}: ${file.name}'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      final controller = Get.find<HomeController>();
+      final success = await controller.addImageComment(
+        widget.postId,
+        file.path,
+        _replyingToId,
       );
+      if (success && mounted) {
+        setState(() {
+          _replyingToId = null;
+          _replyingToName = null;
+        });
+      }
     }
   }
 
@@ -212,6 +218,8 @@ class _CommentsSheetState extends State<CommentsSheet> {
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -280,6 +288,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
+    final controller = Get.find<HomeController>();
     return Container(
       padding: EdgeInsets.only(
         left: MediaQuery.of(context).padding.left,
@@ -405,12 +414,15 @@ class _CommentsSheetState extends State<CommentsSheet> {
                 ),
               ),
               const SizedBox(width: 8),
-              CircleAvatar(
+              SafeCircleAvatar(
                 radius: 20,
+                imageUrl: controller.myProfile.profilePicture,
                 backgroundColor: context.themeBorder,
-                child: Text(
-                  'أ',
-                  style: TextStyle(
+                fallback: Text(
+                  controller.myProfile.name.isNotEmpty
+                      ? controller.myProfile.name[0].toUpperCase()
+                      : '؟',
+                  style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -555,6 +567,69 @@ class _CommentTile extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 8),
+                      if (comment.imageUrl != null &&
+                          comment.imageUrl!.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: GestureDetector(
+                              onTap: () => Get.to(
+                                () => FullscreenImageViewer(
+                                  imageUrl: comment.imageUrl!,
+                                ),
+                              ),
+                              child: CachedNetworkImage(
+                                 imageUrl: comment.imageUrl!,
+                                 httpHeaders: const {
+                                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                 },
+                                 fit: BoxFit.cover,
+                                 width: double.infinity,
+                                 height: 180,
+                                 placeholder: (_, __) => Container(
+                                   height: 180,
+                                   color: context.themeBorder.withValues(
+                                     alpha: 0.1,
+                                   ),
+                                   alignment: Alignment.center,
+                                   child: const SizedBox(
+                                     width: 24,
+                                     height: 24,
+                                     child: CircularProgressIndicator(
+                                       strokeWidth: 2,
+                                     ),
+                                   ),
+                                 ),
+                                 errorWidget: (_, __, ___) => Container(
+                                   height: 180,
+                                   color: context.themeBorder.withValues(
+                                     alpha: 0.1,
+                                   ),
+                                   alignment: Alignment.center,
+                                   child: Column(
+                                     mainAxisSize: MainAxisSize.min,
+                                     children: [
+                                       Icon(
+                                         Icons.broken_image_outlined,
+                                         color: context.themeGrey600,
+                                         size: 32,
+                                       ),
+                                       const SizedBox(height: 4),
+                                       Text(
+                                         'تعذر تحميل الصورة',
+                                         style: TextStyle(
+                                           fontSize: 12,
+                                           color: context.themeGrey600,
+                                         ),
+                                       ),
+                                     ],
+                                   ),
+                                 ),
+                               ),
+                            ),
+                          ),
+                        ),
                       if (comment.isAudio && comment.audioPath != null)
                         AudioCommentPlayer(
                           audioPath: comment.audioPath!,

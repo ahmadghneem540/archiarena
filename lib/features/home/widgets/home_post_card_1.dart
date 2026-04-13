@@ -73,7 +73,7 @@ class HomePostCard1 extends StatelessWidget {
                 children: [
                   SafeCircleAvatar(
                     radius: 16,
-                    imageUrl: imageUrl,
+                    imageUrl: avatarUrl,
                     backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                     fallback: Text(
                       authorInitial,
@@ -135,8 +135,11 @@ class HomePostCard1 extends StatelessWidget {
                         onTap: () =>
                             FullscreenImageViewer.open(context, imageUrl),
                         child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
+              imageUrl: imageUrl,
+              httpHeaders: const {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+              },
+              fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
                           placeholder: (_, __) => Container(

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
@@ -134,7 +135,12 @@ class HomeApiService {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];
           final name = f.path.split(RegExp(r'[/\\]')).last;
-          final multipart = await MultipartFile.fromFile(f.path, filename: name);
+          final ext = f.path.split('.').last.toLowerCase();
+          final multipart = await MultipartFile.fromFile(
+            f.path,
+            filename: name,
+            contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+          );
           if (i == 0) {
             formData.files.add(MapEntry('image', multipart));
           } else {
@@ -147,7 +153,11 @@ class HomeApiService {
         formData.files.add(
           MapEntry(
             'plan_file',
-            await MultipartFile.fromFile(planPdf.path, filename: name),
+            await MultipartFile.fromFile(
+              planPdf.path,
+              filename: name,
+              contentType: MediaType('application', 'pdf'),
+            ),
           ),
         );
       }
@@ -372,7 +382,12 @@ class HomeApiService {
         for (var i = 0; i < images.length && i < 10; i++) {
           final f = images[i];
           final name = f.path.split(RegExp(r'[/\\]')).last;
-          final multipart = await MultipartFile.fromFile(f.path, filename: name);
+          final ext = f.path.split('.').last.toLowerCase();
+          final multipart = await MultipartFile.fromFile(
+            f.path,
+            filename: name,
+            contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+          );
           if (i == 0) {
             formData.files.add(MapEntry('image', multipart));
           } else {
@@ -386,7 +401,11 @@ class HomeApiService {
         formData.files.add(
           MapEntry(
             'plan_file',
-            await MultipartFile.fromFile(planPdf.path, filename: name),
+            await MultipartFile.fromFile(
+              planPdf.path,
+              filename: name,
+              contentType: MediaType('application', 'pdf'),
+            ),
           ),
         );
       }
@@ -470,12 +489,22 @@ class HomeApiService {
       final map = <String, dynamic>{};
       if (body != null && body.isNotEmpty) map['body'] = body;
       if (image != null) {
-        map['image'] = await MultipartFile.fromFile(image.path);
+        final ext = image.path.split('.').last.toLowerCase();
+        map['image'] = await MultipartFile.fromFile(
+          image.path,
+          contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+        );
       }
       if (audio != null) {
-        map['audio'] = await MultipartFile.fromFile(audio.path);
+        map['audio'] = await MultipartFile.fromFile(
+          audio.path,
+          contentType: MediaType('audio', 'mp4'),
+        );
       } else if (audioPath != null && audioPath.isNotEmpty) {
-        map['audio'] = await MultipartFile.fromFile(audioPath);
+        map['audio'] = await MultipartFile.fromFile(
+          audioPath,
+          contentType: MediaType('audio', 'mp4'),
+        );
       }
 
       if (map.isEmpty) {
@@ -518,12 +547,22 @@ class HomeApiService {
       final map = <String, dynamic>{};
       if (body != null && body.isNotEmpty) map['body'] = body;
       if (image != null) {
-        map['image'] = await MultipartFile.fromFile(image.path);
+        final ext = image.path.split('.').last.toLowerCase();
+        map['image'] = await MultipartFile.fromFile(
+          image.path,
+          contentType: MediaType('image', ext == 'png' ? 'png' : 'jpeg'),
+        );
       }
       if (audio != null) {
-        map['audio'] = await MultipartFile.fromFile(audio.path);
+        map['audio'] = await MultipartFile.fromFile(
+          audio.path,
+          contentType: MediaType('audio', 'mp4'),
+        );
       } else if (audioPath != null && audioPath.isNotEmpty) {
-        map['audio'] = await MultipartFile.fromFile(audioPath);
+        map['audio'] = await MultipartFile.fromFile(
+          audioPath,
+          contentType: MediaType('audio', 'mp4'),
+        );
       }
 
       if (map.isEmpty) {

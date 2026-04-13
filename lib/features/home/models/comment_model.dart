@@ -1,3 +1,5 @@
+import '../home_controller.dart';
+
 /// نموذج التعليق — يدعم التعليق النصي والصوتي والصورة والردود.
 class CommentModel {
   CommentModel({
@@ -43,11 +45,37 @@ class CommentModel {
     final createdAtStr = formatTime != null && createdAtRaw != null
         ? formatTime(createdAtRaw)
         : (createdAtRaw?.toString() ?? '');
+    final imgUrlRaw = json['image_url'] ??
+        json['imageUrl'] ??
+        json['image'] ??
+        json['image_path'] ??
+        json['imagePath'];
+    final audioUrlRaw = json['audio_url'] ??
+        json['audioUrl'] ??
+        json['audio'] ??
+        json['audio_path'] ??
+        json['audioPath'];
+
+    String? finalImgUrl;
+    if (imgUrlRaw is String) {
+      finalImgUrl = imgUrlRaw;
+    } else if (imgUrlRaw is Map) {
+      finalImgUrl = (imgUrlRaw['url'] ?? imgUrlRaw['path'])?.toString();
+    }
+
+    String? finalAudioUrl;
+    if (audioUrlRaw is String) {
+      finalAudioUrl = audioUrlRaw;
+    } else if (audioUrlRaw is Map) {
+      finalAudioUrl = (audioUrlRaw['url'] ?? audioUrlRaw['path'])?.toString();
+    }
+
     return CommentModel(
       id: id?.toString() ?? '',
       authorName: author?['name']?.toString() ?? 'مستخدم',
       authorAvatar: (author?['profile_picture'] ??
               author?['avatar_url'] ??
+              author?['avatarUrl'] ??
               author?['image_url'] ??
               author?['imageUrl'] ??
               author?['avatar'] ??
@@ -58,8 +86,8 @@ class CommentModel {
       authorId: (author?['user_id'] ?? author?['id'])?.toString(),
       parentId: json['parent_id']?.toString(),
       text: json['body']?.toString() ?? json['text']?.toString(),
-      imageUrl: json['image_url']?.toString(),
-      audioPath: json['audio_url']?.toString(),
+      imageUrl: HomeController.fullImageUrl(finalImgUrl),
+      audioPath: HomeController.fullImageUrl(finalAudioUrl),
       createdAt: createdAtStr,
       replies: repliesList,
     );

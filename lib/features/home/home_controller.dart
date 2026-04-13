@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -243,6 +244,46 @@ class HomeController extends GetxController {
     return true;
   }
 
+  /// إضافة تعليق بصورة أو رد بصورة — يستدعي الـ API مع ملف الصورة
+  Future<bool> addImageComment(
+    int postId,
+    String imagePath, [
+    String? parentId,
+  ]) async {
+    final list = getCommentsListForPost(postId);
+    ApiResponse<Map<String, dynamic>> res;
+    final imageFile = File(imagePath);
+    if (parentId == null || parentId.isEmpty) {
+      res = await HomeApiService.addComment(postId, image: imageFile);
+    } else {
+      final commentId = int.tryParse(parentId);
+      if (commentId == null) {
+        Get.snackbar(
+          'error'.tr,
+          'invalid_comment_id'.tr,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return false;
+      }
+      res = await HomeApiService.replyComment(commentId, image: imageFile);
+    }
+    if (!res.isSuccess) {
+      Get.snackbar(
+        'comment_add_failed'.tr,
+        res.message ?? 'error_occurred'.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return false;
+    }
+    final comment = _parseCommentFromResponse(res.data);
+    if (comment != null) {
+      list.add(comment);
+      _updateCommentCount(postId);
+      return true;
+    }
+    return true;
+  }
+
   /// إضافة تعليق صوتي أو رد صوتي — يستدعي الـ API مع الملف الصوتي
   Future<bool> addAudioComment(
     int postId,
@@ -291,7 +332,12 @@ class HomeController extends GetxController {
     int? audioDurationSeconds,
   }) {
     if (data == null) return null;
-    final raw = data['comment'] ?? data['data'] ?? data;
+    // استخراج الخريطة الفعلية للتعليق من الاستجابة المتداخلة
+    var raw = data['comment'] ?? data['data'] ?? data;
+    if (raw is Map && (raw.containsKey('comment') || raw.containsKey('data'))) {
+      raw = raw['comment'] ?? raw['data'] ?? raw;
+    }
+
     if (raw is! Map) return null;
     final map = Map<String, dynamic>.from(raw);
     final comment = CommentModel.fromJson(map, formatTime: _formatTimeAgo);
@@ -962,7 +1008,11 @@ class HomeController extends GetxController {
           friendRequests.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
             final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
-            final profilePic = sender['profile_picture']?.toString();
+            final profilePic = sender['profile_picture']?.toString() ??
+                sender['avatar_url']?.toString() ??
+                sender['avatarUrl']?.toString() ??
+                sender['image_url']?.toString() ??
+                sender['imageUrl']?.toString();
             final requestId = m['request_id'] ?? m['id'];
             final senderUserId = sender['user_id'] ?? sender['id'];
             return FriendRequestModel(
@@ -1043,7 +1093,15 @@ class HomeController extends GetxController {
                 user['user_id'] ?? user['id'] ?? m['friend_id'] ?? m['user_id'];
             final profilePic =
                 user['profile_picture']?.toString() ??
-                m['profile_picture']?.toString();
+                user['avatar_url']?.toString() ??
+                user['avatarUrl']?.toString() ??
+                user['image_url']?.toString() ??
+                user['imageUrl']?.toString() ??
+                m['profile_picture']?.toString() ??
+                m['avatar_url']?.toString() ??
+                m['avatarUrl']?.toString() ??
+                m['image_url']?.toString() ??
+                m['imageUrl']?.toString();
             return FriendRequestModel(
               id: friendId?.toString() ?? '',
               senderUserId: friendId?.toString(),
@@ -1086,7 +1144,11 @@ class HomeController extends GetxController {
         if (list is List && list.isNotEmpty) {
           suggestionUsers.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
-            final profilePic = m['profile_picture']?.toString();
+            final profilePic = m['profile_picture']?.toString() ??
+                m['avatar_url']?.toString() ??
+                m['avatarUrl']?.toString() ??
+                m['image_url']?.toString() ??
+                m['imageUrl']?.toString();
             return UserProfileModel(
               id: '${m['user_id'] ?? m['id']}',
               name: m['name']?.toString() ?? 'user_default'.tr,
@@ -1175,11 +1237,17 @@ class HomeController extends GetxController {
   /// بناء رابط صورة كامل من مسار الـ API
   static String? fullImageUrl(String? path) {
     if (path == null || path.isEmpty) return null;
-    if (path.startsWith('http')) return path;
+    final s = path.toString().trim();
+    if (s.startsWith('http')) return s;
     final base = ConstData.API_BASE;
-    return base.endsWith('/')
-        ? '$base${path.startsWith('/') ? path.substring(1) : path}'
-        : '$base${path.startsWith('/') ? path : '/$path'}';
+    // تنظيف المسار من السلاشات المتكررة في البداية
+    var cleanPath = s;
+    while (cleanPath.startsWith('/') && cleanPath.length > 1) {
+      cleanPath = cleanPath.substring(1);
+    }
+    if (cleanPath == '/') cleanPath = '';
+
+    return base.endsWith('/') ? '$base$cleanPath' : '$base/$cleanPath';
   }
 
   /// جلب الملف الشخصي من الـ API
@@ -1200,7 +1268,13 @@ class HomeController extends GetxController {
           education: d['education']?.toString(),
           livesIn: d['current_location'] ?? d['lives_in']?.toString(),
           from: d['origin_location'] ?? d['from']?.toString(),
-          profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+          profilePicture: fullImageUrl(
+            d['profile_picture']?.toString() ??
+                d['avatar_url']?.toString() ??
+                d['avatarUrl']?.toString() ??
+                d['image_url']?.toString() ??
+                d['imageUrl']?.toString(),
+          ),
           coverImage: fullImageUrl(d['cover_image']?.toString()),
           bio: d['bio']?.toString(),
           company: d['company']?.toString(),
@@ -1282,7 +1356,13 @@ class HomeController extends GetxController {
           education: d['education']?.toString(),
           livesIn: d['current_location'] ?? d['lives_in']?.toString(),
           from: d['origin_location'] ?? d['from']?.toString(),
-          profilePicture: fullImageUrl(d['profile_picture']?.toString()),
+          profilePicture: fullImageUrl(
+            d['profile_picture']?.toString() ??
+                d['avatar_url']?.toString() ??
+                d['avatarUrl']?.toString() ??
+                d['image_url']?.toString() ??
+                d['imageUrl']?.toString(),
+          ),
           coverImage: fullImageUrl(d['cover_image']?.toString()),
           bio: d['bio']?.toString(),
           company: d['company']?.toString(),
@@ -1375,7 +1455,11 @@ class HomeController extends GetxController {
         if (list is List && list.isNotEmpty) {
           searchResults.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
-            final profilePic = m['profile_picture']?.toString();
+            final profilePic = m['profile_picture']?.toString() ??
+                m['avatar_url']?.toString() ??
+                m['avatarUrl']?.toString() ??
+                m['image_url']?.toString() ??
+                m['imageUrl']?.toString();
             return UserProfileModel(
               id: '${m['user_id'] ?? m['id']}',
               name: m['name']?.toString() ?? 'user_default'.tr,

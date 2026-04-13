@@ -153,17 +153,22 @@ class PostModel {
       authorName: author is Map
           ? (author['name'] ?? author['username'])?.toString()
           : null,
-      authorAvatar: author is Map
-          ? (author['profile_picture'] ??
-                  author['avatar_url'] ??
-                  author['image_url'] ??
-                  author['imageUrl'] ??
-                  author['avatar'] ??
-                  author['image'] ??
-                  author['picture'] ??
-                  author['logo'])
-              ?.toString()
-          : null,
+      authorAvatar: (author is Map
+              ? (author['profile_picture'] ??
+                      author['avatar_url'] ??
+                      author['avatarUrl'] ??
+                      author['image_url'] ??
+                      author['imageUrl'] ??
+                      author['avatar'] ??
+                      author['image'] ??
+                      author['picture'] ??
+                      author['logo'])
+              : (json['avatarUrl'] ??
+                  json['avatar_url'] ??
+                  json['profile_picture'] ??
+                  json['image_url'] ??
+                  json['imageUrl']))
+          ?.toString(),
       authorId: author is Map
           ? (author['user_id'] ?? author['id'])?.toString()
           : null,
