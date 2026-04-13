@@ -6,6 +6,7 @@ import '../../../core/utils/post_published_at_format.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/gradient_button.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
 import 'countdown_timer.dart';
@@ -36,6 +37,16 @@ class HomePostCard1 extends StatelessWidget {
     final authorInitial = (post.authorName?.isNotEmpty == true)
         ? post.authorName!.substring(0, 1).toUpperCase()
         : 'A';
+    final myProfileId = controller.myProfile.id;
+    final isMe = post.authorId != null &&
+        (post.authorId == myProfileId || post.authorId == 'me');
+    final avatarUrl = post.authorAvatar != null && post.authorAvatar!.isNotEmpty
+        ? _fullImageUrl(post.authorAvatar)
+        : (isMe &&
+                controller.myProfile.profilePicture != null &&
+                controller.myProfile.profilePicture!.isNotEmpty
+            ? controller.myProfile.profilePicture
+            : null);
     final imageUrl = _fullImageUrl(post.imageUrl);
 
     return Container(
@@ -60,21 +71,16 @@ class HomePostCard1 extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Center(
-                      child: Text(
-                        authorInitial,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                          fontSize: 18,
-                        ),
+                  SafeCircleAvatar(
+                    radius: 16,
+                    imageUrl: imageUrl,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                    fallback: Text(
+                      authorInitial,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                        fontSize: 18,
                       ),
                     ),
                   ),

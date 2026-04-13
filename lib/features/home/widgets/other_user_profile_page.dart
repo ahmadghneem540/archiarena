@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../../../core/utils/post_published_at_format.dart';
 import '../../chat/chat_inbox_view.dart';
 import '../home_controller.dart';
@@ -566,6 +567,8 @@ class OtherUserProfilePage extends StatelessWidget {
 
   Widget _postCard(BuildContext context, PostModel post, UserProfileModel profile) {
     final authorName = profile.name;
+    final authorInitial = (authorName.isNotEmpty ? authorName[0] : '؟').toUpperCase();
+    final authorAvatar = profile.profilePicture;
     final imageUrl = post.imageUrl != null && post.imageUrl!.isNotEmpty
         ? HomeController.fullImageUrl(post.imageUrl)
         : null;
@@ -592,22 +595,16 @@ class OtherUserProfilePage extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Center(
-                    child: Text(
-                      (authorName.isNotEmpty ? authorName[0] : '؟')
-                          .toUpperCase(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: primary,
-                        fontSize: 18,
-                      ),
+                SafeCircleAvatar(
+                  radius: 16,
+                  imageUrl: authorAvatar,
+                  backgroundColor: primary.withValues(alpha: 0.2),
+                  fallback: Text(
+                    authorInitial,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: primary,
+                      fontSize: 18,
                     ),
                   ),
                 ),

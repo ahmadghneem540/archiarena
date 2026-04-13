@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/gradient_button.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../home_controller.dart';
 import '../models/post_model.dart';
 import '../models/user_profile_model.dart';
@@ -485,24 +486,19 @@ class ProfileTabView extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Center(
-                    child: Text(
-                      (controller.myProfile.name.isNotEmpty
-                          ? controller.myProfile.name[0]
-                          : '؟')
-                          .toUpperCase(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        fontSize: 18,
-                      ),
+                SafeCircleAvatar(
+                  radius: 16,
+                  imageUrl: controller.myProfile.profilePicture,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                  fallback: Text(
+                    (controller.myProfile.name.isNotEmpty
+                        ? controller.myProfile.name[0]
+                        : '؟')
+                        .toUpperCase(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                      fontSize: 18,
                     ),
                   ),
                 ),

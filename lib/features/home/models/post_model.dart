@@ -68,6 +68,7 @@ class PostModel {
     this.category,
     this.authorName,
     this.authorAvatar,
+    this.authorId,
     this.imageUrl,
     this.likesCount = 0,
     this.commentsCount = 0,
@@ -98,6 +99,7 @@ class PostModel {
   final String? category;
   final String? authorName;
   final String? authorAvatar;
+  final String? authorId;
   final String? imageUrl;
   final int likesCount;
   final int commentsCount;
@@ -152,7 +154,18 @@ class PostModel {
           ? (author['name'] ?? author['username'])?.toString()
           : null,
       authorAvatar: author is Map
-          ? (author['profile_picture'] ?? author['avatar_url'])?.toString()
+          ? (author['profile_picture'] ??
+                  author['avatar_url'] ??
+                  author['image_url'] ??
+                  author['imageUrl'] ??
+                  author['avatar'] ??
+                  author['image'] ??
+                  author['picture'] ??
+                  author['logo'])
+              ?.toString()
+          : null,
+      authorId: author is Map
+          ? (author['user_id'] ?? author['id'])?.toString()
           : null,
       imageUrl: _extractImageUrl(json),
       likesCount: json['like_count'] ?? json['likes_count'] ?? json['likesCount'] ?? 0,
@@ -226,6 +239,7 @@ class PostModel {
       category: coalesce(detail.category, feed.category),
       authorName: coalesce(detail.authorName, feed.authorName),
       authorAvatar: coalesce(detail.authorAvatar, feed.authorAvatar),
+      authorId: coalesce(detail.authorId, feed.authorId),
       imageUrl: coalesce(detail.imageUrl, feed.imageUrl),
       likesCount: detail.likesCount,
       commentsCount: detail.commentsCount,
@@ -363,6 +377,7 @@ class PostModel {
       category: category,
       authorName: authorName,
       authorAvatar: authorAvatar,
+      authorId: authorId,
       imageUrl: imageUrl,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,

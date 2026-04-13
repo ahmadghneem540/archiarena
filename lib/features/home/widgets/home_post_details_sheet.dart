@@ -137,9 +137,16 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
     final initial = (_post.authorName?.isNotEmpty == true)
         ? _post.authorName!.substring(0, 1).toUpperCase()
         : '؟';
+    final myProfileId = widget.controller.myProfile.id;
+    final isMe = _post.authorId != null &&
+        (_post.authorId == myProfileId || _post.authorId == 'me');
     final avatarUrl = _post.authorAvatar != null && _post.authorAvatar!.isNotEmpty
         ? _fullImageUrl(_post.authorAvatar)
-        : null;
+        : (isMe &&
+                widget.controller.myProfile.profilePicture != null &&
+                widget.controller.myProfile.profilePicture!.isNotEmpty
+            ? widget.controller.myProfile.profilePicture
+            : null);
     return Row(
       children: [
         SafeCircleAvatar(

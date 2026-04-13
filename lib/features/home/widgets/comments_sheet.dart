@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/fullscreen_image_viewer.dart';
+import '../../../widget/safe_circle_avatar.dart';
 import '../home_controller.dart';
 import '../models/comment_model.dart';
 import 'audio_comment_player.dart';
@@ -439,6 +441,19 @@ class _CommentTile extends StatelessWidget {
     const indent = 24.0;
     const lineWidth = 2.0;
 
+    final controller = Get.find<HomeController>();
+    final myProfileId = controller.myProfile.id;
+    final isMe = comment.authorId != null &&
+        (comment.authorId == myProfileId || comment.authorId == 'me');
+    final avatarUrl = comment.authorAvatar != null &&
+            comment.authorAvatar!.isNotEmpty
+        ? HomeController.fullImageUrl(comment.authorAvatar)
+        : (isMe &&
+                controller.myProfile.profilePicture != null &&
+                controller.myProfile.profilePicture!.isNotEmpty
+            ? controller.myProfile.profilePicture
+            : null);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -479,12 +494,13 @@ class _CommentTile extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
+                          SafeCircleAvatar(
                             radius: 18,
+                            imageUrl: avatarUrl,
                             backgroundColor: AppColors.primary.withValues(
                               alpha: 0.2,
                             ),
-                            child: Text(
+                            fallback: Text(
                               comment.authorName.isNotEmpty
                                   ? comment.authorName[0].toUpperCase()
                                   : '؟',

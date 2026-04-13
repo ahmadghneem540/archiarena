@@ -10,6 +10,7 @@ class CommentModel {
     this.imageUrl,
     this.audioDurationSeconds,
     this.authorAvatar,
+    this.authorId,
     List<CommentModel>? replies,
   }) : replies = replies ?? [];
 
@@ -20,6 +21,7 @@ class CommentModel {
   final String? audioPath;
   final String? imageUrl;
   final String? authorAvatar;
+  final String? authorId;
   final int? audioDurationSeconds;
   final String createdAt;
   final List<CommentModel> replies;
@@ -44,7 +46,16 @@ class CommentModel {
     return CommentModel(
       id: id?.toString() ?? '',
       authorName: author?['name']?.toString() ?? 'مستخدم',
-      authorAvatar: author?['profile_picture']?.toString(),
+      authorAvatar: (author?['profile_picture'] ??
+              author?['avatar_url'] ??
+              author?['image_url'] ??
+              author?['imageUrl'] ??
+              author?['avatar'] ??
+              author?['image'] ??
+              author?['picture'] ??
+              author?['logo'])
+          ?.toString(),
+      authorId: (author?['user_id'] ?? author?['id'])?.toString(),
       parentId: json['parent_id']?.toString(),
       text: json['body']?.toString() ?? json['text']?.toString(),
       imageUrl: json['image_url']?.toString(),
@@ -57,6 +68,8 @@ class CommentModel {
   CommentModel copyWith({
     String? id,
     String? authorName,
+    String? authorAvatar,
+    String? authorId,
     String? parentId,
     String? text,
     String? audioPath,
@@ -68,6 +81,8 @@ class CommentModel {
     return CommentModel(
       id: id ?? this.id,
       authorName: authorName ?? this.authorName,
+      authorAvatar: authorAvatar ?? this.authorAvatar,
+      authorId: authorId ?? this.authorId,
       parentId: parentId ?? this.parentId,
       text: text ?? this.text,
       audioPath: audioPath ?? this.audioPath,
