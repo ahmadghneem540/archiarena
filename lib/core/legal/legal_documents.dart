@@ -37,12 +37,12 @@ class LegalDocuments {
   }
 
   static const String _privacyEn = '''
-Privacy Policy — ArchiArena
+Privacy Policy — archarena
 
 Last updated: April 2026
 
 1. Introduction
-ArchiArena ("we", "us", "the App") provides a mobile platform for architectural and design-related content, projects, social features, messaging, and related services. This Privacy Policy explains how we collect, use, store, and protect personal information when you use our application.
+archarena ("we", "us", "the App") provides a mobile platform for architectural and design-related content, projects, social features, messaging, and related services. This Privacy Policy explains how we collect, use, store, and protect personal information when you use our application.
 
 2. Data we collect
 • Account data: name, email address, phone number (if provided), profile photo, professional information you choose to add, and account credentials.
@@ -82,18 +82,18 @@ For privacy questions or requests: use the in-app support or feedback options, o
 ''';
 
   static const String _termsEn = '''
-Terms of Service — ArchiArena
+Terms of Service — archarena
 
 Last updated: April 2026
 
 1. Agreement
-By creating an account or using ArchiArena ("the Service"), you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the Service.
+By creating an account or using archarena ("the Service"), you agree to these Terms of Service and our Privacy Policy. If you do not agree, do not use the Service.
 
 2. Eligibility
 You must be legally able to enter a binding contract in your jurisdiction and meet any minimum age required by Apple, Google, and local law (typically at least 13, or higher where required).
 
 3. Description of the Service
-ArchiArena offers features such as feeds, profiles, posts, project-related content, plans and attachments, comments, chat, notifications, and related functionality. Features may change over time.
+archarena offers features such as feeds, profiles, posts, project-related content, plans and attachments, comments, chat, notifications, and related functionality. Features may change over time.
 
 4. Your account
 You are responsible for accurate registration information and for safeguarding your credentials. You are responsible for activity under your account. Notify us promptly of unauthorized use.
@@ -211,12 +211,12 @@ For questions about these Terms, use in-app support or the contact method provid
 ''';
 
   static const String _privacyDe = '''
-Datenschutzerklärung — ArchiArena
+Datenschutzerklärung — archarena
 
 Stand: April 2026
 
 1. Einleitung
-ArchiArena („wir“, „die App“) ist eine mobile Plattform für architektonische Inhalte, Projekte, soziale Funktionen, Nachrichten und verwandte Dienste. Diese Erklärung beschreibt, wie wir personenbezogene Daten erheben, nutzen und schützen.
+archarena („wir“, „die App“) ist eine mobile Plattform für architektonische Inhalte, Projekte, soziale Funktionen, Nachrichten und verwandte Dienste. Diese Erklärung beschreibt, wie wir personenbezogene Daten erheben, nutzen und schützen.
 
 2. Erhobene Daten
 • Kontodaten: Name, E-Mail, Telefonnummer (falls angegeben), Profilbild, von Ihnen ergänzte berufliche Angaben, Anmeldedaten.
@@ -247,18 +247,18 @@ Für Datenschutzanfragen nutzen Sie den In-App-Support oder die in Google Play /
 ''';
 
   static const String _termsDe = '''
-Nutzungsbedingungen — ArchiArena
+Nutzungsbedingungen — archarena
 
 Stand: April 2026
 
 1. Vertragsschluss
-Mit Kontoerstellung oder Nutzung von ArchiArena („Dienst“) akzeptieren Sie diese Bedingungen und unsere Datenschutzerklärung. Wenn Sie nicht einverstanden sind, nutzen Sie den Dienst nicht.
+Mit Kontoerstellung oder Nutzung von archarena („Dienst“) akzeptieren Sie diese Bedingungen und unsere Datenschutzerklärung. Wenn Sie nicht einverstanden sind, nutzen Sie den Dienst nicht.
 
 2. Teilnahmeberechtigung
 Sie müssen geschäftsfähig sein und das von Apple, Google und lokalem Recht geforderte Mindestalter erreicht haben.
 
 3. Leistungsbeschreibung
-ArchiArena bietet u. a. Feeds, Profile, Beiträge, Projektinhalte, Pläne und Anhänge, Kommentare, Chat und Benachrichtigungen. Funktionen können sich ändern.
+archarena bietet u. a. Feeds, Profile, Beiträge, Projektinhalte, Pläne und Anhänge, Kommentare, Chat und Benachrichtigungen. Funktionen können sich ändern.
 
 4. Konto
 Sie sind für richtige Angaben und die Geheimhaltung Ihrer Zugangsdaten verantwortlich und für Aktivitäten unter Ihrem Konto. Melden Sie Missbrauch unverzüglich.

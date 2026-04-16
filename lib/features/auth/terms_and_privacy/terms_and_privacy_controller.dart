@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/api/api_client.dart';
 import '../../../core/constant/const_data.dart';
 import '../../../core/routes/app_routes.dart';
 import '../../../core/services/services.dart';
@@ -138,14 +137,10 @@ class TermsAndPrivacyController extends GetxController {
 
       if (res.isSuccess) {
         await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
-        // إذا رجع الـ API توكناً (تسجيل تلقائي) انتقل للرئيسية مباشرة
-        final token = await MyServices.getStringValue(ConstData.keyToken);
-        if (token != null && token.isNotEmpty) {
-          ApiClient.reset();
-          Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': true});
-        } else {
-          Get.offAllNamed(AppRoutes.verifyEmail, arguments: {'email': email, 'isCompany': true});
-        }
+        Get.offAllNamed(
+          AppRoutes.verifyEmail,
+          arguments: {'email': email, 'isCompany': true},
+        );
       } else {
         _showRegistrationError(res.message ?? 'حدث خطأ أثناء التسجيل');
       }

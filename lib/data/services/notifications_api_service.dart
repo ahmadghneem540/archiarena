@@ -109,9 +109,9 @@ class NotificationsApiService {
   static Future<ApiResponse<Map<String, dynamic>>> registerFcmToken(
     String fcmToken,
   ) async {
-    try {
+    Future<ApiResponse<Map<String, dynamic>>> postPath(String path) async {
       final res = await _dio.post(
-        ApiEndpoints.registerFcmToken,
+        path,
         data: {'fcm_token': fcmToken},
       );
       final raw = res.data;
@@ -123,7 +123,18 @@ class NotificationsApiService {
         );
       }
       return ApiResponse(status: res.statusCode ?? 200, data: {}, message: null);
+    }
+
+    try {
+      return await postPath(ApiEndpoints.registerFcmToken);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        try {
+          return await postPath(ApiEndpoints.registerFcmTokenApiPrefix);
+        } on DioException catch (e2) {
+          return _handleError(e2);
+        }
+      }
       return _handleError(e);
     }
   }

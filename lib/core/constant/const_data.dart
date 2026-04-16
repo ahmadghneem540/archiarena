@@ -7,6 +7,21 @@ class ConstData {
   static const String APP_DOMAIN = "https://papayawhip-goldfish-691767.hostingersite.com";
   static const String API_BASE = "$APP_DOMAIN";
 
+  /// صور من نفس مضيف الـ API غالباً تحتاج Bearer عند جلبها بـ HTTP.
+  static bool imageUrlSameHostAsApi(String url) {
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return false;
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      final u = Uri.tryParse(trimmed);
+      final b = Uri.tryParse(API_BASE);
+      if (u != null && u.host.isNotEmpty && b != null && b.host.isNotEmpty) {
+        return u.host.toLowerCase() == b.host.toLowerCase();
+      }
+      return false;
+    }
+    return true;
+  }
+
   /// إن لم يدعم الاستضافة المشتركة WebSocket دائماً، اعتمد على FCM + استطلاع (انظر ChatRoomController).
   static const String CHAT_SOCKET_URL = APP_DOMAIN;
 

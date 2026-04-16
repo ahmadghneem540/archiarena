@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -49,20 +46,30 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyCNo5I2htryLHT3PK3xH4B53pF5S5uDZQU',
+    appId: '1:768499589240:web:ab4145be82d484d9dc0d8d',
+    messagingSenderId: '768499589240',
+    projectId: 'archarena-78166',
+    authDomain: 'archarena-78166.firebaseapp.com',
+    storageBucket: 'archarena-78166.firebasestorage.app',
+    measurementId: 'G-W0TMCGG1RW',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDt7WkIEtA9GFjqOAaU1Em9vMc8SxRCvxo',
-    appId: '1:768499589240:android:d2d33f8706358a71dc0d8d',
+    appId: '1:768499589240:android:f3602ef5addac6b8dc0d8d',
     messagingSenderId: '768499589240',
-    projectId: 'archiarena-78166',
-    storageBucket: 'archiarena-78166.firebasestorage.app',
+    projectId: 'archarena-78166',
+    storageBucket: 'archarena-78166.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBqkifm5MnIi9YGOSc6S0nhywoNnB1Lhx8',
-    appId: '1:768499589240:ios:0f7d14f56f037077dc0d8d',
+    appId: '1:768499589240:ios:50932c48a486f9ecdc0d8d',
     messagingSenderId: '768499589240',
-    projectId: 'archiarena-78166',
-    storageBucket: 'archiarena-78166.firebasestorage.app',
-    iosBundleId: 'com.example.archiarena',
+    projectId: 'archarena-78166',
+    storageBucket: 'archarena-78166.firebasestorage.app',
+    iosBundleId: 'com.ahmadghneem.archarena',
   );
 }

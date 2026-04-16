@@ -10,6 +10,14 @@ import '../../core/api/api_response.dart';
 import '../../core/constant/const_data.dart';
 import '../../core/services/services.dart';
 
+/// نتيجة تسجيل الدخول مع نص الاستجابة الكامل لقراءة حالة التحقق من البريد
+class AuthLoginOutcome {
+  AuthLoginOutcome({required this.response, required this.rawJson});
+
+  final ApiResponse<Map<String, dynamic>> response;
+  final Map<String, dynamic> rawJson;
+}
+
 class AuthApiService {
   AuthApiService._();
 
@@ -95,21 +103,9 @@ class AuthApiService {
         raw,
         fromJsonT: (d) => d as Map<String, dynamic>,
       );
-      // تخزين التوكن إذا رجعته الـ API (مثل تسجيل الدخول)
+      // لا نخزّن التوكن هنا — يُستخرج بعد التحقق من البريد مثل تسجيل الفرد
       if (apiRes.isSuccess) {
-        final responseData = apiRes.data ?? raw;
-        final token = _extractToken(responseData, raw);
-        if (token != null && token.isNotEmpty) {
-          await MyServices.saveStringValue(ConstData.keyToken, token);
-          final user = responseData['user'] ?? raw['user'];
-          if (user != null && user['id'] != null) {
-            await MyServices.saveStringValue(
-              ConstData.keyUserId,
-              user['id'].toString(),
-            );
-          }
-          await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
-        }
+        await MyServices.saveStringValue(ConstData.keyIsCompany, '1');
       }
       return apiRes;
     } on dio.DioException catch (e) {
@@ -164,7 +160,7 @@ class AuthApiService {
   }
 
   /// تسجيل الدخول — identifier يمكن أن يكون البريد أو الهاتف
-  static Future<ApiResponse<Map<String, dynamic>>> login({
+  static Future<AuthLoginOutcome> login({
     required String identifier,
     required String password,
   }) async {
@@ -194,28 +190,40 @@ class AuthApiService {
 
       if (apiRes.isSuccess) {
         final data = apiRes.data ?? raw;
-        final token = _extractToken(data, raw);
-        if (kDebugMode) {
-          final masked = (token == null || token.isEmpty)
-              ? '(null/empty)'
-              : '${token.substring(0, token.length >= 8 ? 8 : token.length)}*** (len=${token.length})';
-          debugPrint('AUTH LOGIN token extracted: $masked');
-        }
-        if (token != null && token.isNotEmpty) {
-          await MyServices.saveStringValue(ConstData.keyToken, token);
+        final mustVerify = requiresEmailVerificationBeforeAccess(raw, apiRes.data);
+        if (!mustVerify) {
+          final token = _extractToken(data, raw);
           if (kDebugMode) {
-            final saved = await MyServices.getStringValue(ConstData.keyToken);
-            debugPrint(
-              'AUTH LOGIN token saved? ${saved != null && saved.isNotEmpty} (len=${saved?.length ?? 0})',
-            );
+            final masked = (token == null || token.isEmpty)
+                ? '(null/empty)'
+                : '${token.substring(0, token.length >= 8 ? 8 : token.length)}*** (len=${token.length})';
+            debugPrint('AUTH LOGIN token extracted: $masked');
           }
+          if (token != null && token.isNotEmpty) {
+            await MyServices.saveStringValue(ConstData.keyToken, token);
+            if (kDebugMode) {
+              final saved = await MyServices.getStringValue(ConstData.keyToken);
+              debugPrint(
+                'AUTH LOGIN token saved? ${saved != null && saved.isNotEmpty} (len=${saved?.length ?? 0})',
+              );
+            }
+            final user = data['user'] ?? raw['user'];
+            if (user != null && user['id'] != null) {
+              await MyServices.saveStringValue(
+                ConstData.keyUserId,
+                user['id'].toString(),
+              );
+            }
+            final apiIsCompany = _extractIsCompany(data, raw, user);
+            if (apiIsCompany != null) {
+              await MyServices.saveStringValue(
+                ConstData.keyIsCompany,
+                apiIsCompany ? '1' : '0',
+              );
+            }
+          }
+        } else {
           final user = data['user'] ?? raw['user'];
-          if (user != null && user['id'] != null) {
-            await MyServices.saveStringValue(
-              ConstData.keyUserId,
-              user['id'].toString(),
-            );
-          }
           final apiIsCompany = _extractIsCompany(data, raw, user);
           if (apiIsCompany != null) {
             await MyServices.saveStringValue(
@@ -225,10 +233,83 @@ class AuthApiService {
           }
         }
       }
-      return apiRes;
+      return AuthLoginOutcome(response: apiRes, rawJson: raw);
     } on dio.DioException catch (e) {
-      return _handleError(e);
+      Map<String, dynamic> rawErr = {};
+      final d = e.response?.data;
+      if (d is Map) {
+        rawErr = Map<String, dynamic>.from(d);
+      }
+      return AuthLoginOutcome(response: _handleError(e), rawJson: rawErr);
     }
+  }
+
+  /// يقرأ من استجابة تسجيل الدخول إن كان الحساب شركة (للتوجيه لصفحة التحقق)
+  static bool? readIsCompanyFromLoginPayload(Map<String, dynamic> raw) {
+    Map<String, dynamic>? data;
+    if (raw['data'] is Map) {
+      data = Map<String, dynamic>.from(raw['data'] as Map);
+    }
+    final user = raw['user'] ?? data?['user'];
+    return _extractIsCompany(data, raw, user);
+  }
+
+  /// البريد المستخدم في شاشة التحقق عند تسجيل الدخول بالهاتف
+  static String? emailForVerificationAfterLogin(
+    String identifier,
+    Map<String, dynamic> rawJson,
+    Map<String, dynamic>? innerData,
+  ) {
+    final id = identifier.trim();
+    if (id.contains('@')) return id;
+    Map<String, dynamic>? data = innerData;
+    if (data == null && rawJson['data'] is Map) {
+      data = Map<String, dynamic>.from(rawJson['data'] as Map);
+    }
+    dynamic user = rawJson['user'];
+    if (user == null && data != null) user = data['user'];
+    if (user is Map) {
+      final e = user['email']?.toString();
+      if (e != null && e.isNotEmpty) return e;
+    }
+    return null;
+  }
+
+  /// true إذا كان يجب إجبار المستخدم على إدخال رمز البريد قبل استخدام التطبيق
+  static bool requiresEmailVerificationBeforeAccess(
+    Map<String, dynamic> rawJson,
+    Map<String, dynamic>? innerData,
+  ) {
+    if (rawJson['requires_email_verification'] == true) return true;
+    if (rawJson['must_verify_email'] == true) return true;
+
+    Map<String, dynamic>? data = innerData;
+    if (data == null && rawJson['data'] is Map) {
+      data = Map<String, dynamic>.from(rawJson['data'] as Map);
+    }
+    if (data != null) {
+      if (data['requires_email_verification'] == true) return true;
+      if (data['must_verify_email'] == true) return true;
+      if (data['email_verified'] == false) return true;
+    }
+
+    dynamic user = rawJson['user'];
+    if (user == null && data != null) user = data['user'];
+    if (user is Map) {
+      final u = Map<String, dynamic>.from(user);
+      if (u['email_verified'] == false) return true;
+      if (u['is_email_verified'] == false) return true;
+      if (u['must_verify_email'] == true) return true;
+      if (u.containsKey('email_verified_at')) {
+        final ev = u['email_verified_at'];
+        if (ev == null) return true;
+        if (ev is String && ev.trim().isEmpty) return true;
+      }
+      if (u['email_verified'] == true) return false;
+      if (u['is_email_verified'] == true) return false;
+    }
+
+    return false;
   }
 
   /// يرجع true للشركة، false للأفراد، null عندما لا يُرجع الـ API القيمة
@@ -394,5 +475,19 @@ class AuthApiService {
     await MyServices.saveStringValue(ConstData.keyUserId, '');
     await MyServices.saveStringValue(ConstData.keyIsCompany, '0');
     ApiClient.reset();
+  }
+
+  /// حذف الحساب
+  static Future<ApiResponse<Map<String, dynamic>>> deleteAccount() async {
+    try {
+      final res = await _dio.delete(ApiEndpoints.authDeleteAccount);
+      final raw = res.data as Map<String, dynamic>? ?? {};
+      return ApiResponse.fromJson(
+        raw,
+        fromJsonT: (d) => d as Map<String, dynamic>,
+      );
+    } on dio.DioException catch (e) {
+      return _handleError(e);
+    }
   }
 }

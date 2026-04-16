@@ -13,6 +13,7 @@ class ApiEndpoints {
   static const String authForgotPassword = '/auth/forgot-password';
   static const String authResetPassword = '/auth/reset-password';
   static const String authChangePassword = '/auth/change-password';
+  static const String authDeleteAccount = '/auth/delete-account';
 
   // ========== OTP ==========
   static const String verifyOtp = '/verify/otp';
@@ -81,6 +82,8 @@ class ApiEndpoints {
   static const String notifications = '/notifications';
   /// تسجيل توكن FCM لإرسال الإشعارات (مستخدمون وشركات)
   static const String registerFcmToken = '/profile/me/fcm-token';
+  /// بديل إن كان الباكند يضع مسارات الملف الشخصي تحت نفس بادئة الـ API مثل الدردشة
+  static const String registerFcmTokenApiPrefix = '/api/profile/me/fcm-token';
   static String notificationRead(int id) => '/notifications/$id/read';
   static const String notificationsReadAll = '/notifications/read-all';
   static String notificationDelete(int id) => '/notifications/$id';

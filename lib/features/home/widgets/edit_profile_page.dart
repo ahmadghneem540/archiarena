@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/auth_cached_network_image.dart';
 import '../../../data/services/profile_api_service.dart';
 import '../home_controller.dart';
 
@@ -329,12 +330,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
               if (imageUrl != null && imageUrl.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    imageUrl,
+                  child: AuthCachedNetworkImage(
+                    imageUrl: imageUrl,
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorWidget:
                         Icon(Icons.add_photo_alternate, color: context.themeGrey600, size: 40),
                   ),
                 )

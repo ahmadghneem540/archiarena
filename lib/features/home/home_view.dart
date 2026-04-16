@@ -1,4 +1,4 @@
-import 'package:archiarena/features/home/widgets/upload_project.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
@@ -12,6 +12,7 @@ import 'widgets/notifications_tab_view.dart';
 import 'widgets/orders_tab_view.dart';
 import 'widgets/profile_tab_view.dart';
 import 'widgets/shimmer_loading.dart';
+import 'widgets/upload_project.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});

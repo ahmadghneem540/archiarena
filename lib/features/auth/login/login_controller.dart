@@ -39,12 +39,37 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     try {
-      final res = await AuthApiService.login(
+      final outcome = await AuthApiService.login(
         identifier: phoneOrEmail,
         password: password,
       );
+      final res = outcome.response;
+      final raw = outcome.rawJson;
 
       if (res.isSuccess) {
+        if (AuthApiService.requiresEmailVerificationBeforeAccess(raw, res.data)) {
+          final email = AuthApiService.emailForVerificationAfterLogin(
+            phoneOrEmail,
+            raw,
+            res.data,
+          );
+          if (email == null || email.isEmpty) {
+            Get.snackbar(
+              'تنبيه',
+              'لم يُعثر على البريد للتحقق. جرّب تسجيل الدخول باستخدام البريد الإلكتروني.',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+            return;
+          }
+          final isCompany = AuthApiService.readIsCompanyFromLoginPayload(raw) ??
+              ((await MyServices.getStringValue(ConstData.keyIsCompany)) == '1');
+          Get.offAllNamed(
+            AppRoutes.verifyEmail,
+            arguments: {'email': email, 'isCompany': isCompany},
+          );
+          return;
+        }
+
         ApiClient.reset();
         bool isCompany = (await MyServices.getStringValue(ConstData.keyIsCompany)) == '1';
         try {
@@ -64,6 +89,23 @@ class LoginController extends GetxController {
         Get.delete<HomeController>(force: true);
         Get.offAllNamed(AppRoutes.home, arguments: {'isCompany': isCompany});
       } else {
+        if (AuthApiService.requiresEmailVerificationBeforeAccess(outcome.rawJson, null) ||
+            _messageImpliesVerifyEmail(res.message, outcome.rawJson)) {
+          final email = AuthApiService.emailForVerificationAfterLogin(
+            phoneOrEmail,
+            outcome.rawJson,
+            null,
+          );
+          if (email != null && email.isNotEmpty) {
+            final isCompany =
+                AuthApiService.readIsCompanyFromLoginPayload(outcome.rawJson) ?? false;
+            Get.offAllNamed(
+              AppRoutes.verifyEmail,
+              arguments: {'email': email, 'isCompany': isCompany},
+            );
+            return;
+          }
+        }
         Get.snackbar(
           'فشل تسجيل الدخول',
           res.message ?? 'بيانات الدخول غير صحيحة',
@@ -80,6 +122,21 @@ class LoginController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  bool _messageImpliesVerifyEmail(String? message, Map<String, dynamic> raw) {
+    final parts = <String?>[
+      message,
+      raw['message']?.toString(),
+      raw['error']?.toString(),
+    ];
+    final s = parts.whereType<String>().join(' ').toLowerCase();
+    return s.contains('verify') ||
+        s.contains('verification') ||
+        s.contains('unverified') ||
+        s.contains('تأكيد') ||
+        s.contains('التحقق') ||
+        (s.contains('email') && s.contains('not'));
   }
 
   bool? _checkIsCompany(dynamic data) {

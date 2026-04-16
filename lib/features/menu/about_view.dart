@@ -28,7 +28,7 @@ class AboutView extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Text(
-                    'archiarena',
+                    'archarena',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class AboutView extends StatelessWidget {
             const SizedBox(height: 16),
             Center(
               child: Text(
-                'archiarena',
+                'archarena',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

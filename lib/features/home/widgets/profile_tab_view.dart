@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/auth_cached_network_image.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/gradient_button.dart';
 import '../../../widget/safe_circle_avatar.dart';
@@ -72,13 +73,12 @@ class ProfileTabView extends StatelessWidget {
               ? GestureDetector(
                   onTap: () =>
                       FullscreenImageViewer.open(context, p.coverImage!),
-                  child: Image.network(
-                    p.coverImage!,
+                  child: AuthCachedNetworkImage(
+                    imageUrl: p.coverImage!,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) =>
-                        _buildCoverPlaceholder(),
+                    errorWidget: _buildCoverPlaceholder(),
                   ),
                 )
               : _buildCoverPlaceholder(),
@@ -109,13 +109,12 @@ class ProfileTabView extends StatelessWidget {
                         context,
                         p.profilePicture!,
                       ),
-                      child: Image.network(
-                        p.profilePicture!,
+                      child: AuthCachedNetworkImage(
+                        imageUrl: p.profilePicture!,
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildAvatarPlaceholder(),
+                        errorWidget: _buildAvatarPlaceholder(),
                       ),
                     )
                   : _buildAvatarPlaceholder(),
@@ -556,12 +555,12 @@ class ProfileTabView extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    imageUrl,
+                  child: AuthCachedNetworkImage(
+                    imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    errorWidget: Container(
                       color: AppColors.placeholder1,
                       child: Icon(
                         Icons.image_not_supported,

@@ -16,6 +16,7 @@ import '../../data/services/home_api_service.dart';
 import '../../data/services/notifications_api_service.dart';
 import '../../data/services/chat_api_service.dart';
 import '../../data/services/profile_api_service.dart';
+import '../../data/helpers/my_dialogs.dart';
 import '../chat/chat_inbox_view.dart';
 import '../chat/models/chat_thread_model.dart';
 import 'models/comment_model.dart';
@@ -464,7 +465,10 @@ class HomeController extends GetxController {
     Future<void> addPdf(String? rawUrl, String basePathNoExt) async {
       final resolved = fullImageUrl(rawUrl) ?? rawUrl;
       if (resolved == null || resolved.isEmpty) return;
-      final path = await DownloadHelper.downloadPdfFile(resolved, basePathNoExt);
+      final path = await DownloadHelper.downloadPdfFile(
+        resolved,
+        basePathNoExt,
+      );
       if (path != null) paths.add(path);
     }
 
@@ -770,6 +774,11 @@ class HomeController extends GetxController {
           openChatInbox(openRequestsTab: true);
         });
       }
+      if (arguments['openGroupsTabAfterLoad'] == true) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          selectTab(HomeTab.groups);
+        });
+      }
     } else {
       _loadIsCompanyFromStorage();
     }
@@ -793,6 +802,9 @@ class HomeController extends GetxController {
     }
     if (type == 'chat_message' || type == 'new_chat_message') {
       loadChatUnreadMessageCount();
+    }
+    if (type == 'friend_request_push') {
+      loadFriendRequests();
     }
   }
 
@@ -820,7 +832,8 @@ class HomeController extends GetxController {
       if (countRes.isSuccess &&
           countRes.data != null &&
           countRes.status != 404) {
-        final raw = countRes.data!['count'] ??
+        final raw =
+            countRes.data!['count'] ??
             countRes.data!['pending_count'] ??
             countRes.data!['total'];
         final n = raw is int ? raw : int.tryParse('$raw');
@@ -847,7 +860,10 @@ class HomeController extends GetxController {
       var page = 1;
       const limit = 50;
       while (page <= 40) {
-        final res = await ChatApiService.getConversations(page: page, limit: limit);
+        final res = await ChatApiService.getConversations(
+          page: page,
+          limit: limit,
+        );
         if (!res.isSuccess || res.data == null) break;
         final list = res.data!['conversations'] ?? res.data!['list'];
         if (list is! List || list.isEmpty) break;
@@ -882,12 +898,7 @@ class HomeController extends GetxController {
 
   /// تحديث توكن FCM على السيرفر عند فتح التطبيق (مستخدمون وشركات) لاستقبال إشعار قبول العرض أو العرض الجديد
   Future<void> _registerFcmTokenIfAvailable() async {
-    try {
-      final token = await FcmService.getToken();
-      if (token != null && token.isNotEmpty) {
-        await NotificationsApiService.registerFcmToken(token);
-      }
-    } catch (_) {}
+    await FcmService.registerTokenWithServerIfLoggedIn();
   }
 
   void _registerFcmTokenLater() {
@@ -976,8 +987,7 @@ class HomeController extends GetxController {
   }
 
   /// هل المنشور موجود في قائمة الأعمال المحمّلة (GET /home/works).
-  bool isPostInWorks(int postId) =>
-      worksPosts.any((p) => p.id == postId);
+  bool isPostInWorks(int postId) => worksPosts.any((p) => p.id == postId);
 
   /// حذف منشور من الأعمال — DELETE /home/works/:postId
   Future<bool> removePostFromWorks(int postId) async {
@@ -1008,7 +1018,8 @@ class HomeController extends GetxController {
           friendRequests.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
             final sender = m['sender'] is Map ? Map.from(m['sender']) : {};
-            final profilePic = sender['profile_picture']?.toString() ??
+            final profilePic =
+                sender['profile_picture']?.toString() ??
                 sender['avatar_url']?.toString() ??
                 sender['avatarUrl']?.toString() ??
                 sender['image_url']?.toString() ??
@@ -1144,7 +1155,8 @@ class HomeController extends GetxController {
         if (list is List && list.isNotEmpty) {
           suggestionUsers.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
-            final profilePic = m['profile_picture']?.toString() ??
+            final profilePic =
+                m['profile_picture']?.toString() ??
                 m['avatar_url']?.toString() ??
                 m['avatarUrl']?.toString() ??
                 m['image_url']?.toString() ??
@@ -1173,7 +1185,9 @@ class HomeController extends GetxController {
 
   /// جلب الإشعارات
   Future<void> loadNotifications({bool force = false}) async {
-    if (!force && notifications.isNotEmpty && _isFresh(_notificationsFetchedAt)) {
+    if (!force &&
+        notifications.isNotEmpty &&
+        _isFresh(_notificationsFetchedAt)) {
       return;
     }
     isNotificationsLoading.value = true;
@@ -1234,11 +1248,112 @@ class HomeController extends GetxController {
     return '${dt.day}/${dt.month}/${dt.year}';
   }
 
+  static bool _isNonEmptyMediaString(String? s) {
+    if (s == null || s.isEmpty) return false;
+    if (s == 'null') return false;
+    return true;
+  }
+
+  /// يدعم نصاً، أو كائن { url, path }، أو قائمة من ذلك (صيغ شائعة من الباكند).
+  static String? _mediaPathFromDynamic(dynamic v) {
+    if (v == null) return null;
+    if (v is Map) {
+      final m = Map<String, dynamic>.from(v);
+      for (final k in [
+        'url',
+        'full_url',
+        'fullUrl',
+        'path',
+        'src',
+        'href',
+        'link',
+      ]) {
+        final s = m[k]?.toString().trim();
+        if (_isNonEmptyMediaString(s)) return s;
+      }
+      return null;
+    }
+    if (v is List && v.isNotEmpty) {
+      return _mediaPathFromDynamic(v.first);
+    }
+    final s = v.toString().trim();
+    return _isNonEmptyMediaString(s) ? s : null;
+  }
+
+  static const List<String> _kProfilePictureFields = [
+    'profile_picture',
+    'profile_picture_url',
+    'profile_picture_path',
+    'profilePhoto',
+    'avatar_url',
+    'avatarUrl',
+    'photo',
+    'avatar',
+    'picture',
+    'image_url',
+    'imageUrl',
+    'image',
+  ];
+
+  static String? _profilePicturePathFromMap(Map<String, dynamic> m) {
+    for (final key in _kProfilePictureFields) {
+      final p = _mediaPathFromDynamic(m[key]);
+      if (p != null) return p;
+    }
+    return null;
+  }
+
+  /// مسار أو رابط صورة الملف من استجابة `/profile/me` أو `/profile/:id` (مع دعم `user` / `profile` المتداخلة).
+  static String? profilePictureUrlFromApiMap(Map<String, dynamic> d) {
+    String? p = _profilePicturePathFromMap(d);
+    p ??= d['user'] is Map
+        ? _profilePicturePathFromMap(
+            Map<String, dynamic>.from(d['user'] as Map),
+          )
+        : null;
+    p ??= d['profile'] is Map
+        ? _profilePicturePathFromMap(
+            Map<String, dynamic>.from(d['profile'] as Map),
+          )
+        : null;
+    return fullImageUrl(p);
+  }
+
+  static const List<String> _kCoverFields = [
+    'cover_image',
+    'cover_image_url',
+    'cover_photo',
+    'coverPhoto',
+    'cover',
+    'banner',
+    'header_image',
+  ];
+
+  static String? _coverPathFromMap(Map<String, dynamic> m) {
+    for (final key in _kCoverFields) {
+      final p = _mediaPathFromDynamic(m[key]);
+      if (p != null) return p;
+    }
+    return null;
+  }
+
+  static String? coverImageUrlFromApiMap(Map<String, dynamic> d) {
+    String? p = _coverPathFromMap(d);
+    p ??= d['user'] is Map
+        ? _coverPathFromMap(Map<String, dynamic>.from(d['user'] as Map))
+        : null;
+    p ??= d['profile'] is Map
+        ? _coverPathFromMap(Map<String, dynamic>.from(d['profile'] as Map))
+        : null;
+    return fullImageUrl(p);
+  }
+
   /// بناء رابط صورة كامل من مسار الـ API
   static String? fullImageUrl(String? path) {
     if (path == null || path.isEmpty) return null;
     final s = path.toString().trim();
-    if (s.startsWith('http')) return s;
+    if (s.startsWith('http://') || s.startsWith('https://')) return s;
+    if (s.startsWith('//')) return 'https:$s';
     final base = ConstData.API_BASE;
     // تنظيف المسار من السلاشات المتكررة في البداية
     var cleanPath = s;
@@ -1268,14 +1383,8 @@ class HomeController extends GetxController {
           education: d['education']?.toString(),
           livesIn: d['current_location'] ?? d['lives_in']?.toString(),
           from: d['origin_location'] ?? d['from']?.toString(),
-          profilePicture: fullImageUrl(
-            d['profile_picture']?.toString() ??
-                d['avatar_url']?.toString() ??
-                d['avatarUrl']?.toString() ??
-                d['image_url']?.toString() ??
-                d['imageUrl']?.toString(),
-          ),
-          coverImage: fullImageUrl(d['cover_image']?.toString()),
+          profilePicture: profilePictureUrlFromApiMap(d),
+          coverImage: coverImageUrlFromApiMap(d),
           bio: d['bio']?.toString(),
           company: d['company']?.toString(),
           postsCount: (d['posts_count'] is int)
@@ -1356,14 +1465,8 @@ class HomeController extends GetxController {
           education: d['education']?.toString(),
           livesIn: d['current_location'] ?? d['lives_in']?.toString(),
           from: d['origin_location'] ?? d['from']?.toString(),
-          profilePicture: fullImageUrl(
-            d['profile_picture']?.toString() ??
-                d['avatar_url']?.toString() ??
-                d['avatarUrl']?.toString() ??
-                d['image_url']?.toString() ??
-                d['imageUrl']?.toString(),
-          ),
-          coverImage: fullImageUrl(d['cover_image']?.toString()),
+          profilePicture: profilePictureUrlFromApiMap(d),
+          coverImage: coverImageUrlFromApiMap(d),
           bio: d['bio']?.toString(),
           company: d['company']?.toString(),
           postsCount: (d['posts_count'] is int)
@@ -1455,7 +1558,8 @@ class HomeController extends GetxController {
         if (list is List && list.isNotEmpty) {
           searchResults.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
-            final profilePic = m['profile_picture']?.toString() ??
+            final profilePic =
+                m['profile_picture']?.toString() ??
                 m['avatar_url']?.toString() ??
                 m['avatarUrl']?.toString() ??
                 m['image_url']?.toString() ??
@@ -1629,6 +1733,54 @@ class HomeController extends GetxController {
                 Get.delete<HomeController>(force: true);
               },
               child: Text('logout'.tr),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+
+  /// حذف الحساب
+  void deleteAccount(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
+    Get.dialog(
+      Directionality(
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+        child: AlertDialog(
+          title: Text('delete_account'.tr),
+          content: Text('delete_account_confirm'.tr),
+          actions: [
+            TextButton(onPressed: () => Get.back(), child: Text('cancel'.tr)),
+            TextButton(
+               onPressed: () async {
+                 Get.back(); // إغلاق الحوار
+                 Get.dialog(const Center(child: CircularProgressIndicator()), barrierDismissible: false);
+                 final res = await AuthApiService.deleteAccount();
+                 Get.back(); // إغلاق لودينج
+
+                 if (res.isSuccess) {
+                  ChatSocketService.instance.disconnect();
+                  await AuthApiService.logout();
+                  Get.offAllNamed(AppRoutes.authLogin);
+                  Get.delete<HomeController>(force: true);
+                  Get.snackbar(
+                    'success'.tr,
+                    'account_deleted_success'.tr,
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                  );
+                } else {
+                  Get.snackbar(
+                    'error'.tr,
+                    res.message ?? 'error_occurred'.tr,
+                    snackPosition: SnackPosition.BOTTOM,
+                  );
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text('delete'.tr),
             ),
           ],
         ),

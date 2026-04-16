@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../widget/auth_cached_network_image.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/safe_circle_avatar.dart';
 import '../../../core/utils/post_published_at_format.dart';
@@ -109,13 +109,12 @@ class OtherUserProfilePage extends StatelessWidget {
               ? GestureDetector(
                   onTap: () =>
                       FullscreenImageViewer.open(context, p.coverImage!),
-                  child: CachedNetworkImage(
+                  child: AuthCachedNetworkImage(
                     imageUrl: p.coverImage!,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    fadeInDuration: Duration.zero,
-                    errorWidget: (_, __, ___) => _coverPlaceholder(),
+                    errorWidget: _coverPlaceholder(),
                   ),
                 )
               : _coverPlaceholder(),
@@ -145,14 +144,12 @@ class OtherUserProfilePage extends StatelessWidget {
                         context,
                         p.profilePicture!,
                       ),
-                      child: CachedNetworkImage(
+                      child: AuthCachedNetworkImage(
                         imageUrl: p.profilePicture!,
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
-                        fadeInDuration: Duration.zero,
-                        errorWidget: (_, __, ___) =>
-                            _avatarPlaceholder(initial),
+                        errorWidget: _avatarPlaceholder(initial),
                       ),
                     )
                   : _avatarPlaceholder(initial),
@@ -653,13 +650,12 @@ class OtherUserProfilePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: GestureDetector(
                   onTap: () => FullscreenImageViewer.open(context, imageUrl),
-                  child: CachedNetworkImage(
+                  child: AuthCachedNetworkImage(
                     imageUrl: imageUrl,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
-                    fadeInDuration: Duration.zero,
-                    errorWidget: (_, __, ___) => Container(
+                    errorWidget: Container(
                       color: ph,
                       child: Icon(
                         Icons.image_not_supported,

@@ -47,6 +47,19 @@ class PrivacySecurityView extends StatelessWidget {
               ],
             ),
 
+            const SizedBox(height: 20),
+
+            _SectionCard(
+              title: 'account_actions'.tr.isEmpty ? 'account'.tr : 'account_actions'.tr,
+              items: [
+                _TapItem(
+                  icon: Icons.person_remove_rounded,
+                  title: 'delete_account'.tr,
+                  onTap: () => controller.deleteAccount(context),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 32),
           ],
         ),
