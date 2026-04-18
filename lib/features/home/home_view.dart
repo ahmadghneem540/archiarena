@@ -60,8 +60,12 @@ class HomeView extends GetView<HomeController> {
                             );
                           }
 
-                          return ListView.builder(
+                          return ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.only(top: 8, bottom: 24),
                             itemCount: posts.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 24),
                             itemBuilder: (context, index) {
                               return RepaintBoundary(
                                 child: HomePostCard1(

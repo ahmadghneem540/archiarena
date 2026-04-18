@@ -1,8 +1,8 @@
 {
   "project_info": {
     "project_number": "768499589240",
-    "project_id": "archarena-78166",
-    "storage_bucket": "archarena-78166.firebasestorage.app"
+    "project_id": "archiarena-78166",
+    "storage_bucket": "archiarena-78166.firebasestorage.app"
   },
   "client": [
     {
@@ -28,7 +28,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:768499589240:android:d2d33f8706358a71dc0d8d",
         "android_client_info": {
-          "package_name": "com.example.archarena"
+          "package_name": "com.example.archiarena"
         }
       },
       "oauth_client": [],

@@ -573,7 +573,7 @@ class OtherUserProfilePage extends StatelessWidget {
     final onSurface = context.themeOnSurface;
     final ph = context.themePlaceholder1;
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: context.themeCardBackground,
         borderRadius: BorderRadius.circular(12),

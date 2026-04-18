@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/services/fcm_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widget/auth_cached_network_image.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
@@ -206,9 +208,13 @@ class ProfileTabView extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _outlinedButton('edit_profile'.tr, Icons.edit_outlined, onTap: () {
-              Get.to(() => EditProfilePage(controller: controller));
-            }),
+            child: _outlinedButton(
+              'edit_profile'.tr,
+              Icons.edit_outlined,
+              onTap: () {
+                Get.to(() => EditProfilePage(controller: controller));
+              },
+            ),
           ),
         ],
       ),
@@ -464,7 +470,7 @@ class ProfileTabView extends StatelessWidget {
         : null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Get.isDarkMode ? Colors.grey.shade900 : AppColors.surface,
         borderRadius: BorderRadius.circular(12),

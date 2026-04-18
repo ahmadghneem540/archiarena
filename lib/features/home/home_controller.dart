@@ -1193,8 +1193,10 @@ class HomeController extends GetxController {
     isNotificationsLoading.value = true;
     try {
       final res = await NotificationsApiService.getNotifications();
+      debugPrint('[FCM-DEBUG] getNotifications: status=${res.status} data=${res.data}');
       if (res.isSuccess && res.data != null) {
         final list = res.data!['notifications'] ?? res.data!['data'];
+        debugPrint('[FCM-DEBUG] notifications list: ${list is List ? list.length : 'not a list'}');
         if (list is List && list.isNotEmpty) {
           notifications.value = list.map((e) {
             final m = e is Map ? Map.from(e) : {};
@@ -1207,7 +1209,11 @@ class HomeController extends GetxController {
               timeAgo: _formatTimeAgo(m['created_at']),
             );
           }).toList();
+        } else {
+          notifications.clear();
         }
+      } else {
+        notifications.clear();
       }
       final countRes = await NotificationsApiService.getUnreadCount();
       if (countRes.isSuccess && countRes.data != null) {

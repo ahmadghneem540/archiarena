@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../../core/api/api_response.dart';
@@ -33,6 +34,7 @@ class NotificationsApiService {
         queryParameters: {'page': page, 'limit': limit, 'status': status},
       );
       final raw = res.data;
+      debugPrint('[FCM-DEBUG] NotificationsApiService raw data: $raw');
       if (raw is List) {
         return ApiResponse(
           status: 200,

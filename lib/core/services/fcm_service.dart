@@ -49,7 +49,7 @@ class FcmService {
     }
   }
 
-  static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static FirebaseMessaging get _messaging => FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
@@ -305,9 +305,10 @@ class FcmService {
   static void _listenToTokenRefresh() {
     _messaging.onTokenRefresh.listen((token) async {
       if (token.isEmpty) return;
+      debugPrint('[FCM] Token refresh: $token');
       try {
-        await NotificationsApiService.registerFcmToken(token);
-        debugPrint('[FCM] Token refresh registered with server');
+        final res = await NotificationsApiService.registerFcmToken(token);
+        debugPrint('[FCM] Token refresh registered status=${res.status}');
       } catch (e, st) {
         debugPrint('[FCM] onTokenRefresh register failed: $e\n$st');
       }
@@ -441,7 +442,7 @@ class FcmService {
 
   static Future<void> _logToken() async {
     final token = await _messaging.getToken();
-    debugPrint('[FCM] Token: ${token != null ? "${token.substring(0, 20)}..." : "null"}');
+    debugPrint('[FCM] Token: $token');
   }
 
   /// إرسال التوكن للسيرفر بعد تسجيل الدخول (يُستدعى من [HomeController] أيضاً).
@@ -449,12 +450,7 @@ class FcmService {
     try {
       final token = await _messaging.getToken();
       if (token == null || token.isEmpty) return;
-      final res = await NotificationsApiService.registerFcmToken(token);
-      if (kDebugMode) {
-        debugPrint(
-          '[FCM] registerFcmToken status=${res.status} ok=${res.status >= 200 && res.status < 300}',
-        );
-      }
+      await NotificationsApiService.registerFcmToken(token);
     } catch (e, st) {
       debugPrint('[FCM] registerTokenWithServerIfLoggedIn: $e\n$st');
     }
@@ -464,53 +460,22 @@ class FcmService {
   static Future<String?> getToken() async {
     return _messaging.getToken();
   }
-
-  /// وضع التطوير فقط: التحقق من ربط Firebase (التوكن)، القنوات المحلية، وتسجيل التوكن على الـ API.
-  /// أرسل نفس التوكن من **Firebase Console → Cloud Messaging → Send test message** لاختبار FCM من السيرفر.
-  static Future<String> runDebugSelfTest() async {
-    final buf = StringBuffer();
-    try {
-      final token = await _messaging.getToken();
-      if (token == null || token.isEmpty) {
-        return 'FCM token غير متوفر. تحقق من google-services.json واتصال Google Play Services.';
-      }
-      final showLen = token.length > 40 ? 40 : token.length;
-      buf.writeln('Token (بداية): ${token.substring(0, showLen)}...');
-      buf.writeln('طول التوكن: ${token.length}');
-
-      await _showLocalNotification(
-        title: 'اختبار إشعار archarena',
-        body: 'قناة عامة — إن سمعت النغمة فالمسار صحيح.',
-        chatStyle: false,
-      );
-      buf.writeln('تم طلب إشعار محلي (قناة archarena_orders).');
-
-      await _showLocalNotification(
-        title: 'رسالة تجريبية',
-        body: 'قناة دردشة — نص أطول للتأكد من العرض والصوت على قناة المحادثات.',
-        chatStyle: true,
-      );
-      buf.writeln('تم طلب إشعار محلي (قناة archarena_chat).');
-
-      final res = await NotificationsApiService.registerFcmToken(token);
-      buf.writeln(
-        'تسجيل السيرفر: HTTP/حالة=${res.status} ${res.message != null ? "— ${res.message}" : ""}',
-      );
-      buf.writeln(
-        '\nلاختبار FCM من Firebase: الصق التوكن في "Send test message" في وحدة التحكم.',
-      );
-    } catch (e, st) {
-      buf.writeln('خطأ: $e');
-      buf.writeln('$st');
-    }
-    return buf.toString();
-  }
 }
 
 /// يُسجَّل في [main] — يجب أن يبقى دالة top-level مع [pragma vm:entry-point].
 @pragma('vm:entry-point')
 Future<void> fcmBackgroundHandler(RemoteMessage message) async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      debugPrint('Firebase background initialization error: $e');
+    }
+  } catch (e) {
+    debugPrint('Firebase background unknown error: $e');
+  }
   await FcmService.handleBackgroundMessage(message);
 }

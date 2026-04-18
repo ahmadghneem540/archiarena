@@ -15,9 +15,17 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      debugPrint('Firebase initialization error: $e');
+    }
+  } catch (e) {
+    debugPrint('Firebase unknown error: $e');
+  }
   FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
   await Get.putAsync(() => MyServices().init());
   await FcmService.init();
