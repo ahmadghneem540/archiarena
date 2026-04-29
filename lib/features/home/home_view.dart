@@ -226,7 +226,7 @@ class HomeView extends GetView<HomeController> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'رفع المشروع',
+                                        'upload_project'.tr,
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,

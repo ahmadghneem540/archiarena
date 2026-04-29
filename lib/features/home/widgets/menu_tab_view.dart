@@ -100,7 +100,9 @@ class MenuTabView extends StatelessWidget {
               _MenuItem(
                 icon: Icons.info_outline_rounded,
                 title: 'about_app'.tr,
-                subtitle: 'الإصدار 1.0.0'.tr,
+                subtitle: 'app_version'.trParams({
+                  'version': '1.0.0',
+                }),
                 onTap: () => Get.toNamed(AppRoutes.menuAbout),
               ),
             ],
