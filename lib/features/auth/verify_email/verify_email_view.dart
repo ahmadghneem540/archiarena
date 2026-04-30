@@ -16,9 +16,9 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.theme.colorScheme.surface,
         appBar: AppBar(
-          backgroundColor: AppColors.surface,
+          backgroundColor: context.theme.colorScheme.surface,
           elevation: 0,
           leading: IconButton(
             icon: Icon(
@@ -30,7 +30,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
           title: Text(
             'verify_email'.tr,
             style: TextStyle(
-              color: AppColors.onSurface,
+              color: context.theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
@@ -47,7 +47,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                   'verify_email'.tr,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.onSurface,
+                        color: context.theme.colorScheme.onSurface,
                       ),
                 ),
                 const SizedBox(height: 12),
@@ -84,7 +84,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
                         height: 1.5,
-                        color: AppColors.grey600,
+                    color: context.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                   textAlign: TextAlign.center,
                 ),
@@ -115,10 +115,10 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
+        color: context.theme.colorScheme.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.2),
+          color: context.theme.colorScheme.primary.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -137,7 +137,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                 Text(
                   'email'.tr,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.grey600,
+                    color: context.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         fontSize: 12,
                       ),
                 ),
@@ -166,16 +166,18 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
           'verify_code_label'.tr,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: AppColors.onSurface,
+            color: context.theme.colorScheme.onSurface,
               ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.inputBackground,
+            color: context.theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(
+              color: context.theme.dividerColor,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -192,11 +194,11 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
             ],
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
               letterSpacing: 8,
-              color: AppColors.onSurface,
+              color: context.theme.colorScheme.onSurface,
             ),
             decoration: const InputDecoration(
               hintText: '••••••',
@@ -222,7 +224,7 @@ class VerifyEmailView extends GetView<VerifyEmailController> {
                 '${'resend_in_seconds'.tr} ${controller.resendCooldown.value} ${'seconds'.tr}',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.grey600,
+                  color: context.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               )
             : TextButton(

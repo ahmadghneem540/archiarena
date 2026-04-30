@@ -73,7 +73,7 @@ class ChangePasswordView extends GetView<ChangePasswordController> {
         ),
         const SizedBox(height: 20),
         Text(
-          'change_password_title'.tr,
+          'change_password'.tr,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
             color: context.theme.colorScheme.onSurface,

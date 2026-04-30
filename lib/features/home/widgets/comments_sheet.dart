@@ -383,7 +383,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
                     controller: _textController,
                     textDirection: TextDirection.rtl,
                     decoration: InputDecoration(
-                      hintText: 'اكتب تعليقاً...',
+                      hintText: 'write_comment'.tr,
                       hintStyle: TextStyle(
                         color: context.themeGrey600,
                         fontSize: 15,
@@ -617,7 +617,7 @@ class _CommentTile extends StatelessWidget {
                                        ),
                                        const SizedBox(height: 4),
                                        Text(
-                                         'تعذر تحميل الصورة',
+                                         'image_load_failed'.tr,
                                          style: TextStyle(
                                            fontSize: 12,
                                            color: context.themeGrey600,

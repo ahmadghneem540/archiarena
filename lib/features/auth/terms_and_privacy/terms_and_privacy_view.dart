@@ -63,7 +63,7 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                         child: GestureDetector(
                           onTap: () {},
                           child: Text(
-                            'terms'.tr,
+                            'condition'.tr,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 17,

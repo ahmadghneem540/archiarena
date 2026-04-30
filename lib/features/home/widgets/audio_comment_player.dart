@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -122,7 +123,7 @@ class _AudioCommentPlayerState extends State<AudioCommentPlayer> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'فشل التشغيل';
+            _errorMessage = 'audio_play_failed'.tr;
           });
         }
       }

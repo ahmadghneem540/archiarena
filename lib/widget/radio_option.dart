@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/theme/app_colors.dart';
 
 class RadioOption<T> extends StatelessWidget {
   const RadioOption({
@@ -20,6 +19,8 @@ class RadioOption<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelected = value == groupValue;
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: () => onChanged(value),
       borderRadius: BorderRadius.circular(8),
@@ -35,22 +36,24 @@ class RadioOption<T> extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? AppColors.primary : AppColors.borderLight,
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.dividerColor,
                   width: 2,
                 ),
-                color: AppColors.surface,
+                color: theme.colorScheme.surface,
               ),
               child: isSelected
                   ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    )
+                child: Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              )
                   : null,
             ),
             const SizedBox(width: 12),
@@ -60,19 +63,19 @@ class RadioOption<T> extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontSize: 17,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.onSurface,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   if (subtitle != null && subtitle!.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
                       subtitle!,
-                      style: const TextStyle(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 15,
-                        color: AppColors.onSurfaceVariant,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                   ],

@@ -452,8 +452,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
   Widget _buildCategoryDropdown() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'تصنيف المشروع *',
+      Text(
+        'Project_classification'.tr,
         style: TextStyle(fontWeight: FontWeight.w600),
       ),
       const SizedBox(height: 8),
@@ -483,7 +483,7 @@ class _WhatDoThinkState extends State<WhatDoThink> {
           OutlinedButton.icon(
             onPressed: _pickPlanFile,
             icon: const Icon(Icons.upload_file),
-            label: Text(_planPdf == null ? 'upload_plan_pdf'.tr : 'استبدال'),
+            label: Text(_planPdf == null ? 'upload_plan_pdf'.tr : 'replacing'.tr),
           ),
           if (_planPdf != null) ...[
             const SizedBox(width: 8),

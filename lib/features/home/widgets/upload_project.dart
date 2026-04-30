@@ -40,8 +40,8 @@ class UploadProjectPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'الشروط:',
+                   Text(
+                    'conditions'.tr,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -50,7 +50,7 @@ class UploadProjectPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   if (conditions.isEmpty)
                     Text(
-                      '• احصل على تقييم كامل بعلامة ناجح',
+                      'full_rating'.tr,
                       style: TextStyle(color: AppColors.grey700),
                     )
                   else
@@ -477,7 +477,7 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'الشروط:',
+                        'condition'.tr,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -487,7 +487,7 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
                       const SizedBox(height: 8),
                       if (conditions.isEmpty)
                         Text(
-                          '• احصل على تقييم كامل بعلامة ناجح',
+                          'full_rating'.tr,
                           style: TextStyle(color: context.themeGrey700),
                         )
                       else
@@ -508,8 +508,8 @@ class _ProposalOfferSheetState extends State<_ProposalOfferSheet> {
               TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
-                  labelText: 'رسالة العرض',
-                  hintText: 'اكتب تفاصيل عرضك هنا',
+                  labelText: 'Offer_message'.tr,
+                  hintText: 'Write_your_offer_details_here'.tr,
                   border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
                 ),

@@ -86,9 +86,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final res = await ProfileApiService.updateProfilePicture(file);
     if (res.isSuccess && mounted) {
       await widget.controller.loadMyProfile();
-      Get.snackbar('تم', 'تم تحديث صورة البروفايل', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('done'.tr, 'Profile_picture_updated'.tr, snackPosition: SnackPosition.BOTTOM);
     } else if (mounted) {
-      Get.snackbar('فشل', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('failure'.tr, res.message ?? 'An_error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
     }
   }
 
@@ -100,9 +100,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final res = await ProfileApiService.updateCoverImage(file);
     if (res.isSuccess && mounted) {
       await widget.controller.loadMyProfile();
-      Get.snackbar('تم', 'تم تحديث صورة الغلاف', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('done'.tr, 'cover_picture_updated'.tr, snackPosition: SnackPosition.BOTTOM);
     } else if (mounted) {
-      Get.snackbar('فشل', res.message ?? 'حدث خطأ', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('failure'.tr, res.message ?? 'An_error_occurred'.tr, snackPosition: SnackPosition.BOTTOM);
     }
   }
 

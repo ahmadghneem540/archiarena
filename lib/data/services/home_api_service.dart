@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:http_parser/http_parser.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
@@ -247,7 +248,7 @@ class HomeApiService {
     if ((message == null || message.isEmpty) && image == null) {
       return ApiResponse(
         status: 400,
-        message: 'يجب إرسال رسالة أو صورة على الأقل',
+        message: 'At_least_one_message_or_picture_must_be_sent'.tr,
       );
     }
     try {

@@ -447,7 +447,7 @@ class ProfileTabView extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                'لا توجد منشورات بعد',
+                'No_posts_yet'.tr,
                 style: TextStyle(fontSize: 14, color:  Get.isDarkMode ? Colors.white : AppColors.onSurface,),
               ),
             ),

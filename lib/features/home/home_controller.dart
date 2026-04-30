@@ -1248,10 +1248,21 @@ class HomeController extends GetxController {
   String _timeAgo(DateTime dt) {
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inMinutes < 60) return 'منذ ${diff.inMinutes} دقيقة';
-    if (diff.inHours < 24) return 'منذ ${diff.inHours} ساعة';
-    if (diff.inDays < 7) return 'منذ ${diff.inDays} يوم';
-    return '${dt.day}/${dt.month}/${dt.year}';
+
+    if (diff.inMinutes < 60) {
+      return 'minutes_ago'.trParams({'count': diff.inMinutes.toString()});
+    }
+    if (diff.inHours < 24) {
+      return 'hours_ago'.trParams({'count': diff.inHours.toString()});
+    }
+    if (diff.inDays < 7) {
+      return 'days_ago'.trParams({'count': diff.inDays.toString()});
+    }
+    return 'date_format'.trParams({
+      'day': dt.day.toString(),
+      'month': dt.month.toString(),
+      'year': dt.year.toString(),
+    });
   }
 
   static bool _isNonEmptyMediaString(String? s) {
@@ -1694,8 +1705,8 @@ class HomeController extends GetxController {
   void _addSampleComments() {
     final c1 = CommentModel(
       id: '1',
-      authorName: 'عبد الحريري',
-      text: 'هل استطيع ان اقوم بتعديل التصميم بعد شراءه؟',
+      authorName: 'sample_user_1'.tr,
+      text: 'sample_comment_1'.tr,
       createdAt: 'منذ ساعتين',
     );
     final c2 = CommentModel(

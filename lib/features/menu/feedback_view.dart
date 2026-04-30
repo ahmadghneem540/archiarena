@@ -10,10 +10,10 @@ class FeedbackController extends GetxController {
   RxString selectedType = ''.obs;
 
   final List<String> types = [
-    'feedback_type_bug',
-    'feedback_type_suggestion',
-    'feedback_type_complaint',
-    'feedback_type_other',
+    'feedback_type_bug'.tr,
+    'feedback_type_suggestion'.tr,
+    'feedback_type_complaint'.tr,
+    'feedback_type_other'.tr,
   ];
 
   void setType(String value) {
@@ -166,7 +166,7 @@ class FeedbackView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('open_gmail'.tr),
+                child: Center(child: Text('open_gmail'.tr)),
               ),
             ),
 
