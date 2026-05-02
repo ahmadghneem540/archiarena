@@ -30,8 +30,8 @@ class LoginController extends GetxController {
     final password = passwordController.text;
     if (phoneOrEmail.isEmpty || password.isEmpty) {
       Get.snackbar(
-        'تنبيه',
-        'يرجى إدخال الهاتف أو البريد وكلمة المرور.',
+        'alert'.tr,
+        'Please_enter_your_phone_number_or_email_address_and_password.'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -55,8 +55,8 @@ class LoginController extends GetxController {
           );
           if (email == null || email.isEmpty) {
             Get.snackbar(
-              'تنبيه',
-              'لم يُعثر على البريد للتحقق. جرّب تسجيل الدخول باستخدام البريد الإلكتروني.',
+              'alert'.tr,
+              'No_email_address'.tr,
               snackPosition: SnackPosition.BOTTOM,
             );
             return;
@@ -107,15 +107,15 @@ class LoginController extends GetxController {
           }
         }
         Get.snackbar(
-          'فشل تسجيل الدخول',
-          res.message ?? 'بيانات الدخول غير صحيحة',
+          'login_failed'.tr,
+          res.message ?? 'Login_data_is_incorrect'.tr,
           snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (_) {
       // معالجة أي خطأ غير متوقع (مثل 503 من getMyProfile أو أخطاء شبكة)
       Get.snackbar(
-        'فشل تسجيل الدخول',
+        'login_failed'.tr,
         'error_server_unavailable'.tr,
         snackPosition: SnackPosition.BOTTOM,
       );
@@ -134,8 +134,8 @@ class LoginController extends GetxController {
     return s.contains('verify') ||
         s.contains('verification') ||
         s.contains('unverified') ||
-        s.contains('تأكيد') ||
-        s.contains('التحقق') ||
+        s.contains('confirm'.tr) ||
+        s.contains('verification') ||
         (s.contains('email') && s.contains('not'));
   }
 
