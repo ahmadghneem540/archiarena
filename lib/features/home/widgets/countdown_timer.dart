@@ -83,10 +83,10 @@ class _CountdownTimerState extends State<CountdownTimer> {
     final h = _remaining!.inHours % 24;
     final m = _remaining!.inMinutes % 60;
     final parts = <String>[];
-    if (d > 0) parts.add('$d يوم');
-    if (h > 0) parts.add('$h ساعة');
-    if (m > 0 || parts.isEmpty) parts.add('$m دقيقة');
-    return parts.join(' و ');
+    if (d > 0) parts.add('$d ${'day'.tr}');
+    if (h > 0) parts.add('$h ${'hour'.tr}');
+    if (m > 0 || parts.isEmpty) parts.add('$m ${'minute'.tr}');
+    return parts.join('and'.tr);
   }
 
   @override
@@ -95,30 +95,45 @@ class _CountdownTimerState extends State<CountdownTimer> {
     final style = widget.style ??
         TextStyle(fontSize: 13, color: AppColors.grey700);
 
+    final isArabic = Get.locale?.languageCode == 'ar'; // ✅ هنا الحل
+
     if (widget.showIcon) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _remaining != null && _remaining!.inSeconds <= 0
-                ? Icons.check_circle_outline
-                : Icons.timer_outlined,
-            size: widget.iconSize,
-            color: _remaining != null && _remaining!.inSeconds <= 0
-                ? AppColors.grey500
-                : AppColors.primary,
-          ),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              text,
-              style: style,
-              overflow: TextOverflow.ellipsis,
+      return Directionality(
+        textDirection:
+        isArabic ? TextDirection.rtl : TextDirection.ltr,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _remaining != null && _remaining!.inSeconds <= 0
+                  ? Icons.check_circle_outline
+                  : Icons.timer_outlined,
+              size: widget.iconSize,
+              color: _remaining != null && _remaining!.inSeconds <= 0
+                  ? AppColors.grey500
+                  : AppColors.primary,
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                style: style,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       );
     }
-    return Text(text, style: style, overflow: TextOverflow.ellipsis);
+
+    return Flexible(
+      child: Text(
+        text,
+        style: style,
+        overflow: TextOverflow.ellipsis,
+        textDirection:
+        isArabic ? TextDirection.rtl : TextDirection.ltr,
+      ),
+    );
   }
 }
