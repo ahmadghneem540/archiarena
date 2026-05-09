@@ -354,7 +354,11 @@ class _MessageBubble extends StatelessWidget {
 
     final cs = Theme.of(context).colorScheme;
     final sentColor = Color.lerp(cs.primary, AppColors.primaryDark, 0.12)!;
-    final recvColor = context.themeChatBubbleReceived;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final recvColor = isDark
+        ? const Color(0xFF2A2A2A) // للوضع الليلي
+        : const Color(0xFFF2F2F2);// للوضع النهاري
     final sentTextColor = cs.onPrimary;
     final recvTextColor = context.themeOnSurface;
 

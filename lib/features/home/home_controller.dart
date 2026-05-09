@@ -78,7 +78,6 @@ class HomeController extends GetxController {
   final chatUnreadMessageCount = 0.obs;
   // شروط رفع المشروع من الـ API
   final uploadConditions = <String>[].obs;
-
   /// تعليقات المنشورات من الـ API (مفتاح: postId)
   final Map<int, RxList<CommentModel>> postCommentsMap = {};
   // طلبات الصداقة والأصدقاء (التاب الثالث)

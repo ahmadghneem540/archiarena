@@ -59,7 +59,7 @@ class HomeApiService {
           fromJsonT: (d) => d as Map<String, dynamic>,
         );
       }
-      return ApiResponse(status: 0, message: 'صيغة استجابة غير متوقعة');
+      return ApiResponse(status: 0, message: 'unexpected_response_format'.tr);
     } on DioException catch (e) {
       return _handleError(e);
     }
@@ -509,7 +509,7 @@ class HomeApiService {
       }
 
       if (map.isEmpty) {
-        return ApiResponse(status: 400, message: 'يجب إدخال نص أو صورة أو صوت');
+        return ApiResponse(status: 400, message: 'enter_text_or_image'.tr);
       }
 
       final formData = FormData.fromMap(map);
@@ -567,7 +567,7 @@ class HomeApiService {
       }
 
       if (map.isEmpty) {
-        return ApiResponse(status: 400, message: 'يجب إدخال نص أو صورة أو صوت');
+        return ApiResponse(status: 400, message: 'enter_text_or_image'.tr);
       }
 
       final formData = FormData.fromMap(map);
@@ -706,7 +706,7 @@ class HomeApiService {
     if (e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      message = 'انتهت مهلة الاتصال. تحقق من الإنترنت وحاول مرة أخرى.';
+      message = 'error_connection_timeout'.tr;
     }
     if (message == null && data is Map) {
       message = data['message']?.toString() ??
@@ -715,9 +715,9 @@ class HomeApiService {
     }
     if (message == null || message.isEmpty) {
       if (status >= 500 && status < 600) {
-        message = 'خطأ من الخادم. حاول مرة أخرى لاحقاً.';
+        message = 'error_server_unavailable'.tr;
       } else {
-        message = e.message ?? 'حدث خطأ في الاتصال';
+        message = e.message ?? 'error_connection_timeout'.tr;
       }
     }
     return ApiResponse(status: status, message: message);

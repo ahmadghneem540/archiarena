@@ -481,7 +481,7 @@ class OtherUserProfilePage extends StatelessWidget {
                 p.livesIn == null &&
                 p.from == null) ...[
               Text(
-                'لا توجد معلومات عامة',
+                'no_public_information'.tr,
                 style: TextStyle(fontSize: 14, color: context.themeGrey600),
               ),
             ],
