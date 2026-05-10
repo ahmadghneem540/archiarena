@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../constant/const_data.dart';
 import 'services.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 /// تحميل الملفات محلياً (طلبات، صور، مخططات)
 class DownloadHelper {
@@ -151,5 +155,35 @@ class DownloadHelper {
     final name = '$base.pdf';
     final headers = await _bearerHeaders();
     return downloadFile(url, name, headers: headers);
+  }
+///تخزين الصور في المعرض
+  static Future<bool> downloadImageToGallery(
+      String imageUrl,
+      String fileName,
+      ) async {
+    try {
+      // طلب الصلاحيات
+      if (Platform.isAndroid) {
+        await Permission.storage.request();
+        await Permission.photos.request();
+      }
+
+      // تحميل الصورة مباشرة
+      await FileDownloader.downloadFile(
+        url: imageUrl,
+        name: '$fileName.jpg',
+        onDownloadCompleted: (path) {
+          print('Image downloaded to: $path');
+        },
+        onDownloadError: (errorMessage) {
+          print('Download error: $errorMessage');
+        },
+      );
+
+      return true;
+    } catch (e) {
+      print('Download error: $e');
+      return false;
+    }
   }
 }

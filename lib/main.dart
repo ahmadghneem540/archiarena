@@ -3,6 +3,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'core/constant/const_data.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
@@ -11,9 +13,18 @@ import 'core/services/services.dart';
 import 'core/services/fcm_service.dart';
 import 'bindings/app_bindings.dart';
 import 'core/translations/app_translation.dart';
+import 'features/home/models/local_project_image_model.dart';
 import 'firebase_options.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(LocalProjectImageModelAdapter());
+
+  await Hive.openBox<LocalProjectImageModel>('project_images');
+
   WidgetsFlutterBinding.ensureInitialized();
   try {
     await Firebase.initializeApp(

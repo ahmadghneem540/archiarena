@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../core/api/api_response.dart';
 import '../../core/constant/const_data.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/services/local_storage_service.dart';
 import '../../core/services/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/services/download_helper.dart';
@@ -21,6 +22,7 @@ import '../chat/chat_inbox_view.dart';
 import '../chat/models/chat_thread_model.dart';
 import 'models/comment_model.dart';
 import 'models/friend_request_model.dart';
+import 'models/local_project_image_model.dart';
 import 'models/notification_model.dart';
 import 'models/order_model.dart';
 import 'models/post_model.dart';
@@ -633,12 +635,38 @@ class HomeController extends GetxController {
       for (var i = 0; i < images.length; i++) {
         final img = images[i];
         if (img.imageUrl.isEmpty) continue;
+        final success =
+        await DownloadHelper.downloadImageToGallery(
+          img.imageUrl,
+          'proposal_${img.id}',
+        );
+
+        if (success) {
+          count++;
+        }
         final path = await DownloadHelper.downloadImage(
           img.imageUrl,
           'orders/$orderId/proposal_$i',
         );
-        if (path != null) count++;
+        if (path != null) {
+
+          await LocalStorageService.saveProjectImage(
+            LocalProjectImageModel(
+              id: img.id,
+              orderId: orderId,
+              imageUrl: img.imageUrl,
+              authorName: img.authorName,
+              timeAgo: img.timeAgo,
+              isAccepted: img.isAccepted.value,
+              isRejected: img.isRejected.value,
+              localPath: path,
+            ),
+          );
+
+          count++;
+        }
       }
+
       if (count > 0) {
         Get.snackbar(
           'success'.tr,
@@ -669,22 +697,69 @@ class HomeController extends GetxController {
       );
       return;
     }
+
     isDownloadingOrders.value = true;
+
     try {
       int count = 0;
+
       for (final order in orders) {
+
+        /// تحميل عروض المشروع
+        await loadOrderProposals(order.id);
+
+        final proposals = orderImages[order.id];
+
+        if (proposals != null && proposals.isNotEmpty) {
+
+          for (final img in proposals) {
+
+            if (img.imageUrl.isEmpty) continue;
+
+            final success =
+            await DownloadHelper.downloadImageToGallery(
+              img.imageUrl,
+              'proposal_${img.id}',
+            );
+
+            if (success) {
+              count++;
+            }
+          }
+        }
+
+        /// تحميل صورة المشروع الرئيسية
         final url = order.imageUrl;
+
         if (url == null || url.isEmpty) continue;
+
+        final success =
+        await DownloadHelper.downloadImageToGallery(
+          url,
+          'order_${order.id}',
+        );
+
+        if (success) {
+          count++;
+        }
+
+        /// يبقى التخزين المحلي داخل التطبيق كما هو
         final path = await DownloadHelper.downloadImage(
           url,
           'orders/${order.id}/main',
         );
-        if (path != null) count++;
+
+        if (path != null) {
+          count++;
+        }
       }
+
       if (count > 0) {
         Get.snackbar(
           'success'.tr,
-          'downloaded_orders'.trParams({'count': count.toString()}),
+          'downloaded_orders'.trParams({
+            'count': count.toString(),
+          }),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: AppColors.primary,
           colorText: AppColors.onPrimary,

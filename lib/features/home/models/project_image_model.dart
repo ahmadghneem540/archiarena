@@ -7,6 +7,7 @@ class ProjectImageModel {
     required this.imageUrl,
     required this.authorName,
     required this.timeAgo,
+    this.localPath = '',
     bool isAccepted = false,
     bool isRejected = false,
   })  : isAccepted = isAccepted.obs,
@@ -18,4 +19,5 @@ class ProjectImageModel {
   final String timeAgo;
   final RxBool isAccepted;
   final RxBool isRejected;
+  final String localPath;
 }
