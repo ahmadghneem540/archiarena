@@ -427,18 +427,18 @@ class _HomePostDetailsSheetState extends State<HomePostDetailsSheet> {
                         ),
                       ),
                     ),
-                    if (plan.title != null && plan.title!.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        plan.title!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: context.themeGrey600,
-                        ),
-                      ),
-                    ],
+                    // if (plan.title != null && plan.title!.isNotEmpty) ...[
+                    //   const SizedBox(height: 4),
+                    //   Text(
+                    //     plan.title!,
+                    //     maxLines: 1,
+                    //     overflow: TextOverflow.ellipsis,
+                    //     style: TextStyle(
+                    //       fontSize: 12,
+                    //       color: context.themeGrey600,
+                    //     ),
+                    //   ),
+                    // ],
                   ],
                 ),
               );
