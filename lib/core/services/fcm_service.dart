@@ -11,7 +11,9 @@ import '../../firebase_options.dart';
 import '../../data/services/notifications_api_service.dart';
 import '../routes/app_routes.dart';
 
-/// اسم ملف النغمة في android/app/src/main/res/raw/ (بدون امتداد). لتفعيل النغمة المميزة أضف الملف ثم أزل التعليق عن السطرين sound: في القناة وفي AndroidNotificationDetails.
+/// لتفعيل نغمة مخصصة: أضف ملف الصوت في android/app/src/main/res/raw/notification_sound.mp3
+/// ثم غيّر _kUseCustomSound إلى true.
+const bool _kUseCustomSound = false;
 const String _kNotificationSoundName = 'notification_sound';
 
 /// خدمة إشعارات FCM — نغمة مميزة، فتح التطبيق عند النقر، للمستخدمين والشركات
@@ -54,25 +56,29 @@ class FcmService {
       FlutterLocalNotificationsPlugin();
 
   /// قناة الطلبات والعروض
-  static AndroidNotificationChannel get _channel => const AndroidNotificationChannel(
+  static AndroidNotificationChannel get _channel => AndroidNotificationChannel(
         'archarena_orders',
         'Orders & proposals',
         description: 'Order and proposal notifications',
         importance: Importance.high,
         playSound: true,
-        sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
+        sound: _kUseCustomSound
+            ? const RawResourceAndroidNotificationSound(_kNotificationSoundName)
+            : null,
       );
 
-  /// قناة مخصّصة للدردشة — نفس النغمة مع اهتزاز ووضوح عالٍ عند وصول رسالة.
+  /// قناة مخصّصة للدردشة — مع اهتزاز ووضوح عالٍ عند وصول رسالة.
   static AndroidNotificationChannel get _channelChat =>
-      const AndroidNotificationChannel(
+      AndroidNotificationChannel(
         'archarena_chat',
         'Messages',
         description: 'Chat message alerts',
         importance: Importance.high,
         playSound: true,
         enableVibration: true,
-        sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
+        sound: _kUseCustomSound
+            ? const RawResourceAndroidNotificationSound(_kNotificationSoundName)
+            : null,
       );
 
   /// تهيئة FCM وطلب الإذن — [Firebase.initializeApp] يُستدعى مرة واحدة في [main] مع [DefaultFirebaseOptions].
@@ -422,7 +428,9 @@ class FcmService {
       styleInformation: chatStyle && body.length > 60
           ? BigTextStyleInformation(body)
           : null,
-      sound: RawResourceAndroidNotificationSound(_kNotificationSoundName),
+      sound: _kUseCustomSound
+          ? const RawResourceAndroidNotificationSound(_kNotificationSoundName)
+          : null,
     );
     final ios = DarwinNotificationDetails(
       presentAlert: true,

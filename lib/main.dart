@@ -24,8 +24,6 @@ void main() async {
   Hive.registerAdapter(LocalProjectImageModelAdapter());
 
   await Hive.openBox<LocalProjectImageModel>('project_images');
-
-  WidgetsFlutterBinding.ensureInitialized();
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
