@@ -52,7 +52,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                   children: [
                     Expanded(
                       child: TextField(
-                        textDirection: TextDirection.rtl,
+                        textDirection:
+                        isRtl ? TextDirection.rtl : TextDirection.ltr,
                         controller: controller.firstNameController,
                         decoration: InputDecoration(
                           hintText: 'first_name'.tr,
@@ -62,7 +63,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
-                        textDirection: TextDirection.rtl,
+                        textDirection:
+                        isRtl ? TextDirection.rtl : TextDirection.ltr,
                         controller: controller.lastNameController,
                         decoration: InputDecoration(
                           hintText: 'last_name'.tr,
@@ -73,7 +75,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 ),
                 const SizedBox(height: 20),
                 TextField(
-                  textDirection: TextDirection.rtl,
+                  textDirection:
+                  isRtl ? TextDirection.rtl : TextDirection.ltr,
                   controller: controller.mobileController,
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
@@ -83,7 +86,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  textDirection: TextDirection.rtl,
+                  textDirection:
+                  isRtl ? TextDirection.rtl : TextDirection.ltr,
                   controller: controller.passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
@@ -93,7 +97,8 @@ class CreateAccountNameView extends GetView<CreateAccountNameController> {
                 ),
                 const SizedBox(height: 16),
                 TextField(
-                  textDirection: TextDirection.rtl,
+                  textDirection:
+                  isRtl ? TextDirection.rtl : TextDirection.ltr,
                   controller: controller.emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(

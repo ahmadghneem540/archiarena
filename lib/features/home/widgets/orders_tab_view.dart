@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_direction.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../home_controller.dart';
 import '../models/order_model.dart';
@@ -16,93 +17,96 @@ class OrdersTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'orders_title'.tr,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                color: context.themeOnSurface,
+      child: Directionality(
+        textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'orders_title'.tr,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  color: context.themeOnSurface,
+                  ),
+            ),
+            SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'orders_offers_for_your_projects'.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w400,
+                      color: context.themeOnSurface,
+                    fontSize: 8
+                      ),
                 ),
-          ),
-          SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'orders_offers_for_your_projects'.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w400,
-                    color: context.themeOnSurface,
-                  fontSize: 8
+                Obx(() {
+                  if (controller.orders.isEmpty) return const SizedBox.shrink();
+                  return TextButton.icon(
+                    onPressed: controller.isDownloadingOrders.value
+                        ? null
+                        : () => controller.downloadAllOrdersAndImages(),
+                    icon: controller.isDownloadingOrders.value
+                        ? SizedBox(
+                            width: 10,
+                            height: 10,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(Icons.download, size: 10, color: AppColors.primary),
+                    label: Text(
+                      controller.isDownloadingOrders.value ? 'downloading'.tr : 'download_all'.tr,
+                      style: TextStyle(color: AppColors.primary),
                     ),
-              ),
-              Obx(() {
-                if (controller.orders.isEmpty) return const SizedBox.shrink();
-                return TextButton.icon(
-                  onPressed: controller.isDownloadingOrders.value
-                      ? null
-                      : () => controller.downloadAllOrdersAndImages(),
-                  icon: controller.isDownloadingOrders.value
-                      ? SizedBox(
-                          width: 10,
-                          height: 10,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(Icons.download, size: 10, color: AppColors.primary),
-                  label: Text(
-                    controller.isDownloadingOrders.value ? 'downloading'.tr : 'download_all'.tr,
-                    style: TextStyle(color: AppColors.primary),
+                  );
+                }),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Obx(() {
+              if (controller.orders.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.inbox_outlined,
+                          size: 64,
+                          color: AppColors.grey400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'no_orders_uploaded'.tr,
+                          style: TextStyle(
+                            color: context.themeGrey600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 );
-              }),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Obx(() {
-            if (controller.orders.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.inbox_outlined,
-                        size: 64,
-                        color: AppColors.grey400,
+              }
+              return Column(
+                children: List.generate(
+                  controller.orders.length,
+                  (index) {
+                    final order = controller.orders[index];
+        
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index < controller.orders.length - 1 ? 12 : 0,
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'no_orders_uploaded'.tr,
-                        style: TextStyle(
-                          color: context.themeGrey600,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
+                      child: _buildOrderCard(context, order),
+                    );
+                  },
                 ),
               );
-            }
-            return Column(
-              children: List.generate(
-                controller.orders.length,
-                (index) {
-                  final order = controller.orders[index];
-
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index < controller.orders.length - 1 ? 12 : 0,
-                    ),
-                    child: _buildOrderCard(context, order),
-                  );
-                },
-              ),
-            );
-          }),
-          const SizedBox(height: 32),
-        ],
+            }),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

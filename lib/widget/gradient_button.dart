@@ -66,16 +66,18 @@ class ArchiButton extends StatelessWidget {
                         ],
                       )
                     : Text(
-                        label,
-                        style: TextStyle(
-                          color: AppColors.onPrimary,
-                          fontSize: fontSize,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
+                  label,
+                  textDirection:
+                  Directionality.of(context),
+                  style: TextStyle(
+                    color: AppColors.onPrimary,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),

@@ -150,7 +150,7 @@ class TermsAndPrivacyView extends GetView<TermsAndPrivacyController> {
                 const SizedBox(height: 40),
 
                 Text(
-                  'archarena_vision'.tr,
+                  'archiarena_vision'.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 13,
                     height: 1.5,

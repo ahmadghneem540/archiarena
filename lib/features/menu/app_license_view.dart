@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/app_direction.dart';
 import 'widgets/menu_page_scaffold.dart';
 
 class AppLicenseView extends StatelessWidget {
@@ -12,31 +13,34 @@ class AppLicenseView extends StatelessWidget {
       title: 'app_license'.tr,
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 10),
+        child: Directionality(
+          textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 10),
 
-            /// Card المحتوى الرئيسي
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: context.themeCardBackground,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: context.themeBorder),
-              ),
-              child: Text(
-                'app_license_body'.tr,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                  fontSize: 14.5,
-                  height: 1.6,
-                  color: context.themeGrey700,
+              /// Card المحتوى الرئيسي
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: context.themeCardBackground,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: context.themeBorder),
+                ),
+                child: Text(
+                  'app_license_body'.tr,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    height: 1.6,
+                    color: context.themeGrey700,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_direction.dart';
 import '../../../widget/auth_cached_network_image.dart';
 import '../../../widget/fullscreen_image_viewer.dart';
 import '../../../widget/safe_circle_avatar.dart';
@@ -67,28 +68,31 @@ class OtherUserProfilePage extends StatelessWidget {
           }
           final p = controller.otherUserProfile.value ?? user;
           return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildCoverWithProfile(context, p),
-                const SizedBox(height: 60),
-                _buildProfileHeader(context, p),
-                const SizedBox(height: 16),
-                _buildActionButtons(context),
-                const SizedBox(height: 12),
-                _buildChatEntryButton(context, p),
-                if (p.isProfileLocked) ...[
+            child: Directionality(
+              textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildCoverWithProfile(context, p),
+                  const SizedBox(height: 60),
+                  _buildProfileHeader(context, p),
                   const SizedBox(height: 16),
-                  _buildPrivacyBanner(context),
+                  _buildActionButtons(context),
+                  const SizedBox(height: 12),
+                  _buildChatEntryButton(context, p),
+                  if (p.isProfileLocked) ...[
+                    const SizedBox(height: 16),
+                    _buildPrivacyBanner(context),
+                  ],
+                  const SizedBox(height: 16),
+                  _buildAboutSection(context, p),
+                  const SizedBox(height: 20),
+                  _buildTimelineHeader(context),
+                  const SizedBox(height: 12),
+                  _buildPostsList(context),
+                  const SizedBox(height: 32),
                 ],
-                const SizedBox(height: 16),
-                _buildAboutSection(context, p),
-                const SizedBox(height: 20),
-                _buildTimelineHeader(context),
-                const SizedBox(height: 12),
-                _buildPostsList(context),
-                const SizedBox(height: 32),
-              ],
+              ),
             ),
           );
         }),

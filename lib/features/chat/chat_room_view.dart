@@ -18,8 +18,11 @@ class ChatRoomView extends GetView<ChatRoomController> {
         : controller.peerDisplayName;
     final avatarUrl = HomeController.fullImageUrl(controller.peerAvatar);
 
+    final locale = Get.locale?.languageCode ?? 'en';
+    final isRTL = locale == 'ar';
+
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.themeSurface,
         appBar: AppBar(
@@ -198,25 +201,22 @@ class ChatRoomView extends GetView<ChatRoomController> {
                 return RefreshIndicator(
                   color: Theme.of(context).colorScheme.primary,
                   onRefresh: controller.refreshMessages,
-                  child: Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: ListView.builder(
-                      controller: controller.scrollController,
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: ClampingScrollPhysics(),
-                      ),
-                      padding: const EdgeInsets.fromLTRB(8, 12, 8, 20),
-                      itemCount: controller.messages.length,
-                      itemBuilder: (context, index) {
-                        final m = controller.messages[index];
-                        return RepaintBoundary(
-                          child: _MessageBubble(
-                            message: m,
-                            controller: controller,
-                          ),
-                        );
-                      },
+                  child: ListView.builder(
+                    controller: controller.scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: ClampingScrollPhysics(),
                     ),
+                    padding: const EdgeInsets.fromLTRB(8, 12, 8, 20),
+                    itemCount: controller.messages.length,
+                    itemBuilder: (context, index) {
+                      final m = controller.messages[index];
+                      return RepaintBoundary(
+                        child: _MessageBubble(
+                          message: m,
+                          controller: controller,
+                        ),
+                      );
+                    },
                   ),
                 );
               }),
@@ -363,50 +363,47 @@ class _MessageBubble extends StatelessWidget {
     final recvTextColor = context.themeOnSurface;
 
     // LTR ثابت: حزمة chat_bubbles تبني Row بحيث «المرسل» يمين الشاشة؛ في RTL ينعكس المعنى بصرياً.
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Column(
-          crossAxisAlignment:
-              mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                left: mine ? 48 : 12,
-                right: mine ? 12 : 48,
-                bottom: 4,
-              ),
-              child: Text(
-                senderLabel,
-                textDirection: TextDirection.rtl,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: mine ? cs.primary : context.themeGrey700,
-                ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment:
+            mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.only(
+              left: mine ? 48 : 12,
+              right: mine ? 12 : 48,
+              bottom: 4,
+            ),
+            child: Text(
+              senderLabel,
+              textDirection: TextDirection.rtl,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: mine ? cs.primary : context.themeGrey700,
               ),
             ),
-            BubbleNormal(
-              text: body,
-              isSender: mine,
-              color: mine ? sentColor : recvColor,
-              tail: true,
-              textStyle: TextStyle(
-                color: mine ? sentTextColor : recvTextColor,
-                fontSize: 15.5,
-                height: 1.38,
-              ),
-              timestamp: timeStr.isNotEmpty ? timeStr : null,
-              bubbleRadius: 16,
-              constraints: BoxConstraints(maxWidth: bubbleMaxW),
-              margin: EdgeInsets.only(
-                left: mine ? 36 : 6,
-                right: mine ? 6 : 36,
-              ),
+          ),
+          BubbleNormal(
+            text: body,
+            isSender: mine,
+            color: mine ? sentColor : recvColor,
+            tail: true,
+            textStyle: TextStyle(
+              color: mine ? sentTextColor : recvTextColor,
+              fontSize: 15.5,
+              height: 1.38,
             ),
-          ],
-        ),
+            timestamp: timeStr.isNotEmpty ? timeStr : null,
+            bubbleRadius: 16,
+            constraints: BoxConstraints(maxWidth: bubbleMaxW),
+            margin: EdgeInsets.only(
+              left: mine ? 36 : 6,
+              right: mine ? 6 : 36,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -50,8 +50,10 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
   Widget build(BuildContext context) {
     final surface = context.themeSurface;
     final onSurface = context.themeOnSurface;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection:
+      isRtl ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: surface,
         appBar: AppBar(
@@ -63,19 +65,31 @@ class _SearchUsersPageState extends State<SearchUsersPage> {
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () => Get.back(),
           ),
-          title: TextField(
-            controller: _queryController,
-            autofocus: true,
-            textDirection: TextDirection.rtl,
-            cursorColor: context.themePrimary,
-            style: TextStyle(fontSize: 16, color: onSurface),
-            decoration: InputDecoration(
-              hintText: 'search_users_hint'.tr,
-              hintStyle: TextStyle(color: context.themeGrey600, fontSize: 16),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          title: Directionality(
+        textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+          child: SizedBox(
+            height: 40,
+            child: TextField(
+              controller: _queryController,
+              autofocus: true,
+              textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
+              textAlign: isRtl ? TextAlign.right : TextAlign.left,
+              cursorColor: context.themePrimary,
+              style: TextStyle(fontSize: 16, color: onSurface),
+
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'search_users_hint'.tr,
+                hintStyle: TextStyle(
+                  color: context.themeGrey600,
+                  fontSize: 16,
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
             ),
           ),
+        ),
         ),
         body: Obx(() {
           if (widget.controller.isSearchLoading.value) {
@@ -210,7 +224,7 @@ class _UserTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left, color: context.themeGrey500),
+              Icon(Icons.chevron_right, color: context.themeGrey500),
             ],
           ),
         ),

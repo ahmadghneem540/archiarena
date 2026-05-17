@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_direction.dart';
 import '../home_controller.dart';
 import '../models/notification_model.dart';
 import 'shimmer_loading.dart';
@@ -15,22 +16,25 @@ class NotificationsTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          _buildHeader(context),
-          const SizedBox(height: 24),
-          Obx(() {
-            if (controller.isNotificationsLoading.value) {
-              return Column(
-                children: List.generate(6, (_) => const ShimmerListTile(leadingSize: 44, titleWidth: 180, subtitleWidth: 100)),
-              );
-            }
-            return _buildNotificationsList(context);
-          }),
-          const SizedBox(height: 32),
-        ],
+      child: Directionality(
+        textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            _buildHeader(context),
+            const SizedBox(height: 24),
+            Obx(() {
+              if (controller.isNotificationsLoading.value) {
+                return Column(
+                  children: List.generate(6, (_) => const ShimmerListTile(leadingSize: 44, titleWidth: 180, subtitleWidth: 100)),
+                );
+              }
+              return _buildNotificationsList(context);
+            }),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/app_direction.dart';
 import '../../data/services/profile_api_service.dart';
 import '../../features/home/home_controller.dart';
 import 'widgets/menu_page_scaffold.dart';
@@ -13,55 +14,64 @@ class PrivacySecurityView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomeController>();
+    // final locale = Get.locale?.languageCode ?? 'en';
+    // final isRTL = locale == 'ar';
 
-    return MenuPageScaffold(
-      title: 'privacy_security'.tr,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _SectionCard(
-              title: 'account'.tr,
-              items: [
-                Obx(() => _SwitchItem(
-                  icon: Icons.lock_outline_rounded,
-                  title: 'private_account'.tr,
-                  subtitle: 'private_account_desc'.tr,
-                  value: controller.isProfileLocked.value,
-                  onChanged: (v) => _onVisibilityChanged(controller, v),
-                )),
-              ],
-            ),
+    return Directionality(
+      textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
 
-            const SizedBox(height: 20),
-
-            _SectionCard(
-              title: 'security'.tr,
-              items: [
-                _TapItem(
-                  icon: Icons.key_rounded,
-                  title: 'change_password'.tr,
-                  onTap: () => Get.toNamed(AppRoutes.changePassword),
+      child: MenuPageScaffold(
+        title: 'privacy_security'.tr,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Directionality(
+            textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _SectionCard(
+                  title: 'account'.tr,
+                  items: [
+                    Obx(() => _SwitchItem(
+                      icon: Icons.lock_outline_rounded,
+                      title: 'private_account'.tr,
+                      subtitle: 'private_account_desc'.tr,
+                      value: controller.isProfileLocked.value,
+                      onChanged: (v) => _onVisibilityChanged(controller, v),
+                    )),
+                  ],
                 ),
-              ],
-            ),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-            _SectionCard(
-              title: 'account_actions'.tr.isEmpty ? 'account'.tr : 'account_actions'.tr,
-              items: [
-                _TapItem(
-                  icon: Icons.person_remove_rounded,
-                  title: 'delete_account'.tr,
-                  onTap: () => controller.deleteAccount(context),
+                _SectionCard(
+                  title: 'security'.tr,
+                  items: [
+                    _TapItem(
+                      icon: Icons.key_rounded,
+                      title: 'change_password'.tr,
+                      onTap: () => Get.toNamed(AppRoutes.changePassword),
+                    ),
+                  ],
                 ),
+
+                const SizedBox(height: 20),
+
+                _SectionCard(
+                  title: 'account_actions'.tr.isEmpty ? 'account'.tr : 'account_actions'.tr,
+                  items: [
+                    _TapItem(
+                      icon: Icons.person_remove_rounded,
+                      title: 'delete_account'.tr,
+                      onTap: () => controller.deleteAccount(context),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
               ],
             ),
-
-            const SizedBox(height: 32),
-          ],
+          ),
         ),
       ),
     );
@@ -97,20 +107,30 @@ class PrivacySecurityView extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.items});
+  const _SectionCard({
+    required this.title,
+    required this.items,
+  });
 
   final String title;
   final List<Widget> items;
 
   @override
   Widget build(BuildContext context) {
+    final rtl = isRTL;
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment:
+      rtl ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(right: 4, bottom: 8),
+          padding: EdgeInsetsDirectional.only(
+            start: 4,
+            bottom: 8,
+          ),
           child: Text(
             title,
+            textAlign: rtl ? TextAlign.right : TextAlign.left,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -118,6 +138,7 @@ class _SectionCard extends StatelessWidget {
             ),
           ),
         ),
+
         Container(
           decoration: BoxDecoration(
             color: context.themeCardBackground,
@@ -132,14 +153,18 @@ class _SectionCard extends StatelessWidget {
             ],
           ),
           child: Column(
-            children: _separated(context, items),
+            children: _separated(context, items, rtl),
           ),
         ),
       ],
     );
   }
 
-  List<Widget> _separated(BuildContext context, List<Widget> list) {
+  List<Widget> _separated(
+      BuildContext context,
+      List<Widget> list,
+      bool rtl,
+      ) {
     final out = <Widget>[];
 
     for (var i = 0; i < list.length; i++) {
@@ -151,8 +176,8 @@ class _SectionCard extends StatelessWidget {
             height: 1,
             thickness: 1,
             color: context.themeBorder,
-            indent: 56,
-            endIndent: 12,
+            indent: rtl ? 12 : 56,
+            endIndent: rtl ? 56 : 12,
           ),
         );
       }
@@ -259,7 +284,7 @@ class _TapItem extends StatelessWidget {
             ),
 
             Icon(
-              Icons.chevron_left_rounded,
+              Icons.chevron_right_rounded,
               color: context.themeGrey600,
               size: 24,
             ),
