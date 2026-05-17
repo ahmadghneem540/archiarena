@@ -57,7 +57,7 @@ class FcmService {
 
   /// قناة الطلبات والعروض
   static AndroidNotificationChannel get _channel => AndroidNotificationChannel(
-        'archarena_orders',
+        'archiarena_orders',
         'Orders & proposals',
         description: 'Order and proposal notifications',
         importance: Importance.high,
@@ -70,7 +70,7 @@ class FcmService {
   /// قناة مخصّصة للدردشة — مع اهتزاز ووضوح عالٍ عند وصول رسالة.
   static AndroidNotificationChannel get _channelChat =>
       AndroidNotificationChannel(
-        'archarena_chat',
+        'archiarena_chat',
         'Messages',
         description: 'Chat message alerts',
         importance: Importance.high,
@@ -410,14 +410,14 @@ class FcmService {
   }) async {
     final channelName = chatStyle
         ? 'Messages'
-        : (useGetForChannelLabels ? 'fcm_channel_name'.tr : 'archarena');
+        : (useGetForChannelLabels ? 'fcm_channel_name'.tr : 'archiarena');
     final channelDesc = chatStyle
         ? 'Chat alerts'
         : (useGetForChannelLabels
             ? 'fcm_channel_description'.tr
             : 'Notifications');
     final android = AndroidNotificationDetails(
-      chatStyle ? 'archarena_chat' : 'archarena_orders',
+      chatStyle ? 'archiarena_chat' : 'archiarena_orders',
       channelName,
       channelDescription: channelDesc,
       importance: Importance.max,

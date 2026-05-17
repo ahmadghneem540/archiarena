@@ -1,4 +1,4 @@
-"""Generate a short notification WAV (archarena - design/orders app)."""
+"""Generate a short notification WAV (archiarena - design/orders app)."""
 import wave
 import struct
 import math

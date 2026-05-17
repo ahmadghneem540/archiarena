@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     return Obx(() => GetMaterialApp(
-      title: 'archarena',
+      title: 'archiarena',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

@@ -14,101 +14,107 @@ class MenuTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          _buildHeader(context),
-          const SizedBox(height: 28),
-          _buildSectionTitle(context, 'account'.tr),
-          const SizedBox(height: 8),
-          _buildMenuCard(
-            context,
-            children: [
-              Obx(() {
-                final n = controller.chatPendingRequestCount.value;
-                return _MenuItem(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: 'chat_inbox_title'.tr,
-                  badgeCount: n > 0 ? n : null,
-                  onTap: openChatInbox,
-                );
-              }),
-              _MenuItem(
-                icon: Icons.person_outline_rounded,
-                title: 'edit_profile_title'.tr,
-                onTap: () => controller.selectTab(HomeTab.profile),
-              ),
-              _MenuItem(
-                icon: Icons.lock_outline_rounded,
-                title: 'privacy_security'.tr,
-                onTap: () => Get.toNamed(AppRoutes.menuPrivacySecurity),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSectionTitle(context, 'preferences'.tr),
-          const SizedBox(height: 8),
-          _buildMenuCard(
-            context,
-            children: [
-              _MenuItem(
-                icon: Icons.language_rounded,
-                title: 'language'.tr,
-                subtitle: _currentLanguageSubtitle(),
-                onTap: () => Get.toNamed(AppRoutes.menuLanguage),
-              ),
-              Obx(() => _MenuItem(
-                icon: Icons.dark_mode_outlined,
-                title: 'appearance'.tr,
-                subtitle: Get.find<ThemeController>().currentThemeLabel,
-                onTap: () => Get.toNamed(AppRoutes.menuAppearance),
-              )),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSectionTitle(context, 'support'.tr),
-          const SizedBox(height: 8),
-          _buildMenuCard(
-            context,
-            children: [
-              _MenuItem(
-                icon: Icons.help_outline_rounded,
-                title: 'support'.tr,
-                onTap: () => Get.toNamed(AppRoutes.menuHelpSupport),
-              ),
-              _MenuItem(
-                icon: Icons.feedback_outlined,
-                title: 'send_feedback'.tr,
-                onTap: () => Get.toNamed(AppRoutes.menuFeedback),
-              ),
-              _MenuItem(
-                icon: Icons.description_outlined,
-                title: 'terms_and_privacy_policy'.tr,
-                onTap: () => Get.toNamed(AppRoutes.menuTermsPrivacy),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildSectionTitle(context, 'about_app'.tr),
-          const SizedBox(height: 8),
-          _buildMenuCard(
-            context,
-            children: [
-              _MenuItem(
-                icon: Icons.info_outline_rounded,
-                title: 'about_app'.tr,
-                subtitle: 'app_version'.tr.replaceAll('{version}', '1.0.0'),
-                onTap: () => Get.toNamed(AppRoutes.menuAbout),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          _buildLogoutButton(context),
-          const SizedBox(height: 40),
-        ],
+    final locale = Get.locale?.languageCode ?? 'en';
+
+    final isRTL = locale == 'ar';
+    return Directionality(
+      textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            _buildHeader(context),
+            const SizedBox(height: 28),
+            _buildSectionTitle(context, 'account'.tr),
+            const SizedBox(height: 8),
+            _buildMenuCard(
+              context,
+              children: [
+                Obx(() {
+                  final n = controller.chatPendingRequestCount.value;
+                  return _MenuItem(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'chat_inbox_title'.tr,
+                    badgeCount: n > 0 ? n : null,
+                    onTap: openChatInbox,
+                  );
+                }),
+                _MenuItem(
+                  icon: Icons.person_outline_rounded,
+                  title: 'edit_profile_title'.tr,
+                  onTap: () => controller.selectTab(HomeTab.profile),
+                ),
+                _MenuItem(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'privacy_security'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.menuPrivacySecurity),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSectionTitle(context, 'preferences'.tr),
+            const SizedBox(height: 8),
+            _buildMenuCard(
+              context,
+              children: [
+                _MenuItem(
+                  icon: Icons.language_rounded,
+                  title: 'language'.tr,
+                  subtitle: _currentLanguageSubtitle(),
+                  onTap: () => Get.toNamed(AppRoutes.menuLanguage),
+                ),
+                Obx(() => _MenuItem(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'appearance'.tr,
+                  subtitle: Get.find<ThemeController>().currentThemeLabel,
+                  onTap: () => Get.toNamed(AppRoutes.menuAppearance),
+                )),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSectionTitle(context, 'support'.tr),
+            const SizedBox(height: 8),
+            _buildMenuCard(
+              context,
+              children: [
+                _MenuItem(
+                  icon: Icons.help_outline_rounded,
+                  title: 'support'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.menuHelpSupport),
+                ),
+                _MenuItem(
+                  icon: Icons.feedback_outlined,
+                  title: 'send_feedback'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.menuFeedback),
+                ),
+                _MenuItem(
+                  icon: Icons.description_outlined,
+                  title: 'terms_and_privacy_policy'.tr,
+                  onTap: () => Get.toNamed(AppRoutes.menuTermsPrivacy),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            _buildSectionTitle(context, 'about_app'.tr),
+            const SizedBox(height: 8),
+            _buildMenuCard(
+              context,
+              children: [
+                _MenuItem(
+                  icon: Icons.info_outline_rounded,
+                  title: 'about_app'.tr,
+                  subtitle: 'app_version'.tr.replaceAll('{version}', '1.0.0'),
+                  onTap: () => Get.toNamed(AppRoutes.menuAbout),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            _buildLogoutButton(context),
+            const SizedBox(height: 40),
+          ],
+        ),
       ),
     );
   }
@@ -247,6 +253,7 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final grey500 = isDark ? AppColors.darkGrey500 : AppColors.grey500;
+    final isRTL = Get.locale?.languageCode == 'ar';
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -312,8 +319,11 @@ class _MenuItem extends StatelessWidget {
                   ),
                 ),
               ],
+
               Icon(
-                Icons.chevron_left_rounded,
+                isRTL
+                    ? Icons.chevron_right_rounded
+                    : Icons.chevron_right_rounded,
                 color: grey500,
                 size: 24,
               ),

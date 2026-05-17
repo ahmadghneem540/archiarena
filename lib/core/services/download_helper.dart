@@ -28,7 +28,7 @@ class DownloadHelper {
   /// مجلد التحميلات الأساسي
   static Future<Directory> get downloadsDir async {
     final dir = await getApplicationDocumentsDirectory();
-    final downloadDir = Directory('${dir.path}/archarena_downloads');
+    final downloadDir = Directory('${dir.path}/archiarena_downloads');
     if (!await downloadDir.exists()) await downloadDir.create(recursive: true);
     return downloadDir;
   }

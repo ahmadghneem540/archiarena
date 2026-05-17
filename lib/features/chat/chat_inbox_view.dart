@@ -16,8 +16,11 @@ class ChatInboxView extends GetView<ChatInboxController> {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Get.locale?.languageCode ?? 'en';
+    final isRTL = locale == 'ar';
+
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         backgroundColor: context.themeSurface,
         appBar: AppBar(

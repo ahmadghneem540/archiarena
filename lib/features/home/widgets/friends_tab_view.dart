@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/app_direction.dart';
 import '../../../widget/safe_circle_avatar.dart';
 import 'package:get/get.dart';
 import '../../../core/theme/app_colors.dart';
@@ -19,24 +20,27 @@ class FriendsTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 16),
-          Text(
-            'friends'.tr,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: context.themeOnSurface,
+      child: Directionality(
+        textDirection: isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            Text(
+              'friends'.tr,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: context.themeOnSurface,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          _buildMyFriendsSection(context),
-          const SizedBox(height: 24),
-          _buildFriendRequestsSection(context),
-          const SizedBox(height: 32),
-        ],
+            const SizedBox(height: 24),
+            _buildMyFriendsSection(context),
+            const SizedBox(height: 24),
+            _buildFriendRequestsSection(context),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
@@ -281,7 +285,7 @@ class _FriendCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left_rounded, color: AppColors.grey500, size: 24),
+              Icon(Icons.chevron_right_rounded, color: AppColors.grey500, size: 24),
             ],
           ),
         ),

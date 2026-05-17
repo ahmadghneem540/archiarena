@@ -19,6 +19,7 @@ class WhatDoThink extends StatefulWidget {
 }
 
 class _WhatDoThinkState extends State<WhatDoThink> {
+  final isRtl = Get.locale?.languageCode == 'ar';
   final ImagePicker _imagePicker = ImagePicker();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -41,6 +42,14 @@ class _WhatDoThinkState extends State<WhatDoThink> {
     'entertainment',
     'interior',
     'other',
+  ];
+
+  String _selectedCurrency = 'EUR';
+
+  final List<Map<String, String>> currencies = [
+    {'code': 'EUR', 'symbol': '€'},
+    {'code': 'USD', 'symbol': '\$'},
+    {'code': 'SYP', 'symbol': 'ل.س'},
   ];
 
   @override
@@ -324,7 +333,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       const SizedBox(height: 8),
       TextField(
         controller: _titleController,
-        textDirection: TextDirection.rtl,
+        textDirection:
+        isRtl ? TextDirection.rtl : TextDirection.ltr,
         decoration: InputDecoration(hintText: 'enter_project_title'.tr),
       ),
     ],
@@ -340,12 +350,15 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       const SizedBox(height: 8),
       TextField(
         controller: _descriptionController,
-        textDirection: TextDirection.rtl,
+        textDirection:
+        isRtl ? TextDirection.rtl : TextDirection.ltr,
         maxLines: 4,
         decoration: InputDecoration(hintText: 'project_description_hint'.tr),
       ),
     ],
   );
+
+
 
   Widget _buildBudgetField() => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,11 +370,39 @@ class _WhatDoThinkState extends State<WhatDoThink> {
       const SizedBox(height: 8),
       TextField(
         controller: _budgetController,
-        textDirection: TextDirection.rtl,
+        textDirection:
+        isRtl ? TextDirection.rtl : TextDirection.ltr,
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           hintText: 'enter_budget'.tr,
-          prefixIcon: const Icon(Icons.attach_money, size: 22),
+
+          // Dropdown بدلاً من أيقونة الدولار
+          prefixIcon: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedCurrency,
+              icon: const Icon(Icons.arrow_drop_down),
+              items: currencies.map((currency) {
+                return DropdownMenuItem<String>(
+                  value: currency['code'],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(
+                      currency['symbol']!,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCurrency = value!;
+                });
+              },
+            ),
+          ),
         ),
       ),
     ],
@@ -401,7 +442,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
               Expanded(
                 child: TextField(
                   controller: _timerDaysController,
-                  textDirection: TextDirection.rtl,
+                  textDirection:
+                  isRtl ? TextDirection.rtl : TextDirection.ltr,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: 'timer_days_hint'.tr,
@@ -424,7 +466,8 @@ class _WhatDoThinkState extends State<WhatDoThink> {
               Expanded(
                 child: TextField(
                   controller: _timerHoursController,
-                  textDirection: TextDirection.rtl,
+                  textDirection:
+                  isRtl ? TextDirection.rtl : TextDirection.ltr,
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     hintText: 'timer_hours_hint'.tr,

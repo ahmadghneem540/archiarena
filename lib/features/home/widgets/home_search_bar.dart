@@ -13,7 +13,9 @@ class HomeSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRtl = Get.locale?.languageCode == 'ar';
     return Padding(
+
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
         children: [
@@ -45,15 +47,30 @@ class HomeSearchBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(22),
                         child: IgnorePointer(
                           child: TextField(
-                            textDirection: TextDirection.rtl,
-                            style: const TextStyle(fontSize: 15, color: Colors.black),
+                            textDirection:
+                            isRtl ? TextDirection.rtl : TextDirection.ltr,
+
+                            textAlign:
+                            isRtl ? TextAlign.right : TextAlign.left,
+
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
+                            ),
+
                             decoration: InputDecoration(
                               hintText: 'search_users_hint'.tr,
+
+                              hintTextDirection:
+                              isRtl ? TextDirection.rtl : TextDirection.ltr,
+
                               hintStyle: TextStyle(
                                 color: AppColors.grey600,
                                 fontSize: 15,
                               ),
+
                               border: InputBorder.none,
+
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 18,
                                 vertical: 12,
