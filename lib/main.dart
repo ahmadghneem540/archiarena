@@ -3,7 +3,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/constant/const_data.dart';
 import 'core/theme/app_theme.dart';
@@ -24,17 +23,9 @@ void main() async {
   Hive.registerAdapter(LocalProjectImageModelAdapter());
 
   await Hive.openBox<LocalProjectImageModel>('project_images');
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } on FirebaseException catch (e) {
-    if (e.code != 'duplicate-app') {
-      debugPrint('Firebase initialization error: $e');
-    }
-  } catch (e) {
-    debugPrint('Firebase unknown error: $e');
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   FirebaseMessaging.onBackgroundMessage(fcmBackgroundHandler);
   await Get.putAsync(() => MyServices().init());
   await FcmService.init();

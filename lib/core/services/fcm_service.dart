@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -85,6 +86,13 @@ class FcmService {
   /// استدعاء ثانٍ هنا يسبب duplicate-app ويمنع تسجيل المستمعين فلا تصل أي إشعارات.
   static Future<void> init() async {
     await _requestPermission();
+    if (Platform.isIOS) {
+      await _messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
     await _initLocalNotifications();
     await _requestAndroidPostNotificationsPermission();
     await _ensureAndroidChannels(_localNotifications);
@@ -92,7 +100,7 @@ class FcmService {
     _listenToMessageOpenedApp();
     _listenToTokenRefresh();
     await _handleInitialMessage();
-    await _logToken();
+    unawaited(_logToken());
   }
 
   static Future<void> _requestAndroidPostNotificationsPermission() async {
@@ -449,14 +457,43 @@ class FcmService {
   }
 
   static Future<void> _logToken() async {
-    final token = await _messaging.getToken();
+    final token = await _resolveFcmToken();
     debugPrint('[FCM] Token: $token');
+    if (Platform.isIOS && token == null) {
+      debugPrint(
+        '[FCM] iOS: لا يوجد FCM token بعد. على المحاكي الإشعارات غالباً لا تعمل — '
+        'جرّب جهاز iPhone حقيقي وارفع مفتاح APNs في Firebase Console.',
+      );
+    }
+  }
+
+  /// على iOS يحتاج FCM أولاً إلى APNS token قبل إرجاع FCM token.
+  static Future<String?> _resolveFcmToken() async {
+    try {
+      if (Platform.isIOS) {
+        String? apns = await _messaging.getAPNSToken();
+        if (apns == null) {
+          for (var i = 0; i < 10 && apns == null; i++) {
+            await Future<void>.delayed(const Duration(milliseconds: 500));
+            apns = await _messaging.getAPNSToken();
+          }
+        }
+        debugPrint('[FCM] APNS token: ${apns != null ? "ok" : "null"}');
+      }
+      return await _messaging.getToken().timeout(const Duration(seconds: 15));
+    } on TimeoutException {
+      debugPrint('[FCM] getToken timeout');
+      return null;
+    } catch (e, st) {
+      debugPrint('[FCM] getToken failed: $e\n$st');
+      return null;
+    }
   }
 
   /// إرسال التوكن للسيرفر بعد تسجيل الدخول (يُستدعى من [HomeController] أيضاً).
   static Future<void> registerTokenWithServerIfLoggedIn() async {
     try {
-      final token = await _messaging.getToken();
+      final token = await _resolveFcmToken();
       if (token == null || token.isEmpty) return;
       await NotificationsApiService.registerFcmToken(token);
     } catch (e, st) {
@@ -466,7 +503,7 @@ class FcmService {
 
   /// الحصول على توكن الجهاز لإرساله للسيرفر (لإرسال الإشعارات لاحقاً)
   static Future<String?> getToken() async {
-    return _messaging.getToken();
+    return _resolveFcmToken();
   }
 }
 

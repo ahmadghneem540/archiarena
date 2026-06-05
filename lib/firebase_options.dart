@@ -70,6 +70,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '475061185169',
     projectId: 'archiarena-2548d',
     storageBucket: 'archiarena-2548d.firebasestorage.app',
-    iosBundleId: 'com.ahmadghneem.archiarena',
+    iosBundleId: 'com.ahmadghneem.archiarenafordesginers',
   );
 }
